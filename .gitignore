@@ -1,0 +1,25 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+bin/
+
+# Secrets and local overrides
+.env
+*.env.local
+
+# Local server runtime (lives outside the repo by default; ignore if symlinked in)
+run/
+ascent-server/
+
+# OS
+.DS_Store
+Thumbs.db

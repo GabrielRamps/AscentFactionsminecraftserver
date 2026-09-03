@@ -1,0 +1,8 @@
+name: Ascent
+version: '${version}'
+main: dev.ascentfactions.plugin.AscentPlugin
+api-version: '1.21'
+description: Ascent Factions - OP Factions with a prisons progression spine.
+website: https://github.com/GabrielRamps/AscentFactionsminecraftserver
+authors: [Ascent]
+softdepend: [Vault, PlaceholderAPI, LuckPerms]

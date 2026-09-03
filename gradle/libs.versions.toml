@@ -1,0 +1,33 @@
+# Single source of truth for dependency versions.
+# Bump `paper` together with `mcVersion` in gradle.properties.
+
+[versions]
+paper = "1.21.11-R0.1-SNAPSHOT"
+hikari = "6.3.0"
+jedis = "5.2.0"
+caffeine = "3.2.0"
+flyway = "11.3.4"
+mariadb = "3.5.2"
+junit = "5.12.0"
+mockito = "5.16.0"
+shadow = "9.6.1"
+spotless = "8.10.1"
+# MockBukkit (org.mockbukkit.mockbukkit:mockbukkit-v1.21) is added in E3-S4.
+# Its 4.x line tracks the newest Paper, so pick the release that matches `paper` above when wiring it in.
+
+[libraries]
+paper-api = { module = "io.papermc.paper:paper-api", version.ref = "paper" }
+hikari = { module = "com.zaxxer:HikariCP", version.ref = "hikari" }
+jedis = { module = "redis.clients:jedis", version.ref = "jedis" }
+caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
+flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+flyway-mysql = { module = "org.flywaydb:flyway-mysql", version.ref = "flyway" }
+mariadb-client = { module = "org.mariadb.jdbc:mariadb-java-client", version.ref = "mariadb" }
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+mockito = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+
+[plugins]
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
