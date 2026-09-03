@@ -1,0 +1,34 @@
+# --- Secrets ---------------------------------------------------------------
+.env
+.env.*
+!.env.example
+
+# --- Gradle / build --------------------------------------------------------
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+!src/**/build/
+
+# --- Minecraft server runtime ----------------------------------------------
+# The server directory lives outside the repo by default (~/ascent-server), but
+# ignore it here too in case someone runs the server inside the checkout.
+server/run/
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+logs/
+crash-reports/
+world/
+world_nether/
+world_the_end/
+eula.txt
+banned-*.json
+ops.json
+whitelist.json
+usercache.json
+
+# --- Editors / OS ----------------------------------------------------------
+.idea/
+*.iml
+.vscode/
+.DS_Store

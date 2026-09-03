@@ -1,0 +1,27 @@
+name: Ascent
+version: ${version}
+main: gg.ascent.plugin.AscentPlugin
+api-version: '${apiVersion}'
+description: Ascent Factions core plugin.
+authors: [Ascent]
+load: POSTWORLD
+
+# Ascent runs without any of these, but uses them when present:
+#   Vault          economy bridge for third-party plugins
+#   PlaceholderAPI scoreboard, tab and chat placeholders
+#   LuckPerms      permissions and group lookups
+softdepend:
+  - Vault
+  - PlaceholderAPI
+  - LuckPerms
+
+commands:
+  ascent:
+    description: Ascent administrative commands.
+    usage: /ascent version
+    permission: ascent.admin
+
+permissions:
+  ascent.admin:
+    description: Access to the /ascent administrative command.
+    default: op

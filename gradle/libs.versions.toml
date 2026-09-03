@@ -1,0 +1,49 @@
+# Single source of truth for dependency and plugin versions.
+#
+# The Paper API version is pinned in gradle.properties (paperApiVersion) because
+# scripts/update-paper.sh rewrites it when you pull a new server build; keeping
+# the server jar and the compile-time API on the same version is what makes the
+# pin meaningful.
+
+[versions]
+# Build plugins
+shadow = "8.3.5"
+spotless = "6.25.0"
+googleJavaFormat = "1.25.2"
+
+# Shaded runtime libraries (bundled into the plugin jar)
+hikaricp = "5.1.0"
+jedis = "5.2.0"
+caffeine = "3.1.8"
+
+# Test libraries
+junit = "5.11.3"
+mockbukkit = "3.133.2"
+mockito = "5.14.2"
+
+# Annotations
+jetbrainsAnnotations = "26.0.1"
+
+[libraries]
+hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
+jedis = { module = "redis.clients:jedis", version.ref = "jedis" }
+caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
+
+annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrainsAnnotations" }
+
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+# Not yet wired into any module: confirm the current coordinates before use.
+# MockBukkit moved from com.github.seeseemelk to org.mockbukkit.mockbukkit.
+mockbukkit = { module = "com.github.seeseemelk:MockBukkit-v1.21", version.ref = "mockbukkit" }
+mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+
+[bundles]
+# Everything shaded into the final jar. Adventure/MiniMessage is provided by Paper
+# and must never appear here.
+runtime = ["hikaricp", "jedis", "caffeine"]
+
+[plugins]
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
