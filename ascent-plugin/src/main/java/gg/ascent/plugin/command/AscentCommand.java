@@ -14,8 +14,8 @@ import org.bukkit.command.TabCompleter;
  * Administrative root command.
  *
  * <p>Epic 0 ships {@code /ascent version} only, so that a freshly built jar can be verified on the
- * dev server. Story E1-S1 adds {@code /ascent reload}, and later stories add the debug
- * subcommands described in the PRD.
+ * dev server. Story E1-S1 adds {@code /ascent reload}, and later stories add the debug subcommands
+ * described in the PRD.
  */
 public final class AscentCommand implements CommandExecutor, TabCompleter {
 
