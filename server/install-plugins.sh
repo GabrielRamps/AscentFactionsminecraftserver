@@ -13,7 +13,6 @@ mkdir -p "$PLUGINS_DIR"
 MODRINTH_SLUGS=(
   luckperms
   placeholderapi
-  oldcombatmechanics
   viaversion
   viabackwards
   viarewind
@@ -23,8 +22,9 @@ MODRINTH_SLUGS=(
   worldguard
 )
 
-# Vault is not maintained on Modrinth; pull the release jar from GitHub.
+# Not (reliably) on Modrinth: pulled from GitHub releases instead.
 VAULT_URL="https://github.com/MilkBowl/Vault/releases/download/1.7.3/Vault.jar"
+OCM_REPO="kernitus/BukkitOldCombatMechanics"
 
 urlencode() { jq -rn --arg v "$1" '$v|@uri'; }
 
@@ -53,9 +53,21 @@ install_modrinth() {
   curl -fsSL -A "$USER_AGENT" -o "$PLUGINS_DIR/$filename" "$url"
 }
 
+install_github_latest() { # install_github_latest <owner/repo> <asset name regex>
+  local repo="$1" pattern="$2" json url name
+  json="$(curl -fsSL -A "$USER_AGENT" "https://api.github.com/repos/$repo/releases/latest")"
+  url="$(jq -r --arg re "$pattern" '.assets[] | select(.name | test($re)) | .browser_download_url' <<<"$json" | head -1)"
+  [[ -n "$url" ]] || { warn "$repo: no asset matching /$pattern/ in the latest release, install it by hand"; return 0; }
+  name="$(basename "$url")"
+  log "$repo $(jq -r .tag_name <<<"$json") -> $name"
+  curl -fsSL -A "$USER_AGENT" -o "$PLUGINS_DIR/$name" "$url"
+}
+
 for slug in "${MODRINTH_SLUGS[@]}"; do
   install_modrinth "$slug"
 done
+
+install_github_latest "$OCM_REPO" '^OldCombatMechanics.*\.jar$'
 
 log "Vault 1.7.3 -> Vault.jar"
 curl -fsSL -A "$USER_AGENT" -o "$PLUGINS_DIR/Vault.jar" "$VAULT_URL"
