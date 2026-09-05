@@ -13,8 +13,12 @@ server/install-plugins.py    # LuckPerms, Vault, PAPI, OCM, Via*, GrimAC, FAWE, 
 ./dev.sh                     # boot once with plugins so OCM writes its default config
 server/configure-ocm.py      # apply the 1.8 combat settings, then ./dev.sh --no-build
 cp .env.example .env         # then edit passwords
+mkdir -p ~/.docker/cli-plugins && ln -sfn /opt/homebrew/opt/docker-compose/bin/docker-compose ~/.docker/cli-plugins/docker-compose
 colima start && docker compose up -d   # MariaDB 11 + Redis 7
 ```
+
+The symlink makes Homebrew's standalone `docker-compose` available as `docker compose`. Colima was
+started with `--cpu 2 --memory 3 --disk 20`; it remembers those on later `colima start` calls.
 
 spark is bundled with Paper, so it is not installed separately.
 
