@@ -1,0 +1,30 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+bin/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets and local state
+.env
+*.log
+
+# Local server files are never committed (lives in ~/ascent-server)
+server/paper*.jar
+server/plugins/
+server/world*/
+server/logs/
+server/cache/
+server/libraries/
+server/versions/

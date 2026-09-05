@@ -1,0 +1,53 @@
+# Local infrastructure for Ascent: MariaDB 11 and Redis 7 (PRD E0-S3).
+# Credentials come from .env (copy .env.example and fill it in; .env is git-ignored).
+# Ports bind to 127.0.0.1 only. Production runs the same file on the Ubuntu host.
+
+services:
+  mariadb:
+    image: mariadb:11
+    container_name: ascent-mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?set DB_ROOT_PASSWORD in .env}
+      MARIADB_DATABASE: ${DB_NAME:-ascent}
+      MARIADB_USER: ${DB_USER:-ascent}
+      MARIADB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --innodb-buffer-pool-size=256M
+    ports:
+      - "127.0.0.1:${DB_PORT:-3306}:3306"
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  redis:
+    image: redis:7-alpine
+    container_name: ascent-redis
+    restart: unless-stopped
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --requirepass
+      - ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+
+volumes:
+  mariadb-data:
+  redis-data:

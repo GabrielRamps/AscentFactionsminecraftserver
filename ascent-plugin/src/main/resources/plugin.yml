@@ -1,0 +1,7 @@
+name: Ascent
+version: '${version}'
+main: gg.ascent.plugin.AscentPlugin
+api-version: '${apiVersion}'
+description: Ascent Factions core plugin
+authors: [Ascent]
+softdepend: [Vault, PlaceholderAPI, LuckPerms]
