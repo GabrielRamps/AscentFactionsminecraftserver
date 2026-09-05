@@ -4,10 +4,11 @@ Ascent builds on a small set of third-party plugins for cross-cutting concerns.
 Everything that *is* the game — factions, enchants, rank, mines, spawners,
 contracts, events — is ours and lives in `ascent-plugin`.
 
-Download each plugin from its own project home rather than a mirror, drop the
-jar in `~/ascent-server/plugins/`, and restart. There is deliberately no
-download script here: the sources use different hosts and release schemes, and a
-stale hardcoded URL is worse than a documented list.
+`scripts/install-plugins.sh` installs all of these, matching them against the
+Minecraft version pinned in `gradle.properties`. `scripts/bootstrap.sh` runs it
+for you. The table below is the fallback: if the installer warns that it could
+not resolve a plugin, download that one by hand from its project home, drop the
+jar in `$ASCENT_SERVER_DIR/plugins/`, and restart.
 
 | Plugin | Purpose | Source |
 |---|---|---|

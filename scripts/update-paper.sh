@@ -15,9 +15,7 @@ set -euo pipefail
 
 API="https://fill.papermc.io/v3"
 PROJECT="paper"
-UA="ascent-factions/update-paper (+https://github.com/GabrielRamps/AscentFactionsminecraftserver)"
-
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
 PROPS="$REPO_ROOT/gradle.properties"
 
 LINE="${ASCENT_PAPER_LINE:-1.21}"
@@ -47,22 +45,15 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-for tool in curl jq; do
-  command -v "$tool" >/dev/null 2>&1 || {
-    echo "error: $tool is required (apt install $tool)" >&2
-    exit 1
-  }
-done
+need curl
+need jq
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
 fetch() {
   local url="$1" out="$2"
-  if ! curl -fsSL -A "$UA" -o "$out" "$url"; then
-    echo "error: request failed: $url" >&2
-    exit 1
-  fi
+  curl -fsSL -A "$USER_AGENT" -o "$out" "$url" || die "request failed: $url"
 }
 
 die_shape() {
@@ -116,13 +107,6 @@ if [ "$CHECK_ONLY" -eq 1 ]; then
 fi
 
 # --- Download and verify ----------------------------------------------------
-read_env() {
-  [ -f "$REPO_ROOT/.env" ] || return 0
-  sed -n "s/^[[:space:]]*$1=//p" "$REPO_ROOT/.env" | tail -n 1 |
-    sed 's/^"\(.*\)"$/\1/; s/^'"'"'\(.*\)'"'"'$/\1/'
-}
-SERVER_DIR="${ASCENT_SERVER_DIR:-$(read_env ASCENT_SERVER_DIR)}"
-SERVER_DIR="${SERVER_DIR:-$HOME/ascent-server}"
 mkdir -p "$SERVER_DIR"
 
 echo "Downloading $URL"

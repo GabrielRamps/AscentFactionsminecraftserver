@@ -29,3 +29,18 @@ once per sprint (PRD §5.6).
   startup errors surfaced. (E0-S4)
 - `TESTING.md` covering the dev loop, logs, Spark and the admin command table.
   (E0-S4)
+- `scripts/bootstrap.sh`: one command that downloads Paper, accepts the EULA,
+  merges `server/config/server.properties` into the server's own file and
+  installs the third-party plugins. Every step is idempotent. (E0-S1, E0-S3)
+- `scripts/install-plugins.sh`: resolves the third-party plugins from Modrinth
+  against the pinned Minecraft version, with GitHub releases for Vault and
+  OldCombatMechanics. A plugin it cannot resolve warns and is skipped rather
+  than failing the run. (E0-S3)
+- `scripts/lib.sh`: shared path, environment and logging helpers, replacing the
+  copy of `read_env` that each script carried.
+- `SETUP.md`: the ordered Epic 0 runbook, from an empty box to standing in the
+  server, with a check after every step.
+
+### Fixed
+
+- Google Java Format violation in the `AscentCommand` javadoc that failed CI.

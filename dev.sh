@@ -34,20 +34,13 @@ for arg in "$@"; do
   esac
 done
 
-read_env() {
-  [ -f "$REPO_ROOT/.env" ] || return 0
-  sed -n "s/^[[:space:]]*$1=//p" "$REPO_ROOT/.env" | tail -n 1 |
-    sed 's/^"\(.*\)"$/\1/; s/^'"'"'\(.*\)'"'"'$/\1/'
-}
+source "$REPO_ROOT/scripts/lib.sh"
 
-SERVER_DIR="${ASCENT_SERVER_DIR:-$(read_env ASCENT_SERVER_DIR)}"
-SERVER_DIR="${SERVER_DIR:-$HOME/ascent-server}"
 LOG="$SERVER_DIR/logs/latest.log"
 
 if [ ! -d "$SERVER_DIR/plugins" ]; then
-  echo "error: $SERVER_DIR/plugins not found. Complete E0-S1 first," >&2
-  echo "or set ASCENT_SERVER_DIR in .env." >&2
-  exit 1
+  die "$SERVER_DIR/plugins not found.
+Run scripts/bootstrap.sh first, or set ASCENT_SERVER_DIR in .env."
 fi
 
 echo "==> Building"

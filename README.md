@@ -12,6 +12,7 @@ bounded, scheduled ways.
 | `docs/ascent-factions-concept.md` | Game design: pillars, the three-layer model, systems |
 | `docs/ascent-factions-phase-1-prd.md` | Phase 1 requirements, stories, schema, sprint plan |
 | `docs/cosmicpvp-design-bible.md` | Reference mechanics from the genre it descends from |
+| `SETUP.md` | First-time setup, from an empty box to a running server |
 | `TESTING.md` | How to run the server and test a change |
 | `server/PLUGINS.md` | Third-party plugins and the 1.8-combat checklist |
 
@@ -24,7 +25,7 @@ release plan, and run its Definition of Done before closing one.
 ascent-api/      interfaces, custom events and value types; no implementation
 ascent-plugin/   the Paper plugin: services, listeners, commands, GUIs, storage
 docs/            design and requirements
-scripts/         start.sh, update-paper.sh
+scripts/         bootstrap.sh and the setup scripts it drives
 server/          server config templates and third-party plugin notes
 dev.sh           build, deploy and restart the dev server
 docker-compose.yml   MariaDB 11 and Redis 7 for one environment
@@ -36,14 +37,15 @@ should be imported across module boundaries.
 ## Quick start
 
 ```bash
-cp .env.example .env      # then fill it in
+cp .env.example .env      # then fill in passwords and your server directory
 docker compose up -d      # MariaDB + Redis
-./gradlew build           # produces ascent-plugin/build/libs/Ascent-<version>.jar
+scripts/bootstrap.sh      # Paper, EULA, server.properties, all 11 plugins
 ./dev.sh                  # build, deploy, restart, wait for "Done"
 ```
 
-You need Java 21 and a Paper server in `~/ascent-server` first. `TESTING.md`
-walks through it.
+You need Java 21, Docker, tmux, curl and jq on the box. **`SETUP.md` is the
+full walkthrough**, from an empty machine to standing in the server; start
+there if this is your first time.
 
 ## Stack
 

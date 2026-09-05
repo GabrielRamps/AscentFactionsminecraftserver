@@ -11,36 +11,23 @@
 
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-ENV_FILE="$REPO_ROOT/.env"
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
 
-# Read a single key from .env without sourcing it, so passwords containing
-# shell metacharacters can never be executed.
-read_env() {
-  [ -f "$ENV_FILE" ] || return 0
-  sed -n "s/^[[:space:]]*$1=//p" "$ENV_FILE" | tail -n 1 | sed 's/^"\(.*\)"$/\1/; s/^'"'"'\(.*\)'"'"'$/\1/'
-}
-
-SERVER_DIR="${ASCENT_SERVER_DIR:-$(read_env ASCENT_SERVER_DIR)}"
-SERVER_DIR="${SERVER_DIR:-$HOME/ascent-server}"
 MEMORY="${ASCENT_MEMORY:-$(read_env ASCENT_MEMORY)}"
 MEMORY="${MEMORY:-4G}"
 PAPER_JAR="${ASCENT_PAPER_JAR:-paper.jar}"
 
 if [ ! -d "$SERVER_DIR" ]; then
-  echo "error: server directory not found: $SERVER_DIR" >&2
-  echo "Complete story E0-S1, or set ASCENT_SERVER_DIR in .env." >&2
-  exit 1
+  die "server directory not found: $SERVER_DIR
+Run scripts/bootstrap.sh, or set ASCENT_SERVER_DIR in .env."
 fi
 if [ ! -f "$SERVER_DIR/$PAPER_JAR" ]; then
-  echo "error: $PAPER_JAR not found in $SERVER_DIR" >&2
-  echo "Run scripts/update-paper.sh to download a pinned Paper build." >&2
-  exit 1
+  die "$PAPER_JAR not found in $SERVER_DIR
+Run scripts/bootstrap.sh to download a pinned Paper build."
 fi
 if [ ! -f "$SERVER_DIR/eula.txt" ] || ! grep -q '^eula=true' "$SERVER_DIR/eula.txt"; then
-  echo "error: the Minecraft EULA has not been accepted." >&2
-  echo "Read https://aka.ms/MinecraftEULA then write eula=true to $SERVER_DIR/eula.txt" >&2
-  exit 1
+  die "the Minecraft EULA has not been accepted.
+Read https://aka.ms/MinecraftEULA then write eula=true to $SERVER_DIR/eula.txt"
 fi
 
 # Aikar's flags (https://docs.papermc.io/paper/aikars-flags). Heaps of 12G and
@@ -96,5 +83,5 @@ else
 fi
 
 cd "$SERVER_DIR"
-echo "Starting Paper in $SERVER_DIR with ${MEMORY} heap."
+log "Starting Paper in $SERVER_DIR with ${MEMORY} heap"
 exec java "${FLAGS[@]}" -jar "$PAPER_JAR" --nogui

@@ -36,14 +36,15 @@ and player data.
 
 ## First-time setup
 
-1. Complete story E0-S1: Java 21, a Paper jar in `~/ascent-server/`,
-   `eula=true`, and the settings from `server/config/server.properties`.
-2. `cp .env.example .env` and fill it in. Set `ASCENT_SERVER_DIR` to your server
-   directory.
-3. `docker compose up -d` to start MariaDB and Redis, then `docker compose ps`
-   to confirm both are healthy.
-4. Install the third-party plugins listed in `server/PLUGINS.md`.
-5. `./dev.sh`.
+See `SETUP.md` for the full walkthrough. The short version, once Java 21,
+Docker, tmux, curl and jq are installed:
+
+```bash
+cp .env.example .env      # passwords and ASCENT_SERVER_DIR
+docker compose up -d      # MariaDB + Redis
+scripts/bootstrap.sh      # Paper, EULA, server.properties, plugins
+./dev.sh                  # build, deploy, start
+```
 
 Pull a newer Paper build with `scripts/update-paper.sh --check` to see what is
 available, then without `--check` to install it and update the pin in
