@@ -37,10 +37,12 @@ Reboot when it asks, then open Ubuntu from the Start menu and create your
 username and password. Everything from step 1 onward runs in that Ubuntu shell,
 not in PowerShell.
 
-Then install [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/),
-and in its settings enable **Resources → WSL integration** for Ubuntu-24.04.
-That makes `docker` work inside the Ubuntu shell, and lets you skip the Docker
-install in step 1.
+Docker itself is handled in step 1 below — Ubuntu 24.04 on WSL2 ships with
+systemd enabled, so the normal Linux Docker install just works there, and
+there's no separate Windows app to install. (Docker Desktop with WSL
+integration is the other common route; if you already have Docker Desktop
+installed, use that instead and skip the Docker install in step 1 — never run
+both, they fight over the same socket.)
 
 Two things that will bite you if you skip them:
 
@@ -60,20 +62,23 @@ sudo apt update
 sudo apt install -y openjdk-21-jdk git tmux curl jq unzip
 ```
 
-**On WSL2, stop here for Docker.** You installed Docker Desktop with WSL
-integration in step 0, and `docker` already works in this shell. Do NOT run
-`get.docker.com` — its own installer will warn you off this too. Running a
-second Docker inside WSL alongside Docker Desktop fights over the same socket
-and is the single most common way to break this setup.
-
-On real Linux (no Docker Desktop involved), install Docker directly:
+Then Docker:
 
 ```bash
 curl -fsSL https://get.docker.com | sudo sh
 sudo usermod -aG docker "$USER"
 ```
 
-Log out and back in, so your shell picks up the `docker` group.
+The installer prints "WSL DETECTED: We recommend using Docker Desktop" and
+pauses for 20 seconds — that's a heads-up, not an error, and only matters if
+you already have Docker Desktop installed. If you don't, let it run; on
+Ubuntu 24.04 it installs Docker Engine directly via systemd and the daemon
+starts immediately. **If you do already have Docker Desktop, Ctrl-C instead**
+and enable WSL integration for Ubuntu-24.04 in its settings (Settings →
+Resources → WSL integration) rather than installing a second engine.
+
+Either way, close this terminal and reopen Ubuntu (or `wsl --shutdown` from
+PowerShell and relaunch) so your shell picks up the new `docker` group.
 
 **Check it worked:**
 
