@@ -39,7 +39,8 @@ once per sprint (PRD §5.6).
 - `scripts/lib.sh`: shared path, environment and logging helpers, replacing the
   copy of `read_env` that each script carried.
 - `SETUP.md`: the ordered Epic 0 runbook, from an empty box to standing in the
-  server, with a check after every step.
+  server, with a check after every step. Covers Windows via WSL2, since every
+  script here needs bash, tmux and GNU coreutils.
 
 ### Fixed
 

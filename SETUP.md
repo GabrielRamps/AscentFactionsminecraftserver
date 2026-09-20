@@ -1,6 +1,6 @@
 # Setup, start to finish
 
-The complete Epic 0 runbook: from an empty Linux box to standing in your own
+The complete Epic 0 runbook: from an empty machine to standing in your own
 Minecraft server with the Ascent plugin loaded. Follow it in order. Every step
 says what you should see, so you know whether it worked before moving on.
 
@@ -10,13 +10,46 @@ Budget an afternoon. Most of it is downloads.
 
 You need three things:
 
-- **A Linux box.** Ubuntu 24.04. For development anything with 4 GB of RAM
-  works; the PRD sizes production at 8 vCPU and 32 GB.
+- **A Linux environment.** Ubuntu 24.04. On Windows that means WSL2; see the
+  next section. For development anything with 4 GB of RAM works; the PRD sizes
+  production at 8 vCPU and 32 GB.
 - **A Minecraft Java account.** The server runs with `online-mode=true`, so
   cracked clients cannot join.
 - **Two clients to test with.** A 1.8.9 client (Lunar or Badlion) and a current
   1.21.x vanilla client. You need both, because the whole point of the combat
   setup is that both work.
+
+---
+
+## 0. Windows only: install WSL2
+
+Every script in this repo is bash and uses `tmux`, GNU `find` and GNU `stat`.
+None of that exists in PowerShell, and Git Bash has no `tmux`. Run the server
+inside WSL2, and keep playing Minecraft on Windows as normal.
+
+In an **Administrator** PowerShell:
+
+```powershell
+wsl --install -d Ubuntu-24.04
+```
+
+Reboot when it asks, then open Ubuntu from the Start menu and create your
+username and password. Everything from step 1 onward runs in that Ubuntu shell,
+not in PowerShell.
+
+Then install [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/),
+and in its settings enable **Resources → WSL integration** for Ubuntu-24.04.
+That makes `docker` work inside the Ubuntu shell, and lets you skip the Docker
+install in step 1.
+
+Two things that will bite you if you skip them:
+
+- **Keep the repo in the Linux filesystem.** Clone into `~/` inside Ubuntu, not
+  into `/mnt/c/...`. Gradle across the Windows filesystem boundary is slow
+  enough to turn a twenty-second build into minutes.
+- **Connect to `localhost`.** WSL2 forwards localhost, so your Windows
+  Minecraft client joins the server at `localhost:25565` with no extra setup.
+  You can skip the firewall step entirely.
 
 ---
 
@@ -104,7 +137,7 @@ Running this means you accept the [Minecraft EULA](https://aka.ms/MinecraftEULA)
 
 ## 6. Open the firewall
 
-Skip this if you are running on a machine you connect to locally.
+Skip this on WSL2, and on any machine you connect to locally.
 
 ```bash
 sudo ufw allow 25565/tcp
@@ -145,7 +178,8 @@ Press `Ctrl-b` then `d` to detach, leaving the server running. Do not press
 
 ## 9. Join and check the plugin
 
-Connect from your 1.21 client to your box's IP on port 25565. Once in, run:
+Connect from your 1.21 client on port 25565: use `localhost` on WSL2 or a
+local machine, or the box's IP if the server is remote. Once in, run:
 
 ```
 /ascent version
@@ -204,6 +238,8 @@ git push
 | `/ascent version` unknown | The plugin failed to load. `grep -i 'could not load' ~/ascent-server/logs/latest.log`. |
 | 1.8 client cannot join | ViaVersion, ViaBackwards and ViaRewind must all three be installed. |
 | Cannot connect at all | Firewall, or the server bound to a different port. Check `server-port` in `~/ascent-server/server.properties`. |
+| WSL2: build is painfully slow | The repo is on `/mnt/c`. Move it into `~/` inside Ubuntu. |
+| WSL2: `docker` not found | Docker Desktop's WSL integration is off for this distro. Settings → Resources → WSL integration. |
 
 Day-to-day commands live in `TESTING.md`. What to build next is in
 `docs/ascent-factions-phase-1-prd.md`, section 10.2.
