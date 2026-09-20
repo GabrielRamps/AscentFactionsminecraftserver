@@ -60,7 +60,13 @@ sudo apt update
 sudo apt install -y openjdk-21-jdk git tmux curl jq unzip
 ```
 
-Then Docker, for the databases:
+**On WSL2, stop here for Docker.** You installed Docker Desktop with WSL
+integration in step 0, and `docker` already works in this shell. Do NOT run
+`get.docker.com` — its own installer will warn you off this too. Running a
+second Docker inside WSL alongside Docker Desktop fights over the same socket
+and is the single most common way to break this setup.
+
+On real Linux (no Docker Desktop involved), install Docker directly:
 
 ```bash
 curl -fsSL https://get.docker.com | sudo sh
