@@ -68,10 +68,14 @@ die_shape() {
 if [ -z "$WANT_VERSION" ]; then
   fetch "$API/projects/$PROJECT" "$TMP/project.json"
   cp "$TMP/project.json" "$TMP/project.keep.json"
+  # Fill v3 lists pre-release strings (e.g. "1.21.11-rc3") alongside real
+  # releases. `sort -V` treats the longer RC string as newer than the release
+  # it precedes, so filter to strict dotted-numeric versions before picking
+  # the latest -- an RC never has a stable build for update-paper.sh to find.
   WANT_VERSION="$(
     jq -r --arg line "$LINE" '
       (.versions[$line] // empty)[]? , (.versions[]?[]? | select(startswith($line + ".")))
-    ' "$TMP/project.json" 2>/dev/null | sort -V -u | tail -n 1
+    ' "$TMP/project.json" 2>/dev/null | grep -E '^[0-9]+(\.[0-9]+)*$' | sort -V -u | tail -n 1
   )"
   [ -n "$WANT_VERSION" ] || die_shape "no versions found on the $LINE line" "$TMP/project.keep.json"
 fi
