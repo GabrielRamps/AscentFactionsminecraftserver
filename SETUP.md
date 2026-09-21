@@ -265,6 +265,7 @@ git push
 | Cannot connect at all | Firewall, or the server bound to a different port. Check `server-port` in `~/ascent-server/server.properties`. |
 | WSL2: build is painfully slow | The repo is on `/mnt/c`. Move it into `~/` inside Ubuntu. |
 | WSL2: `docker` not found | Docker Desktop's WSL integration is off for this distro. Settings → Resources → WSL integration. |
+| WSL2: log timestamps jump minutes back and forth between adjacent lines | WSL2's clock drifting against the Windows host. Cosmetic in logs, but it corrupts timestamp ordering in the database. Trust Paper's `Done (Ns)` for boot time; `wsl --shutdown` from PowerShell and relaunch to resync. |
 
 Day-to-day commands live in `TESTING.md`. What to build next is in
 `docs/ascent-factions-phase-1-prd.md`, section 10.2.

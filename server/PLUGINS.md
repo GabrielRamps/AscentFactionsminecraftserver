@@ -34,6 +34,10 @@ Notes that bite people:
   ViaVersion. Install all three or none.
 - **Match the server version.** Every jar here must support the Paper line
   pinned in `gradle.properties`. Check before upgrading Paper, not after.
+- **GrimAC and ViaBackwards on 1.21.2+ is unsupported by Grim.** It says so at
+  startup: older clients "will experience issues with vehicles." Expect false
+  flags on 1.8 clients riding boats, minecarts or horses until Grim supports
+  it. Track it; do not disable Grim over it.
 
 ## OldCombatMechanics configuration
 
