@@ -40,7 +40,12 @@ public final class PlayerListener implements Listener {
     }
   }
 
-  /** Another plugin refused the login after our load ran: forget what we loaded. */
+  /**
+   * Another plugin refused the login after our load ran: forget what we loaded. Paper deprecates
+   * this event in favour of its own connection events, but it still fires and is the one
+   * synchronous hook that sees every other plugin's verdict.
+   */
+  @SuppressWarnings("deprecation")
   @EventHandler(priority = EventPriority.MONITOR)
   public void onLogin(PlayerLoginEvent event) {
     if (event.getResult() != PlayerLoginEvent.Result.ALLOWED) {

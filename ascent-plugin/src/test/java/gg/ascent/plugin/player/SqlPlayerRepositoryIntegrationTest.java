@@ -60,7 +60,7 @@ class SqlPlayerRepositoryIntegrationTest {
         .executor()
         .runNow(c -> repo.insert(c, PlayerSnapshot.fresh(uuid, "Poor", 10, Instant.now())));
 
-    assertEquals(25, database.executor().supplyNow(c -> repo.adjustBalance(c, uuid, 15)));
+    assertEquals(25L, database.executor().supplyNow(c -> repo.adjustBalance(c, uuid, 15)));
     assertThrows(
         RuntimeException.class,
         () -> database.executor().supplyNow(c -> repo.adjustBalance(c, uuid, -26)));
