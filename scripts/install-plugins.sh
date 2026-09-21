@@ -4,9 +4,10 @@
 #   scripts/install-plugins.sh
 #
 # Most come from Modrinth, matched against the Minecraft version pinned in
-# gradle.properties. Vault, OldCombatMechanics and Spark come from their GitHub
-# releases: Vault and OCM are not reliably on Modrinth, and Spark publishes
-# only mod-loader builds there (its Bukkit jar is absent from the API entirely).
+# gradle.properties. Vault and OldCombatMechanics come from their GitHub
+# releases, since they are not reliably on Modrinth. Spark comes from its own
+# Jenkins: on Modrinth it publishes only fabric/forge/neoforge/quilt builds
+# (confirmed against the API), and it has no GitHub releases at all.
 #
 # Safe to re-run: each jar is replaced with the current latest. A plugin that
 # cannot be resolved produces a warning and is skipped, never a hard failure --
@@ -67,6 +68,27 @@ install_modrinth() {
   curl -fsSL -A "$USER_AGENT" -o "$PLUGINS_DIR/$filename" "$url"
 }
 
+# Newest artifact of a Jenkins job whose file name matches a regex.
+install_jenkins_latest() {
+  local job="$1" pattern="$2" json rel name prefix
+  json="$(curl -fsSL -A "$USER_AGENT" \
+    "$job/lastSuccessfulBuild/api/json?tree=artifacts%5BfileName,relativePath%5D" || true)"
+  if [ -z "$json" ]; then
+    warn "$job: could not reach the Jenkins API. Install it by hand."
+    return 1
+  fi
+  rel="$(jq -r --arg re "$pattern" '.artifacts[]? | select(.fileName | test($re)) | .relativePath' <<<"$json" | head -1)"
+  if [ -z "$rel" ]; then
+    warn "$job: no artifact matching /$pattern/. Install it by hand."
+    return 1
+  fi
+  name="$(basename "$rel")"
+  log "$job -> $name"
+  prefix="${name%%-*}"
+  find "$PLUGINS_DIR" -maxdepth 1 -iname "${prefix}-*.jar" ! -name "$name" -delete 2>/dev/null || true
+  curl -fsSL -A "$USER_AGENT" -o "$PLUGINS_DIR/$name" "$job/lastSuccessfulBuild/artifact/$rel"
+}
+
 # Newest release asset of a GitHub repo whose name matches a regex.
 install_github_latest() {
   local repo="$1" pattern="$2" json url name
@@ -92,7 +114,7 @@ done
 install_github_latest "kernitus/BukkitOldCombatMechanics" '^OldCombatMechanics.*\.jar$' ||
   warn "OldCombatMechanics is required for 1.8 combat; install it before testing combat feel."
 
-install_github_latest "lucko/spark" '^spark-.*-bukkit\.jar$' ||
+install_jenkins_latest "https://ci.lucko.me/job/spark" '^spark-.*-bukkit\.jar$' ||
   warn "Spark: download the Bukkit jar from https://spark.lucko.me/download by hand."
 
 # Vault publishes irregularly; fall back to the last known-good release.

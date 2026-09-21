@@ -20,7 +20,7 @@ jar in `$ASCENT_SERVER_DIR/plugins/`, and restart.
 | ViaBackwards | Lets older clients join, back to 1.9 | Hangar (ViaVersion) |
 | ViaRewind | Extends that support back to 1.8.x | Hangar (ViaVersion) |
 | GrimAC | Anti-cheat | github.com/GrimAnticheat/Grim |
-| Spark | Profiling, `/spark tps`, `/spark profiler` | github.com/lucko/spark releases (not on Modrinth for Bukkit) |
+| Spark | Profiling, `/spark tps`, `/spark profiler` | ci.lucko.me, its own build server; Modrinth carries only its mod-loader builds |
 | FastAsyncWorldEdit | World edits and mine resets (Epic 4) | Modrinth / github.com/IntellectualSites |
 | WorldGuard | Spawn and warzone regions only | enginehub.org |
 

@@ -73,11 +73,15 @@ if tmux has-session -t "$SESSION" 2>/dev/null; then
 fi
 
 echo "==> Starting server"
+# Paper rolls logs/latest.log on boot by renaming it away and creating a new
+# file. Remember the old file's inode so we only trust a "Done" line from the
+# new one; matching on mtime let the previous boot's line through, because the
+# stop sequence had just written to the old file.
+old_log_inode=""
+[ -f "$LOG" ] && old_log_inode=$(stat -c %i "$LOG")
 started_at=$(date +%s)
 tmux new-session -d -s "$SESSION" "ASCENT_SERVER_DIR='$SERVER_DIR' '$REPO_ROOT/scripts/start.sh'"
 
-# Paper rotates logs/latest.log on boot, so wait for a log newer than the
-# restart before trusting anything we read out of it.
 while :; do
   now=$(date +%s)
   elapsed=$((now - started_at))
@@ -91,7 +95,7 @@ while :; do
     [ -f "$LOG" ] && tail -n 30 "$LOG" >&2
     exit 1
   fi
-  if [ -f "$LOG" ] && [ "$(stat -c %Y "$LOG")" -ge "$started_at" ] && grep -q 'Done (' "$LOG"; then
+  if [ -f "$LOG" ] && [ "$(stat -c %i "$LOG")" != "$old_log_inode" ] && grep -q 'Done (' "$LOG"; then
     echo "==> Server up in ${elapsed}s."
     grep -m1 'Done (' "$LOG" | sed 's/^/    /'
     break

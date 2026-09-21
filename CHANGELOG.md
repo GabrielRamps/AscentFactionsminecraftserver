@@ -52,7 +52,11 @@ once per sprint (PRD §5.6).
 - `update-paper.sh` picked a release candidate (`1.21.11-rc3`) as the latest
   version, because `sort -V` ranks the longer string above the release it
   precedes. Pre-release strings are now filtered out.
-- Spark is fetched from its GitHub releases; it publishes no Bukkit build on
-  Modrinth, so the installer could never find it there.
+- Spark is fetched from its own Jenkins (ci.lucko.me). Confirmed against both
+  APIs: on Modrinth it publishes only fabric/forge/neoforge/quilt builds, and
+  it has no GitHub releases, so neither route could ever find it.
+- `dev.sh` reported "Server up in 0s" by matching the previous boot's `Done`
+  line in the old log, whose mtime the stop sequence had just refreshed. It
+  now identifies the new log by inode, so only a line from the new boot counts.
 - The combat test asked for two clients joined at once, which one account
   cannot do. It is one client at a time.
