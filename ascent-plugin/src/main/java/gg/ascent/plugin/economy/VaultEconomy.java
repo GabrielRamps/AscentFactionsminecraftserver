@@ -325,7 +325,7 @@ public final class VaultEconomy implements Economy {
     return Bukkit.getOfflinePlayer(name);
   }
 
-  private static EconomyResponse success(long amount, long balance) {
+  private static EconomyResponse success(long amount, double balance) {
     return new EconomyResponse(amount, balance, ResponseType.SUCCESS, null);
   }
 

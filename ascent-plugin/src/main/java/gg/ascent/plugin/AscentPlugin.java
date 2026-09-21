@@ -4,6 +4,9 @@ import gg.ascent.api.AscentApi;
 import gg.ascent.api.AscentProvider;
 import gg.ascent.api.config.ReloadReport;
 import gg.ascent.api.db.DbException;
+import gg.ascent.plugin.admin.AdminActionLog;
+import gg.ascent.plugin.admin.AdminService;
+import gg.ascent.plugin.admin.SqlAdminActionRepository;
 import gg.ascent.plugin.command.AscentCommand;
 import gg.ascent.plugin.config.YamlConfigService;
 import gg.ascent.plugin.db.BukkitMainThread;
@@ -124,7 +127,20 @@ public final class AscentPlugin extends JavaPlugin {
     AscentProvider.register(api);
     getServer().getServicesManager().register(AscentApi.class, api, this, ServicePriority.Normal);
 
-    AscentCommand admin = new AscentCommand(this, config, messages);
+    AdminActionLog actionLog =
+        new AdminActionLog(
+            database.executor(),
+            new SqlAdminActionRepository(),
+            Clock.systemUTC(),
+            getSLF4JLogger());
+    AscentCommand admin =
+        new AscentCommand(
+            this,
+            config,
+            messages,
+            new AdminService(players, economy, config, actionLog),
+            actionLog,
+            getSLF4JLogger());
     EconomyCommands money =
         new EconomyCommands(this, economy, players, baltop, messages, getSLF4JLogger());
     if (!bind("ascent", admin, admin)

@@ -8,7 +8,35 @@
 prefix: "<gradient:#f2c14e:#f78154>Ascent</gradient> <dark_gray>»</dark_gray> "
 
 ascent:
-  usage: "<prefix><gray>Usage: <white>/ascent <version|reload>"
+  usage: "<prefix><gray>Usage: <white>/ascent <version|reload|give|rank|debug>"
+  # <player>: the name that was typed
+  unknown-player: "<prefix><red>No player named <white><player></white> has ever joined."
+  # <player>
+  not-online: "<prefix><red><player> must be online for that."
+  give:
+    usage: "<prefix><gray>Usage: <white>/ascent give <player> <money|xp|books|dust|scrolls|spawners> [amount]"
+    bad-amount: "<prefix><red>Amount must be a whole number of at least 1."
+    # <kind>: what was asked for
+    not-yet: "<prefix><yellow>Giving <kind> arrives with the enchant and spawner epics; not available yet."
+    # <player>, <amount>, <balance>
+    money: "<prefix><green>Gave <amount> to <white><player></white>; balance is now <balance>."
+    # <player>, <amount>, <xp>
+    xp: "<prefix><green>Gave <amount> XP to <white><player></white>; they now have <xp> toward the next rank."
+  rank:
+    usage: "<prefix><gray>Usage: <white>/ascent rank <set|add> <player> <number>"
+    # <max>
+    bad-rank: "<prefix><red>Rank must be between 1 and <max>."
+    # <player>, <rank>
+    ok: "<prefix><green><player> is now rank <white><rank></white>."
+  debug:
+    usage: "<prefix><gray>Usage: <white>/ascent debug <tps|db|items>"
+    # <tps1>, <tps5>, <tps15>, <mspt>
+    tps: "<prefix><gray>TPS <white><tps1></white> / <white><tps5></white> / <white><tps15></white> (1m/5m/15m), <white><mspt></white> ms per tick"
+    # <active>, <idle>, <total>, <waiting>, <queued>, <completed>, <failed>, <redis>, <pending>, <online>
+    db: "<prefix><gray>Pool <white><active></white> active, <white><idle></white> idle of <white><total></white>; <white><waiting></white> waiting. Tasks: <white><queued></white> queued, <white><completed></white> done, <red><failed></red> failed. Redis <white><redis></white>. Players: <white><online></white> online, <white><pending></white> logging in."
+    # <ms>
+    db-ping: "<prefix><gray>Database round trip: <white><ms> ms"
+    items-not-yet: "<prefix><yellow>The item registry arrives with E1-S5."
   # <version>
   version: "<prefix><gray>Version <white><version>"
   reload:
@@ -49,3 +77,10 @@ economy:
     empty: "<gray>Nobody has a balance yet."
     # <position>, <player>, <amount>
     entry: "<dark_gray> <position>. <white><player> <dark_gray>- <green><amount>"
+
+# Item lore (E11-S3). The enchant lines themselves take their color from the
+# tier in enchants.yml.
+lore:
+  protected: "<white>PROTECTED"
+  # <count>: enchants on the item; appended to the display name
+  name-count: "<gray>[<count>]"
