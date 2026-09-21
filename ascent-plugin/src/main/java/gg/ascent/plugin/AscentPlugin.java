@@ -2,7 +2,10 @@ package gg.ascent.plugin;
 
 import gg.ascent.api.AscentApi;
 import gg.ascent.api.AscentProvider;
+import gg.ascent.api.config.ReloadReport;
 import gg.ascent.plugin.command.AscentCommand;
+import gg.ascent.plugin.config.YamlConfigService;
+import gg.ascent.plugin.message.YamlMessages;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -10,18 +13,40 @@ import org.bukkit.plugin.java.JavaPlugin;
 /**
  * Plugin entry point.
  *
- * <p>Epic 0 deliberately keeps this class thin: it registers the API instance and the {@code
- * /ascent} command so the skeleton is verifiable on a live server. Epic 1 adds configuration, the
- * database pool, the player profile cache and the module lifecycle here.
+ * <p>Owns the lifecycle: configuration and messages first, then the API, then commands. Later
+ * epics add the database, the player cache and each module here, in dependency order.
  */
 public final class AscentPlugin extends JavaPlugin {
 
   private AscentApiImpl api;
+  private YamlConfigService config;
+  private YamlMessages messages;
 
   @Override
   public void onEnable() {
-    api = new AscentApiImpl(this);
+    messages = new YamlMessages(getSLF4JLogger());
+    config =
+        new YamlConfigService(getDataFolder().toPath(), this::getResource, getSLF4JLogger());
+    config.register(YamlMessages.FILE, YamlMessages::parse, messages::accept, messages::current);
 
+    ReloadReport report;
+    try {
+      report = config.load();
+    } catch (IllegalStateException e) {
+      // A bundled default is broken: a packaging bug, not something an operator can fix live.
+      getSLF4JLogger().error("Configuration cannot load; disabling.", e);
+      getServer().getPluginManager().disablePlugin(this);
+      return;
+    }
+    if (!report.allOk()) {
+      getSLF4JLogger()
+          .warn(
+              "{} configuration file(s) failed to load and are running on fallback values;"
+                  + " fix them and run /ascent reload.",
+              report.failures().size());
+    }
+
+    api = new AscentApiImpl(this, config, messages);
     AscentProvider.register(api);
     getServer().getServicesManager().register(AscentApi.class, api, this, ServicePriority.Normal);
 
@@ -31,7 +56,9 @@ public final class AscentPlugin extends JavaPlugin {
       getServer().getPluginManager().disablePlugin(this);
       return;
     }
-    command.setExecutor(new AscentCommand(this));
+    AscentCommand executor = new AscentCommand(this, config, messages);
+    command.setExecutor(executor);
+    command.setTabCompleter(executor);
 
     api.markReady();
     getSLF4JLogger().info("Ascent {} enabled.", getPluginMeta().getVersion());

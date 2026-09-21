@@ -92,6 +92,16 @@ land; each row should say what the command does and which story added it.
 | Command | Purpose | Story |
 |---|---|---|
 | `/ascent version` | Print the running plugin version | E0-S4 |
+| `/ascent reload` | Re-read every YAML file without a restart; reports any file that failed and kept its old values | E1-S1 |
+
+## Editing configuration
+
+Every tunable number lives in `~/ascent-server/plugins/Ascent/*.yml`, one file
+per module, and every player-facing string in `messages.yml` there. Edit, then
+`/ascent reload`. A file with a mistake is reported in chat and in the console
+with the file name, the path inside it and what was expected, and keeps its
+previous values until fixed. Delete a file to get the bundled default back on
+the next reload.
 
 ## Client compatibility
 

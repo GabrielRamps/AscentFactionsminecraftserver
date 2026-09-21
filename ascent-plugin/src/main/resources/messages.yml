@@ -1,0 +1,20 @@
+# Every player-facing string. MiniMessage formatting:
+# https://docs.advntr.dev/minimessage/format.html
+#
+# Placeholders are written <name> and filled by the code that sends the
+# message; each message documents the ones it accepts. <prefix> is always
+# available and is the "prefix" value below.
+
+prefix: "<gradient:#f2c14e:#f78154>Ascent</gradient> <dark_gray>»</dark_gray> "
+
+ascent:
+  usage: "<prefix><gray>Usage: <white>/ascent <version|reload>"
+  # <version>
+  version: "<prefix><gray>Version <white><version>"
+  reload:
+    # <count>: files reloaded
+    ok: "<prefix><green>Reloaded <count> configuration files."
+    # <count>: files that failed
+    failed: "<prefix><red>Reloaded with <count> error(s); the failing files kept their old values:"
+    # <error>: file, path and reason
+    error: "<dark_gray> - <red><error>"

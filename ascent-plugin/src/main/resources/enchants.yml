@@ -1,0 +1,42 @@
+# Custom enchants (PRD Epic 3, §6.4.4). The book lottery is the heart of the
+# game: an unopened book of a tier reveals into an enchant, a level, a
+# success% and a destroy%, and applying it is a single roll.
+#
+# These numbers are our own tunable defaults; the original Cosmic values could
+# not be verified (PRD §0).
+
+tiers:
+  SIMPLE:
+    color: "<white>"
+    xp-levels: 10
+    success: [60, 100]
+    destroy: [0, 20]
+    min-rank: 1
+  UNIQUE:
+    color: "<green>"
+    xp-levels: 20
+    success: [50, 95]
+    destroy: [5, 35]
+    min-rank: 5
+  ELITE:
+    color: "<aqua>"
+    xp-levels: 35
+    success: [40, 90]
+    destroy: [10, 50]
+    min-rank: 15
+  ULTIMATE:
+    color: "<yellow>"
+    xp-levels: 55
+    success: [30, 80]
+    destroy: [20, 70]
+    min-rank: 25
+  LEGENDARY:
+    color: "<gold>"
+    xp-levels: 90
+    success: [20, 70]
+    destroy: [30, 90]
+    min-rank: 40
+
+# The enchant catalog is added by story E3-S1 under an "enchants:" key, one
+# entry per enchant with display name, tier, applicable gear, max level, lore
+# per level and effect parameters. See PRD §6.4.4 for the shape.

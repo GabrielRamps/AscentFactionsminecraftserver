@@ -6,6 +6,23 @@ once per sprint (PRD §5.6).
 
 ## [Unreleased]
 
+Sprint 1, the core platform (Epic 1).
+
+### Added
+
+- Configuration and messaging (E1-S1). `config.yml` plus one YAML per module
+  (`ranks`, `enchants`, `mines`, `spawners`, `factions`, `contracts`, `events`,
+  `combat`), seeded from the jar on first run and carrying the PRD's documented
+  defaults. Each file parses into an immutable settings record behind
+  `ConfigService`; modules never read YAML. Errors name the file and path.
+  `/ascent reload` re-reads every file; one that fails keeps its previous
+  values, and a broken file on first boot falls back to the bundled default so
+  the server still starts.
+- `messages.yml` holds every player-facing string, rendered with MiniMessage
+  through `Messages`, with `<prefix>` and per-message placeholders. A missing
+  key renders a visible marker rather than throwing.
+- JaCoCo coverage reports on every test run.
+
 ## [0.1.0] - 2026-09-21
 
 Sprint 0: the development environment and project skeleton (Epic 0). Verified

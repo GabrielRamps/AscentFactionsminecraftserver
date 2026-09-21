@@ -1,0 +1,24 @@
+# Spawners (PRD E5-S1, E5-S2): stacked, chunk-bound, virtual yield. No live
+# mobs tick; a stack accumulates pending kills that a melee hit on its
+# representative entity cashes in.
+
+# Spawners of one type stacked in a single block.
+stack-cap: 40
+
+# A stack only accumulates while a player is within this many chunks.
+active-radius-chunks: 5
+
+# Pending kills cap at this many per spawner in the stack (40 x 60 = 2400).
+pending-cap-per-count: 60
+
+# Per mob type. rate-per-second x stack count = pending kills per second;
+# 0.2 x 40 = 8 mobs/s for a full stack. Shop price and F-Top value per type
+# are added by E5-S3.
+types:
+  ZOMBIE: { rate-per-second: 0.2 }
+  SKELETON: { rate-per-second: 0.2 }
+  COW: { rate-per-second: 0.2 }
+  CREEPER: { rate-per-second: 0.2 }
+  BLAZE: { rate-per-second: 0.2 }
+  ENDERMAN: { rate-per-second: 0.2 }
+  IRON_GOLEM: { rate-per-second: 0.2 }

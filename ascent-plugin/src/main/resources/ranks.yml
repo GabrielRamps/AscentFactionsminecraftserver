@@ -1,0 +1,33 @@
+# Personal rank ladder (PRD E2-S1, §6.4.4). Rank is the personal-layer
+# progress that nothing but the season reset can take away.
+
+# XP to go from rank r to r+1 = round(base * r ^ exponent).
+# 400 * 1^1.4 = 400 at rank 1; ~10,000 at rank 10; ~250,000 at rank 100.
+xp-curve:
+  base: 400
+  exponent: 1.4
+  max-rank: 100
+
+# XP granted per activity. Every playstyle feeds the ladder (concept doc §6.1).
+sources:
+  # Per block mined, by personal mine tier.
+  mine-block:
+    tier1: 2
+    tier2: 5
+    tier3: 12
+  # Per melee spawner kill, by mob type.
+  spawner-kill:
+    ZOMBIE: 8
+    SKELETON: 8
+    COW: 6
+    CREEPER: 15
+    BLAZE: 15
+    ENDERMAN: 15
+    IRON_GOLEM: 40
+  # PvP kills, with diminishing returns for farming the same victim.
+  pvp-kill:
+    base: 500
+    repeat-victim-window-minutes: 10
+    repeat-multiplier: 0.1
+  koth-win: 2000
+  envoy-crate: 300

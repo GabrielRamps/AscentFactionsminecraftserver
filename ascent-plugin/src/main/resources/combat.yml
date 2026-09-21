@@ -1,0 +1,24 @@
+# Combat tag and the logger NPC (PRD E9-S1). 1.8 combat mechanics themselves
+# are OldCombatMechanics' job; see server/PLUGINS.md.
+
+# Damaging or being damaged by another player tags both for this long,
+# refreshed on every hit. Ends on death, timeout, or both parties in safezones.
+tag-seconds: 15
+
+# Logging out while tagged leaves a stand-in with your skin, health, armour
+# and inventory for this long. Killing it counts as killing you.
+logger-npc-seconds: 30
+
+# Root commands refused while tagged, without the slash. "f home" is matched
+# as the /f command with the "home" subcommand.
+blocked-commands-while-tagged:
+  - f home
+  - f fly
+  - spawn
+  - mine
+  - kit
+  - shop
+  - enchanter
+  - tinkerer
+  - alchemist
+  - trade

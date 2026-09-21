@@ -17,6 +17,7 @@ allprojects {
 subprojects {
   apply(plugin = "java-library")
   apply(plugin = "com.diffplug.spotless")
+  apply(plugin = "jacoco")
 
   configure<JavaPluginExtension> {
     toolchain { languageVersion.set(JavaLanguageVersion.of(21)) }
@@ -32,6 +33,18 @@ subprojects {
   tasks.withType<Test>().configureEach {
     useJUnitPlatform()
     testLogging { events("passed", "skipped", "failed") }
+    finalizedBy("jacocoTestReport")
+  }
+
+  // PRD §5.6 targets 70% line coverage on core packages. The report is
+  // build/reports/jacoco/test/html/index.html; the threshold is checked by
+  // review rather than enforced, so a story is never blocked on a number.
+  tasks.withType<JacocoReport>().configureEach {
+    dependsOn("test")
+    reports {
+      xml.required.set(true)
+      html.required.set(true)
+    }
   }
 
   configure<SpotlessExtension> {

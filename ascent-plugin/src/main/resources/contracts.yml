@@ -1,0 +1,64 @@
+# Daily contracts (PRD E7-S1). At daily reset each player gets per-day
+# contracts drawn across archetypes, never the same id two days running.
+# Objectives are counted through the ProgressBus; no module knows about
+# contracts directly.
+#
+# archetype: GRINDER | FIGHTER | GAMBLER | SOCIAL
+# objective: MINE_BLOCKS | SPAWNER_KILLS | APPLY_BOOKS | KOTH_PARTICIPATE |
+#            ENVOY_CRATES | PVP_KILLS | JOIN_FACTION | SELL_VALUE
+# rewards:   rank-xp, money (whole dollars), optional book-tier
+#
+# Targets are the PRD's examples; rewards are tunable defaults, balanced in
+# E7-S1 against the rank curve (a mid-rank rank-up is ~10k XP).
+
+per-day: 3
+
+pool:
+  mine-3k:
+    archetype: GRINDER
+    objective: MINE_BLOCKS
+    target: 3000
+    min-rank: 1
+    rewards: { rank-xp: 1500, money: 2500, book-tier: SIMPLE }
+  spawner-500:
+    archetype: GRINDER
+    objective: SPAWNER_KILLS
+    target: 500
+    min-rank: 5
+    rewards: { rank-xp: 2000, money: 4000, book-tier: UNIQUE }
+  sell-50k:
+    archetype: GRINDER
+    objective: SELL_VALUE
+    target: 50000
+    min-rank: 10
+    rewards: { rank-xp: 2500, money: 5000, book-tier: UNIQUE }
+  koth-show-up:
+    archetype: FIGHTER
+    objective: KOTH_PARTICIPATE
+    target: 1
+    min-rank: 1
+    rewards: { rank-xp: 1500, money: 2500, book-tier: SIMPLE }
+  envoy-3:
+    archetype: FIGHTER
+    objective: ENVOY_CRATES
+    target: 3
+    min-rank: 5
+    rewards: { rank-xp: 2000, money: 3000, book-tier: UNIQUE }
+  pvp-3:
+    archetype: FIGHTER
+    objective: PVP_KILLS
+    target: 3
+    min-rank: 10
+    rewards: { rank-xp: 3000, money: 5000, book-tier: ELITE }
+  apply-5:
+    archetype: GAMBLER
+    objective: APPLY_BOOKS
+    target: 5
+    min-rank: 1
+    rewards: { rank-xp: 1500, money: 2000, book-tier: SIMPLE }
+  join-up:
+    archetype: SOCIAL
+    objective: JOIN_FACTION
+    target: 1
+    min-rank: 1
+    rewards: { rank-xp: 1000, money: 2000 }

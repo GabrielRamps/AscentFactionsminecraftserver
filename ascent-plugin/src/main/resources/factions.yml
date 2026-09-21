@@ -1,0 +1,45 @@
+# Factions (PRD Epic 6): lifecycle, power, claims, upkeep, relations, F-Top.
+# In Phase 1 claimed land is not raidable; sieges arrive in Phase 2.
+
+name:
+  min-length: 3
+  max-length: 16
+
+# Whole dollars, taken from the creator.
+create-cost: 10000
+member-cap: 15
+max-allies: 2
+
+# Per-player power. Faction power is the sum over members.
+power:
+  max: 150
+  regen-per-minute: 1
+  # Lost on death outside a safezone.
+  death-loss: 10
+  floor: -20
+
+claims:
+  # Claims allowed = floor(faction power / power-per-claim).
+  power-per-claim: 10
+  # A core claim must be at least this far from spawn, in blocks.
+  min-distance-from-spawn: 200
+
+# Deducted from the faction vault at daily reset. Unpaid for grace-days in a
+# row releases every claim; the faction is warned daily until then.
+upkeep:
+  cost-per-chunk-per-day: 500
+  grace-days: 3
+
+home:
+  # Cancelled by damage or movement; blocked while combat-tagged.
+  warmup-seconds: 3
+
+fly:
+  # Flight in own claims drops when an enemy comes within this many blocks.
+  enemy-radius: 32
+  fall-protection-seconds: 3
+
+ftop:
+  # Faction value = spawner value + vault balance x vault-weight.
+  vault-weight: 0.1
+  recalc-interval: 5m

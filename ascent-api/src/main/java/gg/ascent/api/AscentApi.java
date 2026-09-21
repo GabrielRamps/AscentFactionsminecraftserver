@@ -1,5 +1,8 @@
 package gg.ascent.api;
 
+import gg.ascent.api.config.ConfigService;
+import gg.ascent.api.message.Messages;
+
 /**
  * Root entry point for everything Ascent exposes to other modules and to third-party plugins.
  *
@@ -21,4 +24,10 @@ public interface AscentApi {
    * <p>False while the server is still starting up, and after the plugin has been disabled.
    */
   boolean ready();
+
+  /** Typed configuration for every module. */
+  ConfigService config();
+
+  /** Player-facing strings. */
+  Messages messages();
 }

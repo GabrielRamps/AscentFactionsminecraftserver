@@ -1,0 +1,13 @@
+# Ascent core settings. Every module has its own file next to this one; every
+# number the game uses lives in one of them, never in code (PRD §2.5).
+#
+# Edit, then /ascent reload. A file that fails to load is reported in the
+# console and keeps its previous values.
+
+# Verbose diagnostic logging.
+debug: false
+
+# Daily resets and displayed countdowns use this zone. The PRD fixes it at UTC
+# (§5.5); change only if every player and staff member agrees what "midnight"
+# means.
+time-zone: UTC

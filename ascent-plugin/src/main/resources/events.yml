@@ -1,0 +1,38 @@
+# KOTH, Envoys and the zones they live in (PRD Epic 8).
+
+zones:
+  # Radii from spawn, in blocks. Inside safezone-radius: no PvP, no damage,
+  # no build. From there to warzone-radius: PvP on, no claiming.
+  safezone-radius: 100
+  warzone-radius: 400
+
+koth:
+  interval: 6h
+  # Broadcast this far ahead of the start.
+  warning: 15m
+  # Continuous time alone in the zone to win; leaving or a rival entering
+  # resets it.
+  capture-time: 15m
+  winner-tag-seconds: 15
+  # The winner's Lootbag rolls one row from this weighted table.
+  lootbag:
+    ULTIMATE_BOOK: 40
+    LEGENDARY_BOOK: 25
+    MAGIC_DUST_ELITE: 20
+    WHITE_SCROLL: 10
+    IRON_GOLEM_SPAWNER: 5
+
+envoys:
+  interval: 2h
+  # Countdown broadcast before the crates land.
+  countdown: 5m
+  # Unclaimed crates vanish after this.
+  despawn: 10m
+  # Crates per tier per drop.
+  crates:
+    COMMON: 6
+    RARE: 3
+    LEGENDARY: 1
+  # Weighted loot table per tier, item name to weight. Populated by E8-S3 once
+  # the enchant and spawner item kinds exist to name.
+  loot: {}
