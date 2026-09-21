@@ -1,5 +1,6 @@
 package gg.ascent.plugin.config;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -52,6 +53,34 @@ class YamlConfigServiceTest {
     }
     assertNotNull(service.ranks());
     assertEquals(400, service.ranks().xpCurve().base());
+  }
+
+  @Test
+  void missingKeysAreAddedFromTheBundledDefaultAndWrittenBack() throws IOException {
+    // A config.yml written by the E1-S1 build: no database, redis or players sections.
+    Files.createDirectories(dataDir);
+    Files.writeString(dataDir.resolve("config.yml"), "debug: true\ntime-zone: UTC\n");
+
+    ReloadReport report = service.load();
+
+    assertTrue(report.allOk(), report.failures().toString());
+    assertTrue(service.core().debug(), "the operator's own value survives");
+    assertEquals(10, service.core().database().maxPoolSize(), "filled from the bundled default");
+    String written = Files.readString(dataDir.resolve("config.yml"));
+    assertTrue(written.contains("max-pool-size: 10"), written);
+    assertTrue(written.contains("debug: true"), written);
+    assertTrue(written.contains("# MariaDB"), "the section's comments come along: " + written);
+  }
+
+  @Test
+  void anUpToDateFileIsNotRewritten() throws IOException {
+    service.load();
+    Path config = dataDir.resolve("config.yml");
+    byte[] before = Files.readAllBytes(config);
+
+    service.reload();
+
+    assertArrayEquals(before, Files.readAllBytes(config));
   }
 
   @Test

@@ -72,6 +72,10 @@ public final class Database implements AutoCloseable {
     HikariConfig config = new HikariConfig();
     config.setPoolName("Ascent-Hikari");
     config.setJdbcUrl(settings.jdbcUrl());
+    // The driver is shaded into the plugin jar under a relocated package, so DriverManager's
+    // service discovery never sees it. Name the class through a class literal: the shadow
+    // relocation rewrites this reference along with the driver itself.
+    config.setDriverClassName(org.mariadb.jdbc.Driver.class.getName());
     config.setUsername(settings.user());
     config.setPassword(settings.password());
     config.setMaximumPoolSize(settings.maxPoolSize());

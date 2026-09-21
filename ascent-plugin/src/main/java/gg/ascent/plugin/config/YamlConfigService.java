@@ -120,7 +120,11 @@ public final class YamlConfigService implements ConfigService {
     Path path = dataDir.resolve(slot.file);
     try {
       seedIfMissing(slot.file, path);
-      T value = slot.parser.apply(new Node(slot.file, readYaml(slot.file, path)));
+      YamlConfiguration yaml = readYaml(slot.file, path);
+      if (addMissingKeys(slot.file, yaml)) {
+        yaml.save(path.toFile());
+      }
+      T value = slot.parser.apply(new Node(slot.file, yaml));
       slot.store.accept(value);
       return new FileResult(slot.file, null);
     } catch (ConfigException e) {
@@ -150,6 +154,53 @@ public final class YamlConfigService implements ConfigService {
       throw new IllegalStateException(
           "bundled default " + slot.file + " is invalid; this is a packaging bug", e);
     }
+  }
+
+  /**
+   * Copies every key the bundled default has and the operator's file lacks, with its comments, so a
+   * file written by an older build keeps working after an upgrade adds settings. Values the
+   * operator changed are never touched. Answers whether anything was added.
+   *
+   * <p>A key the operator deleted on purpose comes back, and is logged; to switch something off,
+   * set it to zero or false rather than deleting it.
+   */
+  private boolean addMissingKeys(String file, YamlConfiguration yaml) {
+    YamlConfiguration defaults;
+    try (InputStream in = requireBundled(file)) {
+      defaults = new YamlConfiguration();
+      defaults.loadFromString(new String(in.readAllBytes(), StandardCharsets.UTF_8));
+    } catch (IOException | InvalidConfigurationException e) {
+      throw new IllegalStateException(
+          "bundled default " + file + " is invalid; this is a packaging bug", e);
+    }
+    List<String> added = new ArrayList<>();
+    for (String key : defaults.getKeys(true)) {
+      if (defaults.isConfigurationSection(key) || yaml.contains(key, true)) {
+        continue;
+      }
+      yaml.set(key, defaults.get(key));
+      added.add(key);
+      // Comments sit on the first key that was missing along the path, so the block reads as it
+      // does in the bundled file.
+      String path = key;
+      while (path != null) {
+        if (!yaml.getComments(path).isEmpty()) {
+          break;
+        }
+        yaml.setComments(path, defaults.getComments(path));
+        int dot = path.lastIndexOf('.');
+        path = dot < 0 ? null : path.substring(0, dot);
+      }
+    }
+    if (added.isEmpty()) {
+      return false;
+    }
+    log.info(
+        "Added {} setting(s) missing from {} using the bundled defaults: {}",
+        added.size(),
+        file,
+        String.join(", ", added));
+    return true;
   }
 
   private void seedIfMissing(String file, Path path) throws IOException {
