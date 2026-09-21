@@ -15,6 +15,8 @@ googleJavaFormat = "1.25.2"
 hikaricp = "5.1.0"
 jedis = "5.2.0"
 caffeine = "3.1.8"
+flyway = "10.20.1"
+mariadbClient = "3.5.1"
 
 # Test libraries
 junit = "5.11.3"
@@ -28,6 +30,10 @@ jetbrainsAnnotations = "26.0.1"
 hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
 jedis = { module = "redis.clients:jedis", version.ref = "jedis" }
 caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
+# Flyway 10 splits database support out of core; flyway-mysql covers MariaDB.
+flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+flyway-mysql = { module = "org.flywaydb:flyway-mysql", version.ref = "flyway" }
+mariadb-client = { module = "org.mariadb.jdbc:mariadb-java-client", version.ref = "mariadbClient" }
 
 annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrainsAnnotations" }
 
@@ -42,7 +48,7 @@ mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 [bundles]
 # Everything shaded into the final jar. Adventure/MiniMessage is provided by Paper
 # and must never appear here.
-runtime = ["hikaricp", "jedis", "caffeine"]
+runtime = ["hikaricp", "jedis", "caffeine", "flyway-core", "flyway-mysql", "mariadb-client"]
 
 [plugins]
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }

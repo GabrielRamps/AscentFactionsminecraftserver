@@ -41,6 +41,9 @@ tasks.shadowJar {
   relocate("com.zaxxer.hikari", "gg.ascent.lib.hikari")
   relocate("redis.clients.jedis", "gg.ascent.lib.jedis")
   relocate("com.github.benmanes.caffeine", "gg.ascent.lib.caffeine")
+  relocate("org.mariadb.jdbc", "gg.ascent.lib.mariadb")
+  // Flyway is deliberately not relocated: it loads its own SQL resources by
+  // their original package path, which relocation does not rewrite.
 
   mergeServiceFiles()
   exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
