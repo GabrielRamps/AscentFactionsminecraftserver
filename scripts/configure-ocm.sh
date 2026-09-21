@@ -11,7 +11,8 @@
 #
 # Most of the checklist is already satisfied by OCM's default "old" modeset:
 # attack cooldown off, no sweep, 1.8 armour, old golden apples, old regen,
-# sword blocking, 1.8 knockback. Only the deltas below are needed.
+# sword blocking, 1.8 knockback. Only the deltas below are needed, plus the
+# owner's decision to remove the offhand slot, which did not exist in 1.8.
 
 set -euo pipefail
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
@@ -43,6 +44,42 @@ def edit(name, old, new):
         )
     text = text.replace(old, new, 1)
     changed.append(name)
+
+def move_module(name, src, dst):
+    """Move the '- "name"' entry from top-level list `src` to `dst`. Idempotent."""
+    global text
+    lines = text.split("\n")
+    entry = f'  - "{name}"'
+
+    def block(key):
+        start = next((i for i, l in enumerate(lines) if l == key + ":"), None)
+        if start is None:
+            sys.exit(
+                f"error: could not find the {key} section in {path}.\n"
+                "OldCombatMechanics may have changed its config layout. Compare the "
+                "file against scripts/configure-ocm.sh and update the script."
+            )
+        end = next(
+            (i for i in range(start + 1, len(lines))
+             if lines[i] and not lines[i].startswith((" ", "#"))),
+            len(lines),
+        )
+        return start, end
+
+    s0, s1 = block(src)
+    d0, d1 = block(dst)
+    in_src = [i for i in range(s0, s1) if lines[i] == entry]
+    in_dst = [i for i in range(d0, d1) if lines[i] == entry]
+    if in_dst and not in_src:
+        return
+    if not in_src:
+        sys.exit(f"error: {name} is in neither {src} nor {dst} in {path}; update the script.")
+    del lines[in_src[0]]
+    d0, d1 = block(dst)
+    last = max(i for i in range(d0, d1) if lines[i].startswith("  - "))
+    lines.insert(last + 1, entry)
+    text = "\n".join(lines)
+    changed.append(f"{name} moved to {dst}")
 
 # PRD E0-S3: crafting denied for shields, elytra, tridents, crossbows and
 # netherite. Netherite gear is made at a smithing table, not a crafting table,
@@ -83,6 +120,11 @@ edit(
     "  auto-update: true\n",
     "  auto-update: false\n",
 )
+
+# There was no offhand slot in 1.8. OCM ships this module disabled; enabling it
+# empties the slot (whitelist mode with no items) and leaves sword-blocking
+# untouched, which the module's own comment guarantees.
+move_module("disable-offhand", "disabled_modules", "always_enabled_modules")
 
 path.write_text(text)
 print("Applied: " + ", ".join(changed) if changed else "Already applied; nothing to change.")

@@ -219,7 +219,8 @@ scripts/configure-ocm.sh
 
 It reports what it changed. OCM's defaults already cover most of the checklist
 in `server/PLUGINS.md`; the script adds the crafting bans, locks every player
-to 1.8 combat, and stops OCM auto-updating itself mid-sprint. It keeps the
+to 1.8 combat, removes the offhand slot, and stops OCM auto-updating itself
+mid-sprint. It keeps the
 untouched original as `config.yml.orig`.
 
 Then `./dev.sh` to restart, and test with each client in turn. One account can

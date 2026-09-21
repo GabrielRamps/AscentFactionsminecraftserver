@@ -55,6 +55,7 @@ What the checklist requires, and where each item comes from in OCM 2.6:
 - [x] Crafting disabled for shield, elytra, trident, crossbow, netherite: `disable-crafting.denied`, **set by the script** (the default denies only shields)
 - [x] Players cannot switch to 1.9 combat: `worlds.__default__` restricted to `old`, **set by the script**
 - [x] OCM does not auto-update mid-sprint: `update-checker.auto-update: false`, **set by the script**
+- [x] No offhand slot, as in 1.8: `disable-offhand` moved to `always_enabled_modules`, **set by the script**. Owner's decision, beyond the PRD checklist; sword blocking is unaffected.
 
 Worth trying during the Sprint 4 combat validation, not now: the `attack-range`
 module applies 1.8-style hit detection (smaller hitbox margin, shorter reach).

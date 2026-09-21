@@ -44,7 +44,8 @@ once per sprint (PRD §5.6).
 
 - `scripts/configure-ocm.sh`: applies the E0-S3 combat settings to the config
   OldCombatMechanics generates, in place and idempotently, keeping the original
-  as `config.yml.orig`. Fails loudly if OCM moves a setting.
+  as `config.yml.orig`. Fails loudly if OCM moves a setting. Also removes the
+  offhand slot, which did not exist in 1.8 (owner's call, beyond the checklist).
 
 ### Fixed
 
