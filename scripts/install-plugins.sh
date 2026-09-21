@@ -4,8 +4,9 @@
 #   scripts/install-plugins.sh
 #
 # Most come from Modrinth, matched against the Minecraft version pinned in
-# gradle.properties. Vault and OldCombatMechanics come from their GitHub
-# releases because they are not reliably published on Modrinth.
+# gradle.properties. Vault, OldCombatMechanics and Spark come from their GitHub
+# releases: Vault and OCM are not reliably on Modrinth, and Spark publishes
+# only mod-loader builds there (its Bukkit jar is absent from the API entirely).
 #
 # Safe to re-run: each jar is replaced with the current latest. A plugin that
 # cannot be resolved produces a warning and is skipped, never a hard failure --
@@ -30,7 +31,6 @@ MODRINTH_SLUGS=(
   viabackwards
   viarewind
   grimac
-  spark
   fastasyncworldedit
   worldguard
 )
@@ -91,6 +91,9 @@ done
 
 install_github_latest "kernitus/BukkitOldCombatMechanics" '^OldCombatMechanics.*\.jar$' ||
   warn "OldCombatMechanics is required for 1.8 combat; install it before testing combat feel."
+
+install_github_latest "lucko/spark" '^spark-.*-bukkit\.jar$' ||
+  warn "Spark: download the Bukkit jar from https://spark.lucko.me/download by hand."
 
 # Vault publishes irregularly; fall back to the last known-good release.
 if ! install_github_latest "MilkBowl/Vault" '^Vault.*\.jar$'; then

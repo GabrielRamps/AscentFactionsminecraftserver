@@ -207,13 +207,20 @@ That is stories E0-S1, E0-S2 and E0-S4 done.
 
 ## 10. Configure the combat feel
 
-This is the most important step in Epic 0, and the only one that needs your
-judgement rather than a command.
+This is the most important step in Epic 0, and the only one where the result
+needs your judgement rather than a command.
 
-Open `~/ascent-server/plugins/OldCombatMechanics/config.yml` and work through
-the checklist in `server/PLUGINS.md`: attack cooldown off, 1.8 armour, old
-golden apples, old regeneration, sword blocking, 1.8 knockback, and crafting
-denied for shields, elytra, tridents, crossbows and netherite.
+The server has booted once by now, so OldCombatMechanics has written its
+config. Apply the project's 1.8-combat settings to it:
+
+```bash
+scripts/configure-ocm.sh
+```
+
+It reports what it changed. OCM's defaults already cover most of the checklist
+in `server/PLUGINS.md`; the script adds the crafting bans, locks every player
+to 1.8 combat, and stops OCM auto-updating itself mid-sprint. It keeps the
+untouched original as `config.yml.orig`.
 
 Then `./dev.sh` to restart, and test with each client in turn. One account can
 only be connected once, so this is one client at a time, not both together:

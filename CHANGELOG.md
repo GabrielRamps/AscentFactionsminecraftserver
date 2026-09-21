@@ -42,6 +42,17 @@ once per sprint (PRD §5.6).
   server, with a check after every step. Covers Windows via WSL2, since every
   script here needs bash, tmux and GNU coreutils.
 
+- `scripts/configure-ocm.sh`: applies the E0-S3 combat settings to the config
+  OldCombatMechanics generates, in place and idempotently, keeping the original
+  as `config.yml.orig`. Fails loudly if OCM moves a setting.
+
 ### Fixed
 
 - Google Java Format violation in the `AscentCommand` javadoc that failed CI.
+- `update-paper.sh` picked a release candidate (`1.21.11-rc3`) as the latest
+  version, because `sort -V` ranks the longer string above the release it
+  precedes. Pre-release strings are now filtered out.
+- Spark is fetched from its GitHub releases; it publishes no Bukkit build on
+  Modrinth, so the installer could never find it there.
+- The combat test asked for two clients joined at once, which one account
+  cannot do. It is one client at a time.

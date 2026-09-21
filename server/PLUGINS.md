@@ -20,7 +20,7 @@ jar in `$ASCENT_SERVER_DIR/plugins/`, and restart.
 | ViaBackwards | Lets older clients join, back to 1.9 | Hangar (ViaVersion) |
 | ViaRewind | Extends that support back to 1.8.x | Hangar (ViaVersion) |
 | GrimAC | Anti-cheat | github.com/GrimAnticheat/Grim |
-| Spark | Profiling, `/spark tps`, `/spark profiler` | spark.lucko.me |
+| Spark | Profiling, `/spark tps`, `/spark profiler` | github.com/lucko/spark releases (not on Modrinth for Bukkit) |
 | FastAsyncWorldEdit | World edits and mine resets (Epic 4) | Modrinth / github.com/IntellectualSites |
 | WorldGuard | Spawn and warzone regions only | enginehub.org |
 
@@ -38,18 +38,29 @@ Notes that bite people:
 ## OldCombatMechanics configuration
 
 The PRD requires 1.8 combat feel. OCM generates its own `config.yml` on first
-run; **edit that generated file** rather than pasting one from elsewhere, because
-OCM renames module keys between releases and a stale key silently does nothing.
+run, and `scripts/configure-ocm.sh` edits that generated file in place. It does
+not paste a config from elsewhere, because OCM renames module keys between
+releases and a stale key silently does nothing; if OCM moves a setting, the
+script fails and names it.
 
-After the first boot, open `plugins/OldCombatMechanics/config.yml` and enable:
+What the checklist requires, and where each item comes from in OCM 2.6:
 
-- [ ] Attack cooldown disabled (no 1.9 attack-speed sweep)
-- [ ] Old armour strength (1.8 armour damage-reduction formula)
-- [ ] Old golden apples (notch apples craftable and 1.8 effects)
-- [ ] Old health regeneration (1.8 regen rate and exhaustion)
-- [ ] Sword blocking (right-click sword blocks, replacing shields)
-- [ ] Old knockback (1.8 knockback values)
-- [ ] Crafting disabled for: shield, elytra, trident, crossbow, and all netherite items
+- [x] Attack cooldown disabled: `disable-attack-cooldown`, in the default `old` modeset
+- [x] No sweep attack: `disable-sword-sweep`, in `old`
+- [x] Old armour strength: `old-armour-strength`, in `old`
+- [x] Old golden apples: `old-golden-apples`, in `old`
+- [x] Old health regeneration: `old-player-regen`, in `old`
+- [x] Sword blocking: `sword-blocking`, in `old`
+- [x] Old knockback: `old-player-knockback`, in `old`
+- [x] Crafting disabled for shield, elytra, trident, crossbow, netherite: `disable-crafting.denied`, **set by the script** (the default denies only shields)
+- [x] Players cannot switch to 1.9 combat: `worlds.__default__` restricted to `old`, **set by the script**
+- [x] OCM does not auto-update mid-sprint: `update-checker.auto-update: false`, **set by the script**
+
+Worth trying during the Sprint 4 combat validation, not now: the `attack-range`
+module applies 1.8-style hit detection (smaller hitbox margin, shorter reach).
+It ships disabled, is Paper 1.21.11+ only, and its comment warns of a small
+cost with rapid hotbar swapping. It is the closest OCM gets to 1.8 hit-reg, so
+it belongs in the session with the 1.8 veterans.
 
 Then verify in game, not just in the config:
 
