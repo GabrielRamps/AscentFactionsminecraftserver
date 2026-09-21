@@ -6,6 +6,13 @@ once per sprint (PRD §5.6).
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-09-21
+
+Sprint 0: the development environment and project skeleton (Epic 0). Verified
+end to end on a WSL2 dev box: server, databases, all eleven third-party
+plugins, the build-deploy-restart loop, and 1.8-style combat with both client
+generations.
+
 ### Added
 
 - Gradle multi-module project (`ascent-api`, `ascent-plugin`) on Java 21, with a

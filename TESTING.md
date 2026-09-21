@@ -104,6 +104,12 @@ is done:
 Combat feel is checked against the OldCombatMechanics checklist in
 `server/PLUGINS.md`.
 
+**Verified 2026-09-21** on Paper 1.21.11 build 132, OldCombatMechanics 2.6.0,
+by the owner: a 1.21.11 client and a 1.8.9 client each join through the
+ViaVersion chain; on both, every sword swing lands with no cooldown and no
+sweep, a sword blocks on right-click, and crafting a shield is refused. Offhand
+disabled, `/ocm mode` reports `old`, `/spark tps` answers. Closes E0-S3.
+
 ## Unit tests
 
 ```bash

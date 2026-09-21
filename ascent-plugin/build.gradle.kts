@@ -70,6 +70,14 @@ tasks.register<Copy>("copyToServer") {
           "Run Epic 0 story E0-S1 first, or pass -PascentServerDir=/path/to/server.",
       )
     }
+    // A version bump changes the jar name. Remove any other Ascent jar first,
+    // or Paper finds two copies of the plugin and loads neither.
+    val current = tasks.shadowJar.get().archiveFileName.get()
+    plugins.listFiles { f -> f.name.startsWith("Ascent-") && f.name.endsWith(".jar") && f.name != current }
+      ?.forEach { stale ->
+        logger.lifecycle("Removing stale ${stale.name}")
+        stale.delete()
+      }
   }
   doLast { logger.lifecycle("Copied Ascent-${project.version}.jar -> $ascentServerDir/plugins") }
 }
