@@ -127,7 +127,9 @@ class YamlConfigServiceTest {
 
   @Test
   void brokenFileOnFirstLoadFallsBackToBundledDefaults() throws IOException {
-    Files.writeString(dataDir.resolve("factions.yml"), "name:\n  min-length: 3\n");
+    // Missing keys are filled in from the bundled default, so a file is only broken when a value
+    // it does carry is wrong: here a member cap below the minimum of 1.
+    Files.writeString(dataDir.resolve("factions.yml"), "member-cap: 0\n");
 
     ReloadReport report = service.load();
 
