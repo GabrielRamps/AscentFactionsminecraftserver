@@ -41,7 +41,9 @@ public record FactionsSettings(
    */
   public record Upkeep(long costPerChunkPerDay, int graceDays) {}
 
-  /** @param warmupSeconds delay before {@code /f home} teleports; cancelled by damage or movement */
+  /**
+   * @param warmupSeconds delay before {@code /f home} teleports; cancelled by damage or movement
+   */
   public record Home(int warmupSeconds) {}
 
   /**
