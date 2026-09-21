@@ -127,8 +127,9 @@ docker compose ps
 either says `starting`, wait thirty seconds and check again. If either says
 `unhealthy`, your `.env` passwords are probably empty.
 
-Nothing uses these until Epic 1, but getting them up now means one less thing
-to debug later.
+The plugin needs MariaDB to start at all (Epic 1). `dev.sh` passes it the
+passwords from `.env`, so there is nothing else to configure. Redis is optional:
+without it the leaderboards read the database.
 
 ## 5. Bootstrap the server
 
@@ -261,6 +262,7 @@ git push
 | `permission denied` from docker | You did not log out after `usermod -aG docker`. |
 | Server exits right after starting | Read `~/ascent-server/logs/latest.log`. Usually a plugin built for the wrong Minecraft version. |
 | `/ascent version` unknown | The plugin failed to load. `grep -i 'could not load' ~/ascent-server/logs/latest.log`. |
+| Log says `DATABASE UNAVAILABLE` | MariaDB is not running (`docker compose ps`), or `MARIADB_PASSWORD` in `.env` does not match the one the container was created with. If you changed the password after the first `docker compose up`, run `docker compose down -v` (this deletes the dev data) and bring it up again. |
 | 1.8 client cannot join | ViaVersion, ViaBackwards and ViaRewind must all three be installed. |
 | Cannot connect at all | Firewall, or the server bound to a different port. Check `server-port` in `~/ascent-server/server.properties`. |
 | WSL2: build is painfully slow | The repo is on `/mnt/c`. Move it into `~/` inside Ubuntu. |

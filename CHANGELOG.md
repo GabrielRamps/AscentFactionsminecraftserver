@@ -22,6 +22,31 @@ Sprint 1, the core platform (Epic 1).
   through `Messages`, with `<prefix>` and per-message placeholders. A missing
   key renders a visible marker rather than throwing.
 - JaCoCo coverage reports on every test run.
+- Database layer (E1-S2). HikariCP pool of 10 over MariaDB, Flyway migrations
+  from `db/migration/V1__init.sql` (the 24 tables of PRD §6.3), and
+  `DbExecutor`: SQL runs on worker threads and every result is handed back on
+  the main thread. Credentials come only from the environment; `scripts/start.sh`
+  exports them from `.env`. A database that cannot be reached at startup
+  disables the plugin with one clear line. Redis is initialised but never
+  required. CI runs a MariaDB service for the integration tests.
+- Player data service (E1-S3). `PlayerProfile` is the one in-memory object per
+  online player, loaded during the login handshake (created with rank 1, $1,000
+  and no starter kit on first join), written every 60 seconds when changed, on
+  quit, and all at once at shutdown. A failed load kicks with a friendly
+  message. Sessions are recorded and play time accrues from them.
+- Economy (E1-S4). `EconomyService` with deposit, withdraw, transfer and offline
+  variants; every mutation logs a `money_transactions` row with its reason.
+  Vault's `Economy` is implemented so third-party plugins see the same balance.
+  `/bal`, `/pay` (1 to 2^53, k/m/b suffixes, offline recipients) and `/baltop`
+  from a Redis sorted set refreshed after each autosave, with a database
+  fallback while Redis is down.
+- Admin command base (E1-S6). `/ascent give <player> money|xp`,
+  `/ascent rank set|add`, `/ascent debug tps|db|items`, all behind
+  `ascent.admin` and each written to `admin_actions`. Books, dust, scrolls and
+  spawners are reserved until their epics.
+- Lore renderer (E11-S3). One `LoreRenderer` writes all custom item lore:
+  enchants by tier then name with the tier's color, `PROTECTED` when scrolled,
+  a kind footer, and a `[n]` enchant count on the name. Idempotent.
 
 ## [0.1.0] - 2026-09-21
 

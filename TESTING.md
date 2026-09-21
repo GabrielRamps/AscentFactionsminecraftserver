@@ -86,13 +86,77 @@ failed to load: check the log for `Could not load 'plugins/Ascent`.
 
 ## Admin commands
 
-Epic 0 ships `/ascent version` only. Later stories add commands here as they
-land; each row should say what the command does and which story added it.
+Every `/ascent` command needs the `ascent.admin` permission (ops have it;
+give it to staff through LuckPerms) and writes an `admin_actions` row. Each row
+below says what the command does and which story added it.
 
 | Command | Purpose | Story |
 |---|---|---|
 | `/ascent version` | Print the running plugin version | E0-S4 |
 | `/ascent reload` | Re-read every YAML file without a restart; reports any file that failed and kept its old values | E1-S1 |
+| `/ascent give <player> money <amount>` | Add money; works for offline players. `2k`, `1.5m`-style suffixes are accepted (`1.5m` is not; whole numbers only, so `1500k`) | E1-S6 |
+| `/ascent give <player> xp <amount>` | Add rank XP to an online player. Until E2-S1 this only moves the counters; no rank-up fires | E1-S6 |
+| `/ascent give <player> books\|dust\|scrolls\|spawners` | Reserved; answers "not yet" until Epics 3 and 4 | E1-S6 |
+| `/ascent rank set <player> <1-100>` | Set an online player's rank (XP toward next resets to 0) | E1-S6 |
+| `/ascent rank add <player> <n>` | Move an online player's rank by `n`, negative allowed, clamped to 1..100 | E1-S6 |
+| `/ascent debug tps` | TPS over 1/5/15 minutes and ms per tick | E1-S6 |
+| `/ascent debug db` | Pool usage, queued and failed tasks, Redis state, players online and logging in, then a database round-trip time | E1-S6 |
+| `/ascent debug items` | Reserved for the item registry (E1-S5) | E1-S6 |
+
+Player commands you can use to check economy stories (permission
+`ascent.economy.use`, granted to everyone by default):
+
+| Command | Purpose | Story |
+|---|---|---|
+| `/bal [player]` | Your balance, or anyone's who has ever joined | E1-S4 |
+| `/pay <player> <amount>` | Send money; the target may be offline | E1-S4 |
+| `/baltop` | Top 10 balances, refreshed every 60 seconds | E1-S4 |
+
+## Database
+
+The plugin refuses to start without MariaDB. `docker compose up -d` in the repo
+starts it; `scripts/start.sh` (which `dev.sh` uses) hands the plugin the
+credentials from `.env` as environment variables, so there is nothing to
+configure in the server directory. If you start Paper any other way, export
+`MARIADB_USER` and `MARIADB_PASSWORD` yourself first.
+
+What the log tells you on boot:
+
+| Line | Meaning |
+|---|---|
+| `Applied N database migration(s)` | A new schema version was created. Expected on first boot and after pulling a build that adds a `V<n>__*.sql` file |
+| `Database schema is up to date` | Normal |
+| `DATABASE UNAVAILABLE: ...` then `disabling` | The plugin is off. The line says why: MariaDB not running, wrong password in `.env`, or the migration failed |
+| `Redis at ... is unavailable` | Not fatal. `/baltop` reads the database until Redis answers |
+
+Poke at the data directly:
+
+```bash
+docker compose exec mariadb mariadb -u ascent -p ascent_dev   # password from .env
+```
+
+```sql
+SHOW TABLES;
+SELECT name, `rank`, balance, last_seen FROM players ORDER BY last_seen DESC LIMIT 10;
+SELECT * FROM money_transactions ORDER BY id DESC LIMIT 10;
+SELECT * FROM admin_actions ORDER BY id DESC LIMIT 10;
+SELECT * FROM flyway_schema_history;
+```
+
+Profiles are written every 60 seconds (`players.autosave-interval` in
+`config.yml`), on quit, and all at once when the server stops. Killing the
+server process instead of typing `stop` loses up to 60 seconds of progress.
+
+The database integration tests run in CI against a MariaDB service. To run
+them locally against the dev database (it is **wiped** by the tests, so never
+point this at anything you care about):
+
+```bash
+export ASCENT_TEST_DB_URL=jdbc:mariadb://127.0.0.1:3306/ascent_dev
+export ASCENT_TEST_DB_USER=ascent
+export ASCENT_TEST_DB_PASSWORD='the MARIADB_PASSWORD from .env'
+./gradlew test
+```
 
 ## Editing configuration
 
