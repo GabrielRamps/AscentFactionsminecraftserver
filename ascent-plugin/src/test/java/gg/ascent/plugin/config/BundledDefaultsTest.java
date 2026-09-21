@@ -16,7 +16,7 @@ import gg.ascent.api.contract.Archetype;
 import gg.ascent.api.enchant.Tier;
 import gg.ascent.plugin.message.YamlMessages;
 import java.time.Duration;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
@@ -29,7 +29,9 @@ class BundledDefaultsTest {
   @Test
   void core() {
     CoreSettings s = SettingsParsers.core(TestYaml.bundled("config.yml"));
-    assertEquals(ZoneOffset.UTC, s.timeZone());
+    // ZoneId.of("UTC") is a ZoneRegion and never equals the ZoneOffset.UTC constant, even though
+    // both represent the same offset -- compare against the same parse the production code does.
+    assertEquals(ZoneId.of("UTC"), s.timeZone());
     assertTrue(!s.debug());
   }
 
