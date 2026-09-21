@@ -79,11 +79,14 @@ echo "==> Starting server"
 # stop sequence had just written to the old file.
 old_log_inode=""
 [ -f "$LOG" ] && old_log_inode=$(stat -c %i "$LOG")
-started_at=$(date +%s)
+# Measure the boot with the kernel's monotonic uptime, not the wall clock:
+# WSL2's clock can jump minutes in either direction mid-boot, which made this
+# loop declare a timeout while the server was coming up normally.
+started_at=$(cut -d. -f1 /proc/uptime)
 tmux new-session -d -s "$SESSION" "ASCENT_SERVER_DIR='$SERVER_DIR' '$REPO_ROOT/scripts/start.sh'"
 
 while :; do
-  now=$(date +%s)
+  now=$(cut -d. -f1 /proc/uptime)
   elapsed=$((now - started_at))
   if [ "$elapsed" -ge "$BOOT_TIMEOUT" ]; then
     echo "==> Server did not report Done within ${BOOT_TIMEOUT}s." >&2
