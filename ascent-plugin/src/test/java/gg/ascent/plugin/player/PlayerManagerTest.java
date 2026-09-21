@@ -9,10 +9,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import gg.ascent.api.db.DbException;
 import gg.ascent.api.player.PlayerProfile;
 import gg.ascent.api.player.PlayerSnapshot;
-import java.time.Clock;
+import gg.ascent.plugin.testing.FakeDbExecutor;
+import gg.ascent.plugin.testing.InMemoryPlayerRepository;
+import gg.ascent.plugin.testing.MutableClock;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -243,33 +244,5 @@ class PlayerManagerTest {
 
     assertEquals(STEVE, future.join().orElseThrow().uuid());
     assertTrue(manager.lookupByName("nobody").isDone() || db.pendingCompletions() > 0);
-  }
-
-  /** A clock a test can move. */
-  static final class MutableClock extends Clock {
-    private Instant now;
-
-    MutableClock(Instant start) {
-      this.now = start;
-    }
-
-    void advance(Duration by) {
-      now = now.plus(by);
-    }
-
-    @Override
-    public ZoneOffset getZone() {
-      return ZoneOffset.UTC;
-    }
-
-    @Override
-    public Clock withZone(java.time.ZoneId zone) {
-      return this;
-    }
-
-    @Override
-    public Instant instant() {
-      return now;
-    }
   }
 }

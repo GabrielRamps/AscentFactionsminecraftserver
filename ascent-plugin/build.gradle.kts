@@ -5,6 +5,9 @@ plugins {
 dependencies {
   compileOnly("io.papermc.paper:paper-api:${rootProject.property("paperApiVersion")}")
   compileOnly(libs.annotations)
+  // Vault's Economy interface (E1-S4). Vault ships the classes at runtime; the
+  // hook is only touched when the Vault plugin is present.
+  compileOnly(libs.vaultapi) { exclude(group = "org.bukkit") }
 
   api(project(":ascent-api"))
 
@@ -20,6 +23,7 @@ dependencies {
   // Confirm the current coordinates at https://mockbukkit.org before adding it:
   // the artifact moved from com.github.seeseemelk to org.mockbukkit.mockbukkit.
   testImplementation("io.papermc.paper:paper-api:${rootProject.property("paperApiVersion")}")
+  testImplementation(libs.vaultapi) { exclude(group = "org.bukkit") }
 }
 
 tasks.processResources {

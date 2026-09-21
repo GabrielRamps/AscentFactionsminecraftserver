@@ -1,4 +1,4 @@
-package gg.ascent.plugin.player;
+package gg.ascent.plugin.testing;
 
 import gg.ascent.api.db.DbException;
 import gg.ascent.api.db.DbExecutor;
@@ -14,20 +14,20 @@ import java.util.concurrent.CompletableFuture;
  * A {@link DbExecutor} that runs work inline with no connection and parks each completion until
  * {@link #tick()} is called, so a test controls exactly when "the main thread" sees a result.
  */
-final class FakeDbExecutor implements DbExecutor {
+public final class FakeDbExecutor implements DbExecutor {
 
   private final Deque<Runnable> completions = new ArrayDeque<>();
-  int transactions;
+  public int transactions;
 
   /** Runs every queued completion, as one server tick would. */
-  void tick() {
+  public void tick() {
     Runnable next;
     while ((next = completions.poll()) != null) {
       next.run();
     }
   }
 
-  int pendingCompletions() {
+  public int pendingCompletions() {
     return completions.size();
   }
 

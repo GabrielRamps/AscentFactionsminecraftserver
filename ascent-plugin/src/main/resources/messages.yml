@@ -22,3 +22,30 @@ ascent:
 player:
   # Shown as the kick reason when the database cannot load a player's data.
   load-failed: "<red>Your player data could not be loaded.<newline><gray>Please try again in a moment. If this keeps happening, tell staff."
+
+economy:
+  # <player>: the name that was typed
+  unknown-player: "<prefix><red>No player named <white><player></white> has ever joined."
+  bal:
+    # <amount>
+    own: "<prefix><gray>Balance: <green><amount>"
+    # <player>, <amount>
+    other: "<prefix><gray><player>'s balance: <green><amount>"
+    console: "<prefix><gray>Console has no balance. Try <white>/bal <player>"
+  pay:
+    usage: "<prefix><gray>Usage: <white>/pay <player> <amount>"
+    console: "<prefix><red>Only players can pay."
+    self: "<prefix><red>You cannot pay yourself."
+    # <input>: what was typed
+    bad-amount: "<prefix><red>'<input>' is not an amount. Use whole dollars, like <white>500</white> or <white>2.5k</white>."
+    # <amount>, <balance>
+    insufficient: "<prefix><red>You need <amount> but only have <balance>."
+    # <player>, <amount>
+    sent: "<prefix><green>Sent <amount> to <white><player></white>."
+    # <player>, <amount>
+    received: "<prefix><green>Received <amount> from <white><player></white>."
+  baltop:
+    header: "<prefix><gold>Richest players"
+    empty: "<gray>Nobody has a balance yet."
+    # <position>, <player>, <amount>
+    entry: "<dark_gray> <position>. <white><player> <dark_gray>- <green><amount>"

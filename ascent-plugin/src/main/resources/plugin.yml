@@ -20,8 +20,24 @@ commands:
     description: Ascent administrative commands.
     usage: /ascent version
     permission: ascent.admin
+  bal:
+    description: Show a balance.
+    usage: /bal [player]
+    aliases: [balance, money]
+    permission: ascent.economy.use
+  pay:
+    description: Send money to another player.
+    usage: /pay <player> <amount>
+    permission: ascent.economy.use
+  baltop:
+    description: The richest players.
+    usage: /baltop
+    permission: ascent.economy.use
 
 permissions:
   ascent.admin:
     description: Access to the /ascent administrative command.
     default: op
+  ascent.economy.use:
+    description: /bal, /pay and /baltop.
+    default: true

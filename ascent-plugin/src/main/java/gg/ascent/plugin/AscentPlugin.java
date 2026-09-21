@@ -8,6 +8,11 @@ import gg.ascent.plugin.command.AscentCommand;
 import gg.ascent.plugin.config.YamlConfigService;
 import gg.ascent.plugin.db.BukkitMainThread;
 import gg.ascent.plugin.db.Database;
+import gg.ascent.plugin.economy.BaltopCache;
+import gg.ascent.plugin.economy.EconomyCommands;
+import gg.ascent.plugin.economy.EconomyServiceImpl;
+import gg.ascent.plugin.economy.SqlTransactionRepository;
+import gg.ascent.plugin.economy.VaultHook;
 import gg.ascent.plugin.message.YamlMessages;
 import gg.ascent.plugin.player.PlayerListener;
 import gg.ascent.plugin.player.PlayerManager;
@@ -15,7 +20,9 @@ import gg.ascent.plugin.player.SqlPlayerRepository;
 import gg.ascent.plugin.redis.RedisConnector;
 import java.time.Clock;
 import java.time.Duration;
+import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -34,6 +41,8 @@ public final class AscentPlugin extends JavaPlugin {
   private Database database;
   private RedisConnector redis;
   private PlayerManager players;
+  private EconomyServiceImpl economy;
+  private BaltopCache baltop;
 
   @Override
   public void onEnable() {
@@ -77,34 +86,54 @@ public final class AscentPlugin extends JavaPlugin {
     }
     redis = RedisConnector.connect(config.core().redis(), getSLF4JLogger());
 
+    SqlPlayerRepository playerRepo = new SqlPlayerRepository();
     players =
         new PlayerManager(
             database.executor(),
-            new SqlPlayerRepository(),
+            playerRepo,
             config.core().players().startingBalance(),
             Clock.systemUTC(),
             getSLF4JLogger());
     getServer()
         .getPluginManager()
         .registerEvents(new PlayerListener(players, messages, getSLF4JLogger()), this);
+
+    economy =
+        new EconomyServiceImpl(
+            players,
+            playerRepo,
+            new SqlTransactionRepository(),
+            database.executor(),
+            Clock.systemUTC(),
+            getSLF4JLogger());
+    baltop = new BaltopCache(database.executor(), playerRepo, redis, getSLF4JLogger());
+    baltop.refresh();
+    // PRD E1-S3/E1-S4: autosave every interval, then rebuild the leaderboard from what was written.
     long autosaveTicks = Math.max(20, config.core().players().autosaveInterval().toSeconds() * 20);
     getServer()
         .getScheduler()
-        .runTaskTimer(this, () -> players.autosave(), autosaveTicks, autosaveTicks);
+        .runTaskTimer(
+            this, () -> players.autosave().thenRun(baltop::refresh), autosaveTicks, autosaveTicks);
+    if (getServer().getPluginManager().getPlugin("Vault") != null) {
+      VaultHook.register(this, economy, players);
+    } else {
+      getSLF4JLogger().info("Vault is not installed; third-party plugins cannot see balances.");
+    }
 
-    api = new AscentApiImpl(this, config, messages, database.executor(), players);
+    api = new AscentApiImpl(this, config, messages, database.executor(), players, economy);
     AscentProvider.register(api);
     getServer().getServicesManager().register(AscentApi.class, api, this, ServicePriority.Normal);
 
-    PluginCommand command = getCommand("ascent");
-    if (command == null) {
-      getSLF4JLogger().error("Command 'ascent' is missing from plugin.yml; disabling.");
+    AscentCommand admin = new AscentCommand(this, config, messages);
+    EconomyCommands money =
+        new EconomyCommands(this, economy, players, baltop, messages, getSLF4JLogger());
+    if (!bind("ascent", admin, admin)
+        || !bind("bal", money, money)
+        || !bind("pay", money, money)
+        || !bind("baltop", money, money)) {
       getServer().getPluginManager().disablePlugin(this);
       return;
     }
-    AscentCommand executor = new AscentCommand(this, config, messages);
-    command.setExecutor(executor);
-    command.setTabCompleter(executor);
 
     api.markReady();
     getSLF4JLogger().info("Ascent {} enabled.", getPluginMeta().getVersion());
@@ -125,6 +154,8 @@ public final class AscentPlugin extends JavaPlugin {
       players.flushAll();
       players = null;
     }
+    economy = null;
+    baltop = null;
     if (redis != null) {
       redis.close();
       redis = null;
@@ -135,6 +166,17 @@ public final class AscentPlugin extends JavaPlugin {
       database = null;
     }
     getSLF4JLogger().info("Ascent disabled.");
+  }
+
+  private boolean bind(String name, CommandExecutor executor, TabCompleter completer) {
+    PluginCommand command = getCommand(name);
+    if (command == null) {
+      getSLF4JLogger().error("Command '{}' is missing from plugin.yml; disabling.", name);
+      return false;
+    }
+    command.setExecutor(executor);
+    command.setTabCompleter(completer);
+    return true;
   }
 
   /** The database, for commands that report on it. Null only while disabled. */
@@ -150,5 +192,10 @@ public final class AscentPlugin extends JavaPlugin {
   /** The player cache. Null only while disabled. */
   public PlayerManager players() {
     return players;
+  }
+
+  /** Money. Null only while disabled. */
+  public EconomyServiceImpl economy() {
+    return economy;
   }
 }

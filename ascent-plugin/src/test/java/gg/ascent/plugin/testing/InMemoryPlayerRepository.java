@@ -1,6 +1,7 @@
-package gg.ascent.plugin.player;
+package gg.ascent.plugin.testing;
 
 import gg.ascent.api.player.PlayerSnapshot;
+import gg.ascent.plugin.player.PlayerRepository;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -14,13 +15,13 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
 /** A map standing in for the tables, so the manager's rules can be tested without a database. */
-final class InMemoryPlayerRepository implements PlayerRepository {
+public final class InMemoryPlayerRepository implements PlayerRepository {
 
-  final Map<UUID, PlayerSnapshot> rows = new LinkedHashMap<>();
-  final Map<Long, Instant[]> sessions = new LinkedHashMap<>();
-  final List<String> calls = new ArrayList<>();
+  public final Map<UUID, PlayerSnapshot> rows = new LinkedHashMap<>();
+  public final Map<Long, Instant[]> sessions = new LinkedHashMap<>();
+  public final List<String> calls = new ArrayList<>();
   private final AtomicLong ids = new AtomicLong();
-  boolean failNext;
+  public boolean failNext;
 
   private void maybeFail() throws SQLException {
     if (failNext) {

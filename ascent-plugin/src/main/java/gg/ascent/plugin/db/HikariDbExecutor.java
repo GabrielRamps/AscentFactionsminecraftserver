@@ -35,6 +35,7 @@ public final class HikariDbExecutor implements DbExecutor, AutoCloseable {
   private final Logger log;
   private final AtomicLong completed = new AtomicLong();
   private final AtomicLong failed = new AtomicLong();
+  private final AtomicLong lastMainThreadWarning = new AtomicLong();
   private volatile boolean shuttingDown;
 
   /**
@@ -226,8 +227,21 @@ public final class HikariDbExecutor implements DbExecutor, AutoCloseable {
         });
   }
 
+  /**
+   * A blocking call on the main thread stalls every player, so it is worth a stack trace, but a
+   * third-party plugin polling Vault for offline balances would otherwise flood the log: at most
+   * one warning a minute.
+   */
   private void warnIfMainThread() {
-    if (!shuttingDown && mainThread.isCurrent()) {
+    if (shuttingDown || !mainThread.isCurrent()) {
+      return;
+    }
+    long now = System.nanoTime();
+    long last = lastMainThreadWarning.get();
+    if (now - last < TimeUnit.MINUTES.toNanos(1) && last != 0) {
+      return;
+    }
+    if (lastMainThreadWarning.compareAndSet(last, now)) {
       log.warn(
           "Blocking database call on the main thread; every player waits for it.",
           new DbException("called from"));

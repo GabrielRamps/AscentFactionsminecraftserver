@@ -2,6 +2,7 @@ package gg.ascent.api;
 
 import gg.ascent.api.config.ConfigService;
 import gg.ascent.api.db.DbExecutor;
+import gg.ascent.api.economy.EconomyService;
 import gg.ascent.api.message.Messages;
 import gg.ascent.api.player.PlayerService;
 
@@ -38,4 +39,7 @@ public interface AscentApi {
 
   /** Player profiles: the one in-memory home of per-player state. */
   PlayerService players();
+
+  /** Money. */
+  EconomyService economy();
 }
