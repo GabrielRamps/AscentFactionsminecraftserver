@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import gg.ascent.api.config.ConfigService;
+import gg.ascent.api.message.Messages;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -20,6 +22,16 @@ class AscentProviderTest {
         @Override
         public boolean ready() {
           return true;
+        }
+
+        @Override
+        public ConfigService config() {
+          throw new UnsupportedOperationException("not needed by this test");
+        }
+
+        @Override
+        public Messages messages() {
+          throw new UnsupportedOperationException("not needed by this test");
         }
       };
 
