@@ -94,7 +94,7 @@ below says what the command does and which story added it.
 |---|---|---|
 | `/ascent version` | Print the running plugin version | E0-S4 |
 | `/ascent reload` | Re-read every YAML file without a restart; reports any file that failed and kept its old values | E1-S1 |
-| `/ascent give <player> money <amount>` | Add money; works for offline players. `2k`, `1.5m`-style suffixes are accepted (`1.5m` is not; whole numbers only, so `1500k`) | E1-S6 |
+| `/ascent give <player> money <amount>` | Add money; works for offline players. `k`, `m` and `b` suffixes are accepted (`2k`, `3m`); whole numbers only, so write `1500k` rather than `1.5m` | E1-S6 |
 | `/ascent give <player> xp <amount>` | Add rank XP to an online player. Until E2-S1 this only moves the counters; no rank-up fires | E1-S6 |
 | `/ascent give <player> books\|dust\|scrolls\|spawners` | Reserved; answers "not yet" until Epics 3 and 4 | E1-S6 |
 | `/ascent rank set <player> <1-100>` | Set an online player's rank (XP toward next resets to 0) | E1-S6 |
