@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,6 +44,20 @@ class LoreRendererTest {
     return PlainTextComponentSerializer.plainText().serialize(c);
   }
 
+  /** MiniMessage may put the color on the root or on the first child; either counts. */
+  private static TextColor colorOf(Component c) {
+    if (c.color() != null) {
+      return c.color();
+    }
+    for (Component child : c.children()) {
+      TextColor color = colorOf(child);
+      if (color != null) {
+        return color;
+      }
+    }
+    return null;
+  }
+
   @Test
   void enchantsSortByTierThenNameWithTierColorAndRomanLevel() {
     LoreSpec spec =
@@ -59,8 +74,8 @@ class LoreRendererTest {
     assertEquals(
         List.of("Lifesteal II", "Aquatic I", "Sharpness IV"),
         lines.stream().map(LoreRendererTest::plain).toList());
-    assertEquals(NamedTextColor.GOLD, lines.get(0).color(), "legendary is gold in enchants.yml");
-    assertEquals(NamedTextColor.WHITE, lines.get(1).color());
+    assertEquals(NamedTextColor.GOLD, colorOf(lines.get(0)), "legendary is gold in enchants.yml");
+    assertEquals(NamedTextColor.WHITE, colorOf(lines.get(1)));
     assertTrue(
         lines.stream()
             .allMatch(l -> l.decoration(TextDecoration.ITALIC) == TextDecoration.State.FALSE));

@@ -6,6 +6,7 @@ import gg.ascent.api.economy.TxReason;
 import gg.ascent.api.player.PlayerProfile;
 import gg.ascent.api.player.PlayerService;
 import gg.ascent.api.player.PlayerSnapshot;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -109,7 +110,7 @@ public final class AdminService {
     int before = profile.rank();
     profile.setRank(rank);
     profile.setXp(0);
-    log.record(actor, "rank.set", profile.name(), Map.of("from", before, "to", rank));
+    log.record(actor, "rank.set", profile.name(), args("from", before, "to", rank));
     return new Result(Outcome.OK, rank);
   }
 
@@ -128,8 +129,16 @@ public final class AdminService {
     int after = Math.max(1, Math.min(max, before + delta));
     profile.setRank(after);
     profile.setXp(0);
-    log.record(actor, "rank.add", profile.name(), Map.of("delta", delta, "to", after));
+    log.record(actor, "rank.add", profile.name(), args("delta", delta, "to", after));
     return new Result(Outcome.OK, after);
+  }
+
+  /** Two arguments in the order given, so the stored JSON reads the same every time. */
+  private static Map<String, Object> args(String k1, Object v1, String k2, Object v2) {
+    Map<String, Object> out = new LinkedHashMap<>();
+    out.put(k1, v1);
+    out.put(k2, v2);
+    return out;
   }
 
   private Optional<PlayerProfile> onlineByName(String name) {
