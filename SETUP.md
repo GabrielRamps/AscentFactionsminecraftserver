@@ -215,11 +215,17 @@ the checklist in `server/PLUGINS.md`: attack cooldown off, 1.8 armour, old
 golden apples, old regeneration, sword blocking, 1.8 knockback, and crafting
 denied for shields, elytra, tridents, crossbows and netherite.
 
-Then `./dev.sh` to restart, and test with both clients joined at once:
+Then `./dev.sh` to restart, and test with each client in turn. One account can
+only be connected once, so this is one client at a time, not both together:
 
-- Hits register on both, with no cooldown delay and no sweep attack.
-- Right-clicking with a sword blocks.
-- Crafting a shield is denied.
+1. Join with your 1.21 client. Hit a mob: no cooldown delay, no sweep attack.
+   Right-click with a sword: it blocks. Try to craft a shield: denied.
+2. Disconnect, then join with a 1.8.9 client (a second installation in the
+   launcher, version `1.8.9`). Connecting at all proves the ViaVersion chain
+   works. Then repeat the same three checks.
+
+Player-versus-player between a 1.8 client and a 1.21 client needs two accounts
+and is a beta-tester job; the PRD schedules it for Sprint 4 with 1.8 veterans.
 
 If combat does not feel like 1.8 to you, stop and tune it. The PRD flags this
 as a high-impact risk, and every later story assumes it is right.

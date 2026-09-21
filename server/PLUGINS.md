@@ -53,10 +53,15 @@ After the first boot, open `plugins/OldCombatMechanics/config.yml` and enable:
 
 Then verify in game, not just in the config:
 
-1. Join with a 1.8.9 client and a 1.21 client at the same time.
-2. Hit a mob and a player with each. Hits register on both, with no cooldown
-   delay and no sweep attack.
+1. Join with a 1.21 client, then disconnect and join with a 1.8.9 client. One
+   account connects once, so test them in turn. The 1.8.9 client connecting at
+   all is the ViaVersion chain working.
+2. With each client, hit a mob. Hits register, with no cooldown delay and no
+   sweep attack.
 3. Right-click with a sword and confirm it blocks.
 4. Try to craft a shield and confirm it is denied.
+
+Cross-version PvP (a 1.8 player hitting a 1.21 player) needs two accounts; it
+is validated in Sprint 4 with 1.8 veterans, per PRD §10.4.
 
 Record the result in `TESTING.md` before closing story E0-S3.
