@@ -11,3 +11,27 @@ debug: false
 # (§5.5); change only if every player and staff member agrees what "midnight"
 # means.
 time-zone: UTC
+
+# MariaDB (PRD E1-S2). Credentials never live in this file: the plugin reads
+# MARIADB_USER and MARIADB_PASSWORD from the environment, which
+# scripts/start.sh exports from the repo's .env. MARIADB_HOST, MARIADB_PORT and
+# MARIADB_DATABASE override the values below when they are set, so one .env
+# drives docker compose and the plugin alike.
+database:
+  host: 127.0.0.1
+  port: 3306
+  name: ascent_dev
+  # HikariCP pool size. The PRD fixes this at 10 (E1-S2). Every database task
+  # also gets one worker thread, so this is the number of queries in flight.
+  max-pool-size: 10
+  # How long a query waits for a free connection before it fails.
+  connect-timeout: 10s
+
+# Redis holds only rebuildable caches (baltop, F-Top). If it is disabled or
+# unreachable the plugin still starts and those features read the database
+# instead. REDIS_HOST, REDIS_PORT and REDIS_PASSWORD come from the environment
+# the same way as the MariaDB values.
+redis:
+  enabled: true
+  host: 127.0.0.1
+  port: 6379

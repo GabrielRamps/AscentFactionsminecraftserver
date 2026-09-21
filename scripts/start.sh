@@ -82,6 +82,28 @@ else
   )
 fi
 
+# The plugin reads its database and Redis credentials from the environment,
+# never from a file in the server directory (PRD E1-S2). Export each key from
+# .env unless the caller already set it, so a systemd unit or a CI job can
+# supply its own. The password is read with read_env, which never executes
+# the file, so a value containing shell metacharacters is safe.
+export_env() {
+  local key="$1"
+  if [ -z "${!key:-}" ]; then
+    local value
+    value="$(read_env "$key")"
+    [ -n "$value" ] && export "$key=$value"
+  fi
+  return 0
+}
+for key in MARIADB_HOST MARIADB_PORT MARIADB_DATABASE MARIADB_USER MARIADB_PASSWORD \
+  REDIS_HOST REDIS_PORT REDIS_PASSWORD; do
+  export_env "$key"
+done
+if [ -z "${MARIADB_PASSWORD:-}" ]; then
+  warn "MARIADB_PASSWORD is not set in .env or the environment; Ascent will refuse to start."
+fi
+
 cd "$SERVER_DIR"
 log "Starting Paper in $SERVER_DIR with ${MEMORY} heap"
 exec java "${FLAGS[@]}" -jar "$PAPER_JAR" --nogui

@@ -22,7 +22,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Turns each configuration file into its settings record.
@@ -35,12 +37,69 @@ public final class SettingsParsers {
 
   private SettingsParsers() {}
 
+  /** Parses {@code config.yml} with the process environment supplying the credentials. */
   public static CoreSettings core(Node root) {
+    return core(root, System::getenv);
+  }
+
+  /**
+   * Parses {@code config.yml}.
+   *
+   * @param env resolves an environment variable to its value, or null when unset. Credentials come
+   *     only from here; host, port and database name may be overridden from here.
+   */
+  public static CoreSettings core(Node root, Function<String, @Nullable String> env) {
     String zone = root.string("time-zone");
+    ZoneId zoneId;
     try {
-      return new CoreSettings(root.bool("debug"), ZoneId.of(zone));
+      zoneId = ZoneId.of(zone);
     } catch (DateTimeException e) {
       throw new ConfigException(root.at("time-zone") + ": unknown time zone '" + zone + "'");
+    }
+    Node db = root.section("database");
+    CoreSettings.Database database =
+        wrap(
+            root,
+            "database",
+            () ->
+                new CoreSettings.Database(
+                    envOr(env, "MARIADB_HOST", db.string("host")),
+                    envIntOr(env, "MARIADB_PORT", db.integerAtLeast("port", 1)),
+                    envOr(env, "MARIADB_DATABASE", db.string("name")),
+                    envOr(env, "MARIADB_USER", ""),
+                    envOr(env, "MARIADB_PASSWORD", ""),
+                    db.integerAtLeast("max-pool-size", 1),
+                    db.duration("connect-timeout")));
+    Node redis = root.section("redis");
+    CoreSettings.Redis redisSettings =
+        wrap(
+            root,
+            "redis",
+            () ->
+                new CoreSettings.Redis(
+                    redis.bool("enabled"),
+                    envOr(env, "REDIS_HOST", redis.string("host")),
+                    envIntOr(env, "REDIS_PORT", redis.integerAtLeast("port", 1)),
+                    envOr(env, "REDIS_PASSWORD", null)));
+    return new CoreSettings(root.bool("debug"), zoneId, database, redisSettings);
+  }
+
+  private static @Nullable String envOr(
+      Function<String, @Nullable String> env, String key, @Nullable String fallback) {
+    String value = env.apply(key);
+    return value == null || value.isBlank() ? fallback : value.trim();
+  }
+
+  private static int envIntOr(Function<String, @Nullable String> env, String key, int fallback) {
+    String value = env.apply(key);
+    if (value == null || value.isBlank()) {
+      return fallback;
+    }
+    try {
+      return Integer.parseInt(value.trim());
+    } catch (NumberFormatException e) {
+      throw new ConfigException(
+          "environment variable " + key + ": expected a whole number, got \"" + value + "\"");
     }
   }
 

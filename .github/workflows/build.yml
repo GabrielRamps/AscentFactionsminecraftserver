@@ -16,6 +16,32 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    # A real MariaDB for the database integration tests (E1-S2). The same image
+    # docker-compose.yml runs on the dev box. Tests read ASCENT_TEST_DB_* below
+    # and skip themselves when the URL is unset, so `./gradlew build` still
+    # passes on a laptop without a database.
+    services:
+      mariadb:
+        image: mariadb:11.4
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: ascent_test
+          MARIADB_USER: ascent
+          MARIADB_PASSWORD: ascent
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "healthcheck.sh --connect --innodb_initialized"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 12
+
+    env:
+      ASCENT_TEST_DB_URL: jdbc:mariadb://127.0.0.1:3306/ascent_test
+      ASCENT_TEST_DB_USER: ascent
+      ASCENT_TEST_DB_PASSWORD: ascent
+
     steps:
       - uses: actions/checkout@v4
 

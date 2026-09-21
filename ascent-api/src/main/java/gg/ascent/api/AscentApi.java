@@ -1,6 +1,7 @@
 package gg.ascent.api;
 
 import gg.ascent.api.config.ConfigService;
+import gg.ascent.api.db.DbExecutor;
 import gg.ascent.api.message.Messages;
 
 /**
@@ -30,4 +31,7 @@ public interface AscentApi {
 
   /** Player-facing strings. */
   Messages messages();
+
+  /** Off-main-thread database access. Every persistent read and write goes through this. */
+  DbExecutor db();
 }

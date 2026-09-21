@@ -28,11 +28,16 @@ class BundledDefaultsTest {
 
   @Test
   void core() {
-    CoreSettings s = SettingsParsers.core(TestYaml.bundled("config.yml"));
+    CoreSettings s = SettingsParsers.core(TestYaml.bundled("config.yml"), key -> null);
     // ZoneId.of("UTC") is a ZoneRegion and never equals the ZoneOffset.UTC constant, even though
     // both represent the same offset -- compare against the same parse the production code does.
     assertEquals(ZoneId.of("UTC"), s.timeZone());
     assertTrue(!s.debug());
+    assertEquals("jdbc:mariadb://127.0.0.1:3306/ascent_dev", s.database().jdbcUrl());
+    assertEquals(10, s.database().maxPoolSize());
+    assertTrue(!s.database().hasCredentials());
+    assertTrue(s.redis().enabled());
+    assertEquals(6379, s.redis().port());
   }
 
   @Test
