@@ -13,8 +13,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 /**
  * Plugin entry point.
  *
- * <p>Owns the lifecycle: configuration and messages first, then the API, then commands. Later
- * epics add the database, the player cache and each module here, in dependency order.
+ * <p>Owns the lifecycle: configuration and messages first, then the API, then commands. Later epics
+ * add the database, the player cache and each module here, in dependency order.
  */
 public final class AscentPlugin extends JavaPlugin {
 
@@ -25,8 +25,7 @@ public final class AscentPlugin extends JavaPlugin {
   @Override
   public void onEnable() {
     messages = new YamlMessages(getSLF4JLogger());
-    config =
-        new YamlConfigService(getDataFolder().toPath(), this::getResource, getSLF4JLogger());
+    config = new YamlConfigService(getDataFolder().toPath(), this::getResource, getSLF4JLogger());
     config.register(YamlMessages.FILE, YamlMessages::parse, messages::accept, messages::current);
 
     ReloadReport report;

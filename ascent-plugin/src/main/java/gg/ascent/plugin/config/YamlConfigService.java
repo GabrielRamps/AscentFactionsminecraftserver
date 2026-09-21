@@ -84,18 +84,12 @@ public final class YamlConfigService implements ConfigService {
    * messages.yml}. Must be called before {@link #load()}.
    */
   public <T> void register(
-      String file,
-      Function<Node, T> parser,
-      Consumer<T> store,
-      Supplier<T> current) {
+      String file, Function<Node, T> parser, Consumer<T> store, Supplier<T> current) {
     slot(file, parser, store, current);
   }
 
   private <T> void slot(
-      String file,
-      Function<Node, T> parser,
-      Consumer<T> store,
-      Supplier<T> current) {
+      String file, Function<Node, T> parser, Consumer<T> store, Supplier<T> current) {
     slots.add(new Slot<>(file, parser, store, current));
   }
 
@@ -197,10 +191,7 @@ public final class YamlConfigService implements ConfigService {
   }
 
   private record Slot<T>(
-      String file,
-      Function<Node, T> parser,
-      Consumer<T> store,
-      Supplier<T> current) {}
+      String file, Function<Node, T> parser, Consumer<T> store, Supplier<T> current) {}
 
   @Override
   public CoreSettings core() {
