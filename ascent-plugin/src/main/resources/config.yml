@@ -35,3 +35,11 @@ redis:
   enabled: true
   host: 127.0.0.1
   port: 6379
+
+# Player data (PRD E1-S3).
+players:
+  # Balance a brand-new player starts with.
+  starting-balance: 1000
+  # How often changed profiles are written to the database. Every profile is
+  # also written on quit and at shutdown.
+  autosave-interval: 60s

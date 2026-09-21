@@ -3,6 +3,7 @@ package gg.ascent.api;
 import gg.ascent.api.config.ConfigService;
 import gg.ascent.api.db.DbExecutor;
 import gg.ascent.api.message.Messages;
+import gg.ascent.api.player.PlayerService;
 
 /**
  * Root entry point for everything Ascent exposes to other modules and to third-party plugins.
@@ -34,4 +35,7 @@ public interface AscentApi {
 
   /** Off-main-thread database access. Every persistent read and write goes through this. */
   DbExecutor db();
+
+  /** Player profiles: the one in-memory home of per-player state. */
+  PlayerService players();
 }

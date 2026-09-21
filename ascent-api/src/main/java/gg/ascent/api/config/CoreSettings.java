@@ -11,8 +11,27 @@ import org.jetbrains.annotations.Nullable;
  * @param timeZone the zone daily resets and displayed times use; the PRD fixes this at UTC
  * @param database the MariaDB connection and pool
  * @param redis the Redis connection, used only for leaderboard caches in Phase 1
+ * @param players player data defaults and persistence timing
  */
-public record CoreSettings(boolean debug, ZoneId timeZone, Database database, Redis redis) {
+public record CoreSettings(
+    boolean debug, ZoneId timeZone, Database database, Redis redis, Players players) {
+
+  /**
+   * Player data (PRD E1-S3).
+   *
+   * @param startingBalance the balance a brand-new player starts with
+   * @param autosaveInterval how often dirty profiles are written
+   */
+  public record Players(long startingBalance, Duration autosaveInterval) {
+    public Players {
+      if (startingBalance < 0) {
+        throw new IllegalArgumentException("starting-balance cannot be negative");
+      }
+      if (autosaveInterval == null || autosaveInterval.isZero() || autosaveInterval.isNegative()) {
+        throw new IllegalArgumentException("autosave-interval must be positive");
+      }
+    }
+  }
 
   /**
    * MariaDB connection settings (PRD E1-S2).

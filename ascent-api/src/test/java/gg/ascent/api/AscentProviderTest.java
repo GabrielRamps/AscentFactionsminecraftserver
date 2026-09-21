@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import gg.ascent.api.config.ConfigService;
 import gg.ascent.api.db.DbExecutor;
 import gg.ascent.api.message.Messages;
+import gg.ascent.api.player.PlayerService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -37,6 +38,11 @@ class AscentProviderTest {
 
         @Override
         public DbExecutor db() {
+          throw new UnsupportedOperationException("not needed by this test");
+        }
+
+        @Override
+        public PlayerService players() {
           throw new UnsupportedOperationException("not needed by this test");
         }
       };

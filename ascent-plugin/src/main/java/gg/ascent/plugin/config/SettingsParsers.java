@@ -81,7 +81,16 @@ public final class SettingsParsers {
                     envOr(env, "REDIS_HOST", redis.string("host")),
                     envIntOr(env, "REDIS_PORT", redis.integerAtLeast("port", 1)),
                     envOr(env, "REDIS_PASSWORD", null)));
-    return new CoreSettings(root.bool("debug"), zoneId, database, redisSettings);
+    Node players = root.section("players");
+    CoreSettings.Players playerSettings =
+        wrap(
+            root,
+            "players",
+            () ->
+                new CoreSettings.Players(
+                    players.longAtLeast("starting-balance", 0),
+                    players.duration("autosave-interval")));
+    return new CoreSettings(root.bool("debug"), zoneId, database, redisSettings, playerSettings);
   }
 
   private static @Nullable String envOr(

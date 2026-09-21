@@ -9,7 +9,11 @@ import gg.ascent.plugin.config.YamlConfigService;
 import gg.ascent.plugin.db.BukkitMainThread;
 import gg.ascent.plugin.db.Database;
 import gg.ascent.plugin.message.YamlMessages;
+import gg.ascent.plugin.player.PlayerListener;
+import gg.ascent.plugin.player.PlayerManager;
+import gg.ascent.plugin.player.SqlPlayerRepository;
 import gg.ascent.plugin.redis.RedisConnector;
+import java.time.Clock;
 import java.time.Duration;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.ServicePriority;
@@ -29,6 +33,7 @@ public final class AscentPlugin extends JavaPlugin {
   private YamlMessages messages;
   private Database database;
   private RedisConnector redis;
+  private PlayerManager players;
 
   @Override
   public void onEnable() {
@@ -72,7 +77,22 @@ public final class AscentPlugin extends JavaPlugin {
     }
     redis = RedisConnector.connect(config.core().redis(), getSLF4JLogger());
 
-    api = new AscentApiImpl(this, config, messages, database.executor());
+    players =
+        new PlayerManager(
+            database.executor(),
+            new SqlPlayerRepository(),
+            config.core().players().startingBalance(),
+            Clock.systemUTC(),
+            getSLF4JLogger());
+    getServer()
+        .getPluginManager()
+        .registerEvents(new PlayerListener(players, messages, getSLF4JLogger()), this);
+    long autosaveTicks = Math.max(20, config.core().players().autosaveInterval().toSeconds() * 20);
+    getServer()
+        .getScheduler()
+        .runTaskTimer(this, () -> players.autosave(), autosaveTicks, autosaveTicks);
+
+    api = new AscentApiImpl(this, config, messages, database.executor(), players);
     AscentProvider.register(api);
     getServer().getServicesManager().register(AscentApi.class, api, this, ServicePriority.Normal);
 
@@ -98,6 +118,13 @@ public final class AscentPlugin extends JavaPlugin {
     getServer().getServicesManager().unregisterAll(this);
     AscentProvider.unregister();
     api = null;
+    getServer().getScheduler().cancelTasks(this);
+    if (players != null && database != null) {
+      // PRD E1-S3: shutdown flushes every profile. Blocking is right here: no more ticks run.
+      database.beginShutdown();
+      players.flushAll();
+      players = null;
+    }
     if (redis != null) {
       redis.close();
       redis = null;
@@ -118,5 +145,10 @@ public final class AscentPlugin extends JavaPlugin {
   /** The Redis connector; answers empty results while Redis is unavailable. */
   public RedisConnector redis() {
     return redis;
+  }
+
+  /** The player cache. Null only while disabled. */
+  public PlayerManager players() {
+    return players;
   }
 }

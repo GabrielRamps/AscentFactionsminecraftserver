@@ -29,6 +29,9 @@ class CoreSettingsParserTest {
         enabled: true
         host: cache.internal
         port: 6380
+      players:
+        starting-balance: 1000
+        autosave-interval: 60s
       """;
 
   @Test
@@ -42,6 +45,8 @@ class CoreSettingsParserTest {
     assertEquals("cache.internal", s.redis().host());
     assertEquals(6380, s.redis().port());
     assertNull(s.redis().password());
+    assertEquals(1000, s.players().startingBalance());
+    assertEquals(Duration.ofSeconds(60), s.players().autosaveInterval());
   }
 
   @Test

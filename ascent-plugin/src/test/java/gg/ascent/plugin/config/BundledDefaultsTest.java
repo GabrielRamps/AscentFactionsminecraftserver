@@ -38,6 +38,7 @@ class BundledDefaultsTest {
     assertTrue(!s.database().hasCredentials());
     assertTrue(s.redis().enabled());
     assertEquals(6379, s.redis().port());
+    assertEquals(1000, s.players().startingBalance());
   }
 
   @Test

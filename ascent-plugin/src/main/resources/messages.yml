@@ -18,3 +18,7 @@ ascent:
     failed: "<prefix><red>Reloaded with <count> error(s); the failing files kept their old values:"
     # <error>: file, path and reason
     error: "<dark_gray> - <red><error>"
+
+player:
+  # Shown as the kick reason when the database cannot load a player's data.
+  load-failed: "<red>Your player data could not be loaded.<newline><gray>Please try again in a moment. If this keeps happening, tell staff."
