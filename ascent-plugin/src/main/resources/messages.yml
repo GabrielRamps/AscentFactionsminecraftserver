@@ -187,6 +187,7 @@ enchant:
   revealed: "<prefix><gray>Revealed <white><enchant></white>: <green><success>% success</green>, <red><destroy>% destroy</red>."
   # <count>
   revealed-stack: "<prefix><gray>Revealed <white><count></white> books."
+  opened-hint: "<prefix><gray>This book is already open. Pick it up and click it onto a piece of gear to apply it."
   apply:
     # <enchant> in each, e.g. "Lifesteal III"; <applies>: what the book fits
     not-gear: "<prefix><red>Books go on gear. <white><enchant></white> fits: <applies>."

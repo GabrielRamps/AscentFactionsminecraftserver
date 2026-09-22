@@ -170,6 +170,12 @@ likeliest), and success and destroy percentages from the tier's ranges in
 exact format. Both kinds are registry-tagged, so `/ascent item lookup` shows
 their history and the reveal is logged as CONSUMED on the unopened id.
 
+The reveal works whatever the crosshair is on: air, a block, a mob or an NPC.
+The game client itself only sends one right-click every 4 ticks (5 per second),
+so very fast clicking drops some clicks; hold the button or click at a steady
+pace. Right-clicking an *opened* book does nothing except print a reminder to
+click it onto gear instead.
+
 Applying a book: pick the opened book up onto your cursor and click it onto a
 piece of gear in your inventory. One roll decides: success puts the enchant on
 the item and rebuilds its lore, a failed roll that also hits the destroy chance
