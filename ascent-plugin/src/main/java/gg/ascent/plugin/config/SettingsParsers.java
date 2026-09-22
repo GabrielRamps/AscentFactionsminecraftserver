@@ -262,7 +262,10 @@ public final class SettingsParsers {
           new EnchantsSettings.Alchemist(
               root.section("alchemist").integerAtLeast("dust-cost-levels", 0));
     }
-    return wrap(root, "tiers", () -> new EnchantsSettings(out, enchants, tinkerer, alchemist));
+    EnchantsSettings.Tinkerer fixedTinkerer = tinkerer;
+    EnchantsSettings.Alchemist fixedAlchemist = alchemist;
+    return wrap(
+        root, "tiers", () -> new EnchantsSettings(out, enchants, fixedTinkerer, fixedAlchemist));
   }
 
   /** One catalog entry. Every failure names the enchant and the field (PRD E3-S1). */
