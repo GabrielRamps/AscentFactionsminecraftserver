@@ -86,6 +86,12 @@ Sprint 1, the core platform (Epic 1).
   loader validates every field and refuses to enable the plugin on a malformed
   entry, naming the enchant and the field. `EnchantDefinition`, `ItemTarget`
   and `EffectType` join the API.
+- Books (E3-S2). `EnchantService.createUnopenedBook` and `reveal`: right-click
+  reveals one, sneak and right-click the stack; the roll picks a random enchant
+  of the tier, a level weighted 1/level, and success and destroy from the tier
+  ranges, all proven by tests. Opened books carry enchant, level, success and
+  destroy in their data and the PRD's exact lore. `/ascent give <player> books
+  <tier> [amount]` hands out unopened books.
 - Lore renderer (E11-S3). One `LoreRenderer` writes all custom item lore:
   enchants by tier then name with the tier's color, `PROTECTED` when scrolled,
   a kind footer, and a `[n]` enchant count on the name. Idempotent.

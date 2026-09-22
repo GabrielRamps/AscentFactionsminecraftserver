@@ -96,7 +96,8 @@ below says what the command does and which story added it.
 | `/ascent reload` | Re-read every YAML file without a restart; reports any file that failed and kept its old values | E1-S1 |
 | `/ascent give <player> money <amount>` | Add money; works for offline players. `k`, `m` and `b` suffixes are accepted (`2k`, `3m`); whole numbers only, so write `1500k` rather than `1.5m` | E1-S6 |
 | `/ascent give <player> xp <amount>` | Add rank XP to an online player. Until E2-S1 this only moves the counters; no rank-up fires | E1-S6 |
-| `/ascent give <player> books\|dust\|scrolls\|spawners` | Reserved; answers "not yet" until Epics 3 and 4 | E1-S6 |
+| `/ascent give <player> books <tier> [amount]` | Unopened books of a tier (SIMPLE, UNIQUE, ELITE, ULTIMATE, LEGENDARY), up to 64 | E3-S2 |
+| `/ascent give <player> dust\|scrolls\|spawners` | Reserved; answers "not yet" until E3-S5 and Epic 5 | E1-S6 |
 | `/ascent rank set <player> <1-100>` | Set an online player's rank (XP toward next resets to 0) | E1-S6 |
 | `/ascent rank add <player> <n>` | Move an online player's rank by `n`, negative allowed, clamped to 1..100 | E1-S6 |
 | `/ascent debug tps` | TPS over 1/5/15 minutes and ms per tick | E1-S6 |
@@ -155,6 +156,18 @@ effect type with per-level numbers. Numbers are ours to tune. Change one, save,
 field, keeps the previous catalog on reload, and stops the plugin from
 enabling at boot: the catalog is not something to run half-loaded. Books that
 use the catalog arrive with E3-S2; effects with E3-S4.
+
+## Books
+
+An unopened book is a plain book named after its tier. Right-click it to reveal
+one; sneak and right-click to reveal the whole stack. The reveal picks a random
+enchant of that tier, a level weighted toward the low end (level 1 is the
+likeliest), and success and destroy percentages from the tier's ranges in
+`enchants.yml`. The opened book is an enchanted book whose lore is the PRD's
+exact format. Both kinds are registry-tagged, so `/ascent item lookup` shows
+their history and the reveal is logged as CONSUMED on the unopened id.
+
+Applying a book onto gear is E3-S3.
 
 ## Personal mines
 

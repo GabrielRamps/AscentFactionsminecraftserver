@@ -14,7 +14,7 @@ ascent:
   # <player>
   not-online: "<prefix><red><player> must be online for that."
   give:
-    usage: "<prefix><gray>Usage: <white>/ascent give <player> <money|xp|books|dust|scrolls|spawners> [amount]"
+    usage: "<prefix><gray>Usage: <white>/ascent give <player> <money|xp> <amount> <dark_gray>| <white>/ascent give <player> books <tier> [amount]"
     bad-amount: "<prefix><red>Amount must be a whole number of at least 1."
     # <kind>: what was asked for
     not-yet: "<prefix><yellow>Giving <kind> arrives with the enchant and spawner epics; not available yet."
@@ -22,6 +22,9 @@ ascent:
     money: "<prefix><green>Gave <amount> to <white><player></white>; balance is now <balance>."
     # <player>, <amount>, <xp>
     xp: "<prefix><green>Gave <amount> XP to <white><player></white>; they now have <xp> toward the next rank."
+    bad-tier: "<prefix><red>Tier must be one of SIMPLE, UNIQUE, ELITE, ULTIMATE, LEGENDARY."
+    # <player>, <amount>, <tier>
+    books: "<prefix><green>Gave <amount> unopened <tier> book(s) to <white><player></white>."
   rank:
     usage: "<prefix><gray>Usage: <white>/ascent rank <set|add> <player> <number>"
     # <max>
@@ -171,6 +174,12 @@ sell:
   line: "<dark_gray> - <gray><count>x <white><item> <dark_gray>for <green><total>"
   # <total>, <balance>
   total: "<prefix><green>+<total></green> <gray>(balance <white><balance></white>)"
+
+enchant:
+  # <enchant>: "Lifesteal III"; <success>, <destroy>: percents
+  revealed: "<prefix><gray>Revealed <white><enchant></white>: <green><success>% success</green>, <red><destroy>% destroy</red>."
+  # <count>
+  revealed-stack: "<prefix><gray>Revealed <white><count></white> books."
 
 alerts:
   # Sent to everyone with ascent.staff.alerts.

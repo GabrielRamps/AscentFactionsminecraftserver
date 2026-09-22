@@ -3,6 +3,7 @@ package gg.ascent.plugin.command;
 import gg.ascent.api.config.ConfigService;
 import gg.ascent.api.config.ReloadReport;
 import gg.ascent.api.db.DbStats;
+import gg.ascent.api.enchant.Tier;
 import gg.ascent.api.item.ItemEventRecord;
 import gg.ascent.api.item.ItemRecord;
 import gg.ascent.api.item.ItemRegistry;
@@ -169,7 +170,34 @@ public final class AscentCommand implements CommandExecutor, TabCompleter {
             Placeholder.unparsed("amount", String.valueOf(amount)),
             Placeholder.unparsed("xp", String.valueOf(result.value())));
       }
-      case "books", "dust", "scrolls", "spawners" ->
+      case "books" -> {
+        Tier tier = null;
+        if (args.length >= 4) {
+          try {
+            tier = Tier.valueOf(args[3].toUpperCase(Locale.ROOT));
+          } catch (IllegalArgumentException ignored) {
+            // reported below
+          }
+        }
+        if (tier == null) {
+          messages.send(sender, "ascent.give.bad-tier");
+          return;
+        }
+        long amount = args.length >= 5 ? parseLong(args[4]) : 1;
+        if (amount < 1 || amount > 64) {
+          messages.send(sender, "ascent.give.bad-amount");
+          return;
+        }
+        Result result = admin.giveBooks(actor, target, tier, (int) amount);
+        report(
+            sender,
+            result,
+            "ascent.give.books",
+            player(target),
+            Placeholder.unparsed("amount", String.valueOf(amount)),
+            Placeholder.unparsed("tier", tier.name()));
+      }
+      case "dust", "scrolls", "spawners" ->
           messages.send(sender, "ascent.give.not-yet", Placeholder.unparsed("kind", kind));
       default -> messages.send(sender, "ascent.give.usage");
     }
@@ -412,6 +440,10 @@ public final class AscentCommand implements CommandExecutor, TabCompleter {
           switch (args.length) {
             case 2 -> onlineNames(args[1]);
             case 3 -> filter(GIVE_KINDS, args[2]);
+            case 4 ->
+                args[2].equalsIgnoreCase("books")
+                    ? filter(List.of("simple", "unique", "elite", "ultimate", "legendary"), args[3])
+                    : List.of();
             default -> List.of();
           };
       case "rank" ->

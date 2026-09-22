@@ -5,6 +5,7 @@ import gg.ascent.api.config.ConfigService;
 import gg.ascent.api.db.DbExecutor;
 import gg.ascent.api.economy.EconomyService;
 import gg.ascent.api.economy.SellMultiplierService;
+import gg.ascent.api.enchant.EnchantService;
 import gg.ascent.api.item.ItemRegistry;
 import gg.ascent.api.kit.KitService;
 import gg.ascent.api.message.Messages;
@@ -30,6 +31,7 @@ final class AscentApiImpl implements AscentApi {
   private final MineService mines;
   private final ProgressBus progress;
   private final SellMultiplierService sellMultiplier;
+  private final EnchantService enchants;
   private volatile boolean ready;
 
   AscentApiImpl(
@@ -45,7 +47,8 @@ final class AscentApiImpl implements AscentApi {
       KitService kits,
       MineService mines,
       ProgressBus progress,
-      SellMultiplierService sellMultiplier) {
+      SellMultiplierService sellMultiplier,
+      EnchantService enchants) {
     this.plugin = plugin;
     this.config = config;
     this.messages = messages;
@@ -59,6 +62,7 @@ final class AscentApiImpl implements AscentApi {
     this.mines = mines;
     this.progress = progress;
     this.sellMultiplier = sellMultiplier;
+    this.enchants = enchants;
   }
 
   @Override
@@ -129,6 +133,11 @@ final class AscentApiImpl implements AscentApi {
   @Override
   public SellMultiplierService sellMultiplier() {
     return sellMultiplier;
+  }
+
+  @Override
+  public EnchantService enchants() {
+    return enchants;
   }
 
   void markReady() {

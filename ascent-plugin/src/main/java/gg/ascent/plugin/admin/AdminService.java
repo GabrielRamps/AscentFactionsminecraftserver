@@ -3,6 +3,8 @@ package gg.ascent.plugin.admin;
 import gg.ascent.api.config.ConfigService;
 import gg.ascent.api.economy.EconomyService;
 import gg.ascent.api.economy.TxReason;
+import gg.ascent.api.enchant.EnchantService;
+import gg.ascent.api.enchant.Tier;
 import gg.ascent.api.player.PlayerProfile;
 import gg.ascent.api.player.PlayerService;
 import gg.ascent.api.player.PlayerSnapshot;
@@ -40,20 +42,47 @@ public final class AdminService {
   private final PlayerService players;
   private final EconomyService economy;
   private final RankService ranks;
+  private final EnchantService enchants;
+  private final ItemGiver giver;
   private final ConfigService config;
   private final AdminActionLog log;
+
+  /** Puts an item stack in an online player's inventory, dropping what does not fit. */
+  @FunctionalInterface
+  public interface ItemGiver {
+    void give(UUID player, org.bukkit.inventory.ItemStack stack);
+  }
 
   public AdminService(
       PlayerService players,
       EconomyService economy,
       RankService ranks,
+      EnchantService enchants,
+      ItemGiver giver,
       ConfigService config,
       AdminActionLog log) {
     this.players = players;
     this.economy = economy;
     this.ranks = ranks;
+    this.enchants = enchants;
+    this.giver = giver;
     this.config = config;
     this.log = log;
+  }
+
+  /** {@code /ascent give <player> books <tier> [amount]}: unopened books to an online player. */
+  public Result giveBooks(UUID actor, String targetName, Tier tier, int amount) {
+    if (amount < 1 || amount > 64) {
+      return Result.of(Outcome.BAD_AMOUNT);
+    }
+    Optional<PlayerProfile> target = onlineByName(targetName);
+    if (target.isEmpty()) {
+      return Result.of(Outcome.NOT_ONLINE);
+    }
+    PlayerProfile profile = target.get();
+    giver.give(profile.uuid(), enchants.createUnopenedBook(tier, amount, actor, "admin"));
+    log.record(actor, "give.books", profile.name(), args("tier", tier.name(), "amount", amount));
+    return new Result(Outcome.OK, amount);
   }
 
   /** {@code /ascent give <player> money <amount>}: works for offline players too. */

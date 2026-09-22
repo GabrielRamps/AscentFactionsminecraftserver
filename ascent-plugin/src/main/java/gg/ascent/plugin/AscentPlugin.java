@@ -19,6 +19,8 @@ import gg.ascent.plugin.economy.EconomyServiceImpl;
 import gg.ascent.plugin.economy.SellCommand;
 import gg.ascent.plugin.economy.SqlTransactionRepository;
 import gg.ascent.plugin.economy.VaultHook;
+import gg.ascent.plugin.enchant.BookListener;
+import gg.ascent.plugin.enchant.EnchantServiceImpl;
 import gg.ascent.plugin.item.DupeScanTask;
 import gg.ascent.plugin.item.ItemAudit;
 import gg.ascent.plugin.item.ItemListener;
@@ -83,6 +85,7 @@ public final class AscentPlugin extends JavaPlugin {
   private KitManager kits;
   private MineWorld mines;
   private SimpleProgressBus progress;
+  private EnchantServiceImpl enchants;
   private ItemRegistryImpl items;
   private DupeScanTask dupeScan;
   private StaffAlerts alerts;
@@ -264,6 +267,9 @@ public final class AscentPlugin extends JavaPlugin {
         .getPluginManager()
         .registerEvents(new KitListener(kits, kitCommand, config, messages), this);
 
+    enchants = new EnchantServiceImpl(config, items, new java.security.SecureRandom());
+    getServer().getPluginManager().registerEvents(new BookListener(enchants, messages), this);
+
     progress = new SimpleProgressBus(getSLF4JLogger());
     ConstantSellMultiplier sellMultiplier = new ConstantSellMultiplier(1.0);
     MinePlots plots =
@@ -305,7 +311,8 @@ public final class AscentPlugin extends JavaPlugin {
             kits,
             mines,
             progress,
-            sellMultiplier);
+            sellMultiplier,
+            enchants);
     AscentProvider.register(api);
     getServer().getServicesManager().register(AscentApi.class, api, this, ServicePriority.Normal);
 
@@ -320,7 +327,22 @@ public final class AscentPlugin extends JavaPlugin {
             this,
             config,
             messages,
-            new AdminService(players, economy, ranks, config, actionLog),
+            new AdminService(
+                players,
+                economy,
+                ranks,
+                enchants,
+                (playerId, stack) -> {
+                  org.bukkit.entity.Player target = getServer().getPlayer(playerId);
+                  if (target != null) {
+                    for (org.bukkit.inventory.ItemStack rest :
+                        target.getInventory().addItem(stack).values()) {
+                      target.getWorld().dropItemNaturally(target.getLocation(), rest);
+                    }
+                  }
+                },
+                config,
+                actionLog),
             actionLog,
             getSLF4JLogger());
     RankCommand rank = new RankCommand(this, ranks, unlocks, rankTop, messages);
@@ -368,6 +390,7 @@ public final class AscentPlugin extends JavaPlugin {
     kits = null;
     mines = null;
     progress = null;
+    enchants = null;
     items = null;
     dupeScan = null;
     alerts = null;

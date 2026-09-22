@@ -57,7 +57,13 @@ class AdminServiceTest {
             players, config, db, (c, p, s, a, m) -> {}, (p, from, to) -> {}, clock, log);
     admin =
         new AdminService(
-            players, economy, rankService, config, new AdminActionLog(db, actions, clock, log));
+            players,
+            economy,
+            rankService,
+            Mockito.mock(gg.ascent.api.enchant.EnchantService.class),
+            (player, stack) -> {},
+            config,
+            new AdminActionLog(db, actions, clock, log));
     players.preLogin(STEVE, "Steve");
     players.join(STEVE, "Steve");
     repo.rows.put(GHOST, PlayerSnapshot.fresh(GHOST, "Ghost", 5, clock.instant()));

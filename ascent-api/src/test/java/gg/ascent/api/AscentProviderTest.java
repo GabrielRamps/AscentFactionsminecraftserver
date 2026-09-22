@@ -9,6 +9,7 @@ import gg.ascent.api.config.ConfigService;
 import gg.ascent.api.db.DbExecutor;
 import gg.ascent.api.economy.EconomyService;
 import gg.ascent.api.economy.SellMultiplierService;
+import gg.ascent.api.enchant.EnchantService;
 import gg.ascent.api.item.ItemRegistry;
 import gg.ascent.api.kit.KitService;
 import gg.ascent.api.message.Messages;
@@ -91,6 +92,11 @@ class AscentProviderTest {
 
         @Override
         public SellMultiplierService sellMultiplier() {
+          throw new UnsupportedOperationException("not needed by this test");
+        }
+
+        @Override
+        public EnchantService enchants() {
           throw new UnsupportedOperationException("not needed by this test");
         }
       };
