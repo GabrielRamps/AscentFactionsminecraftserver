@@ -86,7 +86,7 @@ public final class BookLore {
     };
   }
 
-  static String tierName(Tier tier) {
+  public static String tierName(Tier tier) {
     String word = tier.name().toLowerCase(Locale.ROOT);
     return Character.toUpperCase(word.charAt(0)) + word.substring(1);
   }
