@@ -33,6 +33,10 @@ commands:
     description: The richest players.
     usage: /baltop
     permission: ascent.economy.use
+  rank:
+    description: Your rank, the leaderboard, and what each rank unlocks.
+    usage: /rank [top|unlocks]
+    permission: ascent.rank.use
 
 permissions:
   ascent.admin:
@@ -40,6 +44,9 @@ permissions:
     default: op
   ascent.economy.use:
     description: /bal, /pay and /baltop.
+    default: true
+  ascent.rank.use:
+    description: /rank, /rank top and /rank unlocks.
     default: true
   ascent.staff.alerts:
     description: Receive dupe and other staff alerts in game.

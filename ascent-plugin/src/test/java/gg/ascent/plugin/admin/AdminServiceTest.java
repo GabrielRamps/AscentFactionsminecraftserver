@@ -12,6 +12,7 @@ import gg.ascent.plugin.config.SettingsParsers;
 import gg.ascent.plugin.config.TestYamlAccess;
 import gg.ascent.plugin.economy.EconomyServiceImpl;
 import gg.ascent.plugin.player.PlayerManager;
+import gg.ascent.plugin.rank.RankServiceImpl;
 import gg.ascent.plugin.testing.FakeDbExecutor;
 import gg.ascent.plugin.testing.InMemoryPlayerRepository;
 import gg.ascent.plugin.testing.MutableClock;
@@ -51,7 +52,12 @@ class AdminServiceTest {
     RanksSettings ranks = SettingsParsers.ranks(TestYamlAccess.bundled("ranks.yml"));
     ConfigService config = Mockito.mock(ConfigService.class);
     Mockito.when(config.ranks()).thenReturn(ranks);
-    admin = new AdminService(players, economy, config, new AdminActionLog(db, actions, clock, log));
+    RankServiceImpl rankService =
+        new RankServiceImpl(
+            players, config, db, (c, p, s, a, m) -> {}, (p, from, to) -> {}, clock, log);
+    admin =
+        new AdminService(
+            players, economy, rankService, config, new AdminActionLog(db, actions, clock, log));
     players.preLogin(STEVE, "Steve");
     players.join(STEVE, "Steve");
     repo.rows.put(GHOST, PlayerSnapshot.fresh(GHOST, "Ghost", 5, clock.instant()));
@@ -95,9 +101,12 @@ class AdminServiceTest {
   void giveXpNeedsAnOnlinePlayer() {
     assertEquals(new Result(Outcome.OK, 250), admin.giveXp(STAFF, "Steve", 250));
     assertEquals(250, players.require(STEVE).xpTotal());
+    // 400 XP is rank 2 on the bundled curve: XP now goes through the ladder.
+    assertEquals(new Result(Outcome.OK, 100), admin.giveXp(STAFF, "Steve", 250));
+    assertEquals(2, players.require(STEVE).rank());
     assertEquals(Outcome.NOT_ONLINE, admin.giveXp(STAFF, "Ghost", 1).outcome());
     assertEquals(Outcome.BAD_AMOUNT, admin.giveXp(STAFF, "Steve", 0).outcome());
-    assertEquals(1, actions.rows.size());
+    assertEquals(2, actions.rows.size());
   }
 
   @Test

@@ -112,11 +112,31 @@ Player commands you can use to check economy stories (permission
 | `/bal [player]` | Your balance, or anyone's who has ever joined | E1-S4 |
 | `/pay <player> <amount>` | Send money; the target may be offline | E1-S4 |
 | `/baltop` | Top 10 balances, refreshed every 60 seconds | E1-S4 |
+| `/rank` | Your rank, a progress bar, and the next unlock | E2-S1 |
+| `/rank top` | Top 10 ranks, refreshed every 60 seconds | E2-S1 |
+| `/rank unlocks` | Every threshold on the ladder with ✔/✘ for you | E2-S2 |
 
 **Verified 2026-09-22** on Paper 1.21.11 build 132 by the owner: first join
 created the row with $1,000; `/ascent give money`, `/ascent rank set`,
 `/baltop` and `/ascent debug db` answered as documented; the balance survived
 a rejoin and a full server restart. Closes E1-S2, E1-S3, E1-S4 and E1-S6.
+
+**Verified 2026-09-22** by the owner: `/ascent debug items` and
+`/ascent item lookup` answer as documented, and the Discord webhook from
+`.env` reports as configured. Closes E1-S5.
+
+## Rank ladder
+
+Rank XP is separate from vanilla XP. Sources and the curve live in
+`ranks.yml`; `xp_log` records every grant aggregated per minute and source.
+The fastest way to see the ladder work is `/ascent give <you> xp 400`, which
+is exactly rank 2 on the default curve: expect the chat line, a title and the
+level-up sound. PvP kills grant XP today; mining, spawners, events and
+contracts plug in as their epics land.
+
+```sql
+SELECT source, SUM(amount) FROM xp_log WHERE player_uuid = '<uuid>' GROUP BY source;
+```
 
 ## Item registry and dupe alerts
 

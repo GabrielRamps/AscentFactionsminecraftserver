@@ -100,6 +100,37 @@ lore:
   # <count>: enchants on the item; appended to the display name
   name-count: "<gray>[<count>]"
 
+rank:
+  usage: "<prefix><gray>Usage: <white>/rank [top|unlocks]"
+  console: "<prefix><gray>Console has no rank. Try <white>/rank top"
+  show:
+    # <rank>, <max>, <xp>, <needed>, <percent>, <bar>, <banked>
+    progress: "<prefix><gray>Rank <gold><rank></gold><dark_gray>/<max> <green><bar> <white><percent>% <dark_gray>(<xp>/<needed> XP)"
+    top: "<prefix><gray>Rank <gold><rank></gold><dark_gray>/<max> <gold>MAX <gray>with <white><banked></white> XP banked for prestige."
+    # <rank>, <unlock>
+    next: "<dark_gray>  Next: <gray>rank <white><rank></white> unlocks <unlock>"
+  up:
+    # <rank>, <previous>
+    chat: "<prefix><gold><bold>RANK UP!</bold> <gray>You are now rank <white><rank></white>."
+    title: "<gold><bold>RANK <rank>"
+    subtitle: "<gray>Rank <previous> <dark_gray>➜ <white>Rank <rank>"
+  top:
+    header: "<prefix><gold>Top ranks"
+    empty: "<gray>Nobody has ranked up yet."
+    # <position>, <player>, <rank>, <xp>
+    entry: "<dark_gray> <position>. <white><player> <dark_gray>- <gold>Rank <rank> <dark_gray>(<xp> XP in)"
+  unlocks:
+    header: "<prefix><gold>Rank unlocks"
+    # <rank>, <unlock>
+    open: "<dark_gray> <green>✔ <gray>Rank <white><rank></white>: <unlock>"
+    locked: "<dark_gray> <red>✘ <gray>Rank <white><rank></white>: <unlock>"
+  # <name> in each
+  unlock:
+    enchant-slot: "<aqua><name> enchant slots per item"
+    book-tier: "<aqua><name> books at the Enchanter"
+    mine-tier: "<aqua>Mine tier <name>"
+    kit: "<aqua>/kit <name>"
+
 alerts:
   # Sent to everyone with ascent.staff.alerts.
   # <item>, <observed>, <created>, <holders>

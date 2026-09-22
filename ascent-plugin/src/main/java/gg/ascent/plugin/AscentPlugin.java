@@ -13,7 +13,6 @@ import gg.ascent.plugin.command.AscentCommand;
 import gg.ascent.plugin.config.YamlConfigService;
 import gg.ascent.plugin.db.BukkitMainThread;
 import gg.ascent.plugin.db.Database;
-import gg.ascent.plugin.economy.BaltopCache;
 import gg.ascent.plugin.economy.EconomyCommands;
 import gg.ascent.plugin.economy.EconomyServiceImpl;
 import gg.ascent.plugin.economy.SqlTransactionRepository;
@@ -23,10 +22,19 @@ import gg.ascent.plugin.item.ItemAudit;
 import gg.ascent.plugin.item.ItemListener;
 import gg.ascent.plugin.item.ItemRegistryImpl;
 import gg.ascent.plugin.item.SqlItemRepository;
+import gg.ascent.plugin.leaderboard.Leaderboard;
+import gg.ascent.plugin.leaderboard.Leaderboard.Entry;
 import gg.ascent.plugin.message.YamlMessages;
 import gg.ascent.plugin.player.PlayerListener;
 import gg.ascent.plugin.player.PlayerManager;
 import gg.ascent.plugin.player.SqlPlayerRepository;
+import gg.ascent.plugin.rank.BukkitRankUpNotifier;
+import gg.ascent.plugin.rank.PvpKillTracker;
+import gg.ascent.plugin.rank.PvpListener;
+import gg.ascent.plugin.rank.RankCommand;
+import gg.ascent.plugin.rank.RankServiceImpl;
+import gg.ascent.plugin.rank.SqlXpLogRepository;
+import gg.ascent.plugin.rank.UnlockServiceImpl;
 import gg.ascent.plugin.redis.RedisConnector;
 import java.time.Clock;
 import java.time.Duration;
@@ -52,7 +60,10 @@ public final class AscentPlugin extends JavaPlugin {
   private RedisConnector redis;
   private PlayerManager players;
   private EconomyServiceImpl economy;
-  private BaltopCache baltop;
+  private Leaderboard baltop;
+  private Leaderboard rankTop;
+  private RankServiceImpl ranks;
+  private UnlockServiceImpl unlocks;
   private ItemRegistryImpl items;
   private DupeScanTask dupeScan;
   private StaffAlerts alerts;
@@ -119,14 +130,65 @@ public final class AscentPlugin extends JavaPlugin {
             database.executor(),
             Clock.systemUTC(),
             getSLF4JLogger());
-    baltop = new BaltopCache(database.executor(), playerRepo, redis, getSLF4JLogger());
+    baltop =
+        new Leaderboard(
+            "ascent:baltop",
+            database.executor(),
+            c ->
+                playerRepo.topBalances(c, Leaderboard.SIZE).stream()
+                    .map(e -> new Entry(e.uuid(), e.name(), e.balance()))
+                    .toList(),
+            redis,
+            getSLF4JLogger());
+    rankTop =
+        new Leaderboard(
+            "ascent:ranktop",
+            database.executor(),
+            c ->
+                playerRepo.topRanks(c, Leaderboard.SIZE).stream()
+                    .map(
+                        e ->
+                            new Entry(
+                                e.uuid(),
+                                e.name(),
+                                e.rank() * RankCommand.RANK_SCORE_SCALE + e.xp()))
+                    .toList(),
+            redis,
+            getSLF4JLogger());
     baltop.refresh();
-    // PRD E1-S3/E1-S4: autosave every interval, then rebuild the leaderboard from what was written.
+    rankTop.refresh();
+    // PRD E1-S3/E1-S4/E2-S1: autosave every interval, then rebuild the boards from what was
+    // written.
     long autosaveTicks = Math.max(20, config.core().players().autosaveInterval().toSeconds() * 20);
     getServer()
         .getScheduler()
         .runTaskTimer(
-            this, () -> players.autosave().thenRun(baltop::refresh), autosaveTicks, autosaveTicks);
+            this,
+            () ->
+                players
+                    .autosave()
+                    .thenRun(
+                        () -> {
+                          baltop.refresh();
+                          rankTop.refresh();
+                        }),
+            autosaveTicks,
+            autosaveTicks);
+
+    unlocks = new UnlockServiceImpl(config);
+    ranks =
+        new RankServiceImpl(
+            players,
+            config,
+            database.executor(),
+            new SqlXpLogRepository(),
+            new BukkitRankUpNotifier(getServer(), messages, config, getSLF4JLogger()),
+            Clock.systemUTC(),
+            getSLF4JLogger());
+    getServer()
+        .getPluginManager()
+        .registerEvents(
+            new PvpListener(ranks, config, new PvpKillTracker(Clock.systemUTC())), this);
     if (getServer().getPluginManager().getPlugin("Vault") != null) {
       VaultHook.register(this, economy, players);
     } else {
@@ -158,7 +220,9 @@ public final class AscentPlugin extends JavaPlugin {
     long scanTicks = Math.max(20, config.core().items().dupeScanInterval().toSeconds() * 20);
     getServer().getScheduler().runTaskTimer(this, dupeScan, scanTicks, scanTicks);
 
-    api = new AscentApiImpl(this, config, messages, database.executor(), players, economy, items);
+    api =
+        new AscentApiImpl(
+            this, config, messages, database.executor(), players, economy, items, ranks, unlocks);
     AscentProvider.register(api);
     getServer().getServicesManager().register(AscentApi.class, api, this, ServicePriority.Normal);
 
@@ -173,15 +237,17 @@ public final class AscentPlugin extends JavaPlugin {
             this,
             config,
             messages,
-            new AdminService(players, economy, config, actionLog),
+            new AdminService(players, economy, ranks, config, actionLog),
             actionLog,
             getSLF4JLogger());
+    RankCommand rank = new RankCommand(this, ranks, unlocks, rankTop, messages);
     EconomyCommands money =
         new EconomyCommands(this, economy, players, baltop, messages, getSLF4JLogger());
     if (!bind("ascent", admin, admin)
         || !bind("bal", money, money)
         || !bind("pay", money, money)
-        || !bind("baltop", money, money)) {
+        || !bind("baltop", money, money)
+        || !bind("rank", rank, rank)) {
       getServer().getPluginManager().disablePlugin(this);
       return;
     }
@@ -207,6 +273,9 @@ public final class AscentPlugin extends JavaPlugin {
     }
     economy = null;
     baltop = null;
+    rankTop = null;
+    ranks = null;
+    unlocks = null;
     items = null;
     dupeScan = null;
     alerts = null;

@@ -56,6 +56,16 @@ Sprint 1, the core platform (Epic 1).
 - Config files written by an older build gain any setting a newer build adds,
   copied from the bundled default with its comments; the operator's own values
   are never touched.
+- Rank ladder (E2-S1). `RankService.addXp` moves a player up the curve
+  `round(400 * rank^1.4)`, carrying excess over and banking XP past rank 100
+  for prestige; each rank-up fires `RankUpEvent` with a chat line, title and
+  sound. Every grant lands in `xp_log`, aggregated per minute and source. PvP
+  kills grant XP with the repeat-victim rule; other sources arrive with their
+  epics. `/rank` shows progress and the next unlock, `/rank top` a Redis-backed
+  top 10.
+- Unlock hooks (E2-S2). `UnlockService` answers enchant slot cap, highest book
+  tier, mine tier and open kits from `ranks.yml`, `enchants.yml` and the new
+  `kits.yml`; `/rank unlocks` lists every threshold with ✔/✘.
 - Lore renderer (E11-S3). One `LoreRenderer` writes all custom item lore:
   enchants by tier then name with the tier's color, `PROTECTED` when scrolled,
   a kind footer, and a `[n]` enchant count on the name. Idempotent.
