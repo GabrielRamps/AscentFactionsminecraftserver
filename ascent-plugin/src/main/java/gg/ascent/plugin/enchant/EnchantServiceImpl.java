@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.UUID;
 import java.util.random.RandomGenerator;
 import net.kyori.adventure.text.Component;
@@ -140,6 +141,15 @@ public final class EnchantServiceImpl implements EnchantService {
                         "reason", "reveal", "enchant", roll.enchantId(), "level", roll.level())));
     return createOpenedBook(
         enchant, roll, player, "reveal:" + tier.name().toLowerCase(Locale.ROOT));
+  }
+
+  @Override
+  public ItemStack createOpenedBook(OpenedBook book, @Nullable UUID creator, String reason) {
+    EnchantDefinition def =
+        settings()
+            .enchant(book.enchantId())
+            .orElseThrow(() -> new IllegalArgumentException("unknown enchant " + book.enchantId()));
+    return createOpenedBook(def, book, creator, reason);
   }
 
   /** Builds an opened book carrying {@code roll}. Registry-tagged. */
@@ -539,6 +549,33 @@ public final class EnchantServiceImpl implements EnchantService {
                 Map.of("what", "magic_dust", "percent", d.get().percent(), "success", success)));
     dust.setAmount(dust.getAmount() - 1);
     return true;
+  }
+
+  // --- XP bottles (PRD E3-S7) ---------------------------------------------------------------
+
+  @Override
+  public ItemStack createXpBottle(int levels, int amount, @Nullable UUID creator, String reason) {
+    int l = Math.max(1, levels);
+    ItemStack bottle = new ItemStack(Material.EXPERIENCE_BOTTLE, Math.max(1, Math.min(64, amount)));
+    ItemMeta meta = bottle.getItemMeta();
+    meta.displayName(plain(mini.deserialize(BottleLore.name(l))));
+    List<Component> lines = new ArrayList<>();
+    for (String line : BottleLore.lore(l)) {
+      lines.add(plain(mini.deserialize(line)));
+    }
+    meta.lore(lines);
+    meta.getPersistentDataContainer().set(EnchantKeys.XP_LEVELS, PersistentDataType.INTEGER, l);
+    bottle.setItemMeta(meta);
+    items.tag(bottle, ItemKind.XP_BOTTLE, Map.of("levels", l), creator, reason);
+    return bottle;
+  }
+
+  @Override
+  public OptionalInt xpBottleLevels(@Nullable ItemStack item) {
+    PersistentDataContainer pdc = pdc(item);
+    Integer levels =
+        pdc == null ? null : pdc.get(EnchantKeys.XP_LEVELS, PersistentDataType.INTEGER);
+    return levels == null ? OptionalInt.empty() : OptionalInt.of(levels);
   }
 
   @Override

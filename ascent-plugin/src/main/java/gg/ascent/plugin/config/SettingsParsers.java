@@ -245,7 +245,24 @@ public final class SettingsParsers {
     for (String id : catalog.keys()) {
       enchants.put(id, enchant(catalog.section(id), id));
     }
-    return wrap(root, "tiers", () -> new EnchantsSettings(out, enchants));
+    EnchantsSettings.Tinkerer tinkerer = EnchantsSettings.Tinkerer.DEFAULT;
+    if (root.has("tinkerer")) {
+      Node t = root.section("tinkerer");
+      tinkerer =
+          new EnchantsSettings.Tinkerer(
+              t.integerAtLeast("book-value-percent", 0),
+              t.integerAtLeast("gear-value-percent", 0),
+              t.integerAtLeast("dust-chance-percent", 0),
+              t.enumValue("dust-min-tier", Tier.class),
+              t.intRange("dust-percent", 1, 15));
+    }
+    EnchantsSettings.Alchemist alchemist = EnchantsSettings.Alchemist.DEFAULT;
+    if (root.has("alchemist")) {
+      alchemist =
+          new EnchantsSettings.Alchemist(
+              root.section("alchemist").integerAtLeast("dust-cost-levels", 0));
+    }
+    return wrap(root, "tiers", () -> new EnchantsSettings(out, enchants, tinkerer, alchemist));
   }
 
   /** One catalog entry. Every failure names the enchant and the field (PRD E3-S1). */

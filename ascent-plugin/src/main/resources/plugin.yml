@@ -55,6 +55,14 @@ commands:
     description: Buy unopened enchant books with XP levels.
     usage: /enchanter
     permission: ascent.enchants.use
+  tinkerer:
+    description: Trade opened books and enchanted gear for XP bottles.
+    usage: /tinkerer
+    permission: ascent.enchants.use
+  alchemist:
+    description: Combine two identical books or dusts into a better one.
+    usage: /alchemist
+    permission: ascent.enchants.use
 
 permissions:
   ascent.admin:

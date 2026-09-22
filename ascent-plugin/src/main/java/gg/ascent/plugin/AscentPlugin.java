@@ -32,6 +32,9 @@ import gg.ascent.plugin.enchant.runtime.FighterViews;
 import gg.ascent.plugin.enchant.runtime.PassiveTask;
 import gg.ascent.plugin.enchant.runtime.SafeZones;
 import gg.ascent.plugin.enchant.runtime.Silences;
+import gg.ascent.plugin.enchant.station.AlchemistCommand;
+import gg.ascent.plugin.enchant.station.TinkererCommand;
+import gg.ascent.plugin.enchant.station.XpBottleListener;
 import gg.ascent.plugin.item.DupeScanTask;
 import gg.ascent.plugin.item.ItemAudit;
 import gg.ascent.plugin.item.ItemListener;
@@ -286,6 +289,18 @@ public final class AscentPlugin extends JavaPlugin {
         new EnchanterCommand(enchants, players, unlocks, config, messages);
     getServer().getPluginManager().registerEvents(enchanterCommand, this);
 
+    // PRD E3-S7, E3-S8: the Tinkerer and the Alchemist, and the XP bottles the Tinkerer pays in.
+    TinkererCommand tinkererCommand =
+        new TinkererCommand(
+            this, enchants, config, items, messages, new java.security.SecureRandom());
+    AlchemistCommand alchemistCommand =
+        new AlchemistCommand(this, enchants, config, items, messages);
+    getServer().getPluginManager().registerEvents(tinkererCommand, this);
+    getServer().getPluginManager().registerEvents(alchemistCommand, this);
+    getServer()
+        .getPluginManager()
+        .registerEvents(new XpBottleListener(enchants, items, messages), this);
+
     // PRD E3-S4: the effect runtime. Combat math is pure; these are its Bukkit hooks.
     java.security.SecureRandom effectRandom = new java.security.SecureRandom();
     Silences silences = new Silences();
@@ -417,7 +432,9 @@ public final class AscentPlugin extends JavaPlugin {
         || !bind("kit", kitCommand, kitCommand)
         || !bind("mine", mineCommand, mineCommand)
         || !bind("sell", sellCommand, sellCommand)
-        || !bind("enchanter", enchanterCommand, enchanterCommand)) {
+        || !bind("enchanter", enchanterCommand, enchanterCommand)
+        || !bind("tinkerer", tinkererCommand, tinkererCommand)
+        || !bind("alchemist", alchemistCommand, alchemistCommand)) {
       getServer().getPluginManager().disablePlugin(this);
       return;
     }

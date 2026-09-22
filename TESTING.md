@@ -99,6 +99,7 @@ below says what the command does and which story added it.
 | `/ascent give <player> books <tier> [amount]` | Unopened books of a tier (SIMPLE, UNIQUE, ELITE, ULTIMATE, LEGENDARY), up to 64 | E3-S2 |
 | `/ascent give <player> scrolls [amount]` | White Scrolls | E3-S5 |
 | `/ascent give <player> dust <tier> <percent> [amount]` | Magic Dust for a tier, adding 1 to 15 success points | E3-S5 |
+| `/ascent give <player> xpbottle <levels> [amount]` | XP bottles granting 1 to 1000 vanilla levels each | E3-S7 |
 | `/ascent give <player> spawners` | Reserved; answers "not yet" until Epic 5 | E1-S6 |
 | `/ascent rank set <player> <1-100>` | Set an online player's rank (XP toward next resets to 0) | E1-S6 |
 | `/ascent rank add <player> <n>` | Move an online player's rank by `n`, negative allowed, clamped to 1..100 | E1-S6 |
@@ -123,6 +124,8 @@ Player commands you can use to check economy stories (permission
 | `/mine` | Teleport to your personal mine; builds it on first use, upgrades the tier when your rank allows | E4-S1 |
 | `/sell` | Sell every sellable item in your inventory at `prices.yml` values, with a receipt | E4-S2 |
 | `/enchanter` | Buy unopened books with vanilla XP levels; left-click 1, right-click 8, shift-click 16 | E3-S6 |
+| `/tinkerer` | Trade opened books and enchanted gear for XP bottles; 10% dust chance per Elite+ book | E3-S7 |
+| `/alchemist` | Combine two identical books into the next level, or two dusts into the next tier | E3-S8 |
 
 **Verified 2026-09-22** on Paper 1.21.11 build 132 by the owner: first join
 created the row with $1,000; `/ascent give money`, `/ascent rank set`,
@@ -175,6 +178,34 @@ The game client itself only sends one right-click every 4 ticks (5 per second),
 so very fast clicking drops some clicks; hold the button or click at a steady
 pace. Right-clicking an *opened* book does nothing except print a reminder to
 click it onto gear instead.
+
+**Verified 2026-09-22** by the owner: right-click reveals work on every kind of
+click. Closes E3-S2.
+
+## Stations
+
+The Tinkerer (`/tinkerer`) is a two-pane menu. Put opened books and enchanted
+gear in the left four columns; the right four show what each stack returns
+and the green button at the bottom confirms. An opened book pays 40% of its
+tier's Enchanter cost in XP levels (Simple 4, Unique 8, Elite 14, Ultimate 22,
+Legendary 36); enchanted gear pays half the sum of its enchants' book values.
+Each Elite or better book also has a 10% chance of returning Magic Dust of its
+tier (1 to 8%). Unopened books, scrolls, dust and plain items show a red
+barrier and block the trade until removed (`tinkerer` in `enchants.yml`).
+Anything left in the pane comes back to you when the menu closes.
+
+Payment is XP bottles: custom items that grant their levels when right-clicked
+(sneak to drink a stack). They never throw like vanilla bottles.
+
+The Alchemist (`/alchemist`) takes two items in its two left slots and shows
+the result on the right. Two opened books of the same enchant and level, below
+the enchant's max, become one book a level higher with success and destroy
+averaged, for the tier's Enchanter cost times the level (two Simple level 2
+books cost 20 levels). Two Magic Dusts of one tier become one of the next tier
+with the percent averaged, for a flat 5 levels; Legendary dust cannot go
+higher. The preview is only a picture; the real item lands in your inventory
+when you press Combine. To test alone: `/ascent give <you> books SIMPLE 16`,
+reveal them until two match, then `/xp set <you> 100 levels` in the console.
 
 Applying a book: pick the opened book up onto your cursor and click it onto a
 piece of gear in your inventory. One roll decides: success puts the enchant on

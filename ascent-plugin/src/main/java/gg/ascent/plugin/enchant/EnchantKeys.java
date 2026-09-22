@@ -35,5 +35,8 @@ public final class EnchantKeys {
   /** Magic Dust: the success points it adds. */
   public static final NamespacedKey DUST_PERCENT = new NamespacedKey("ascent", "dust_percent");
 
+  /** XP bottle: the vanilla XP levels it grants. */
+  public static final NamespacedKey XP_LEVELS = new NamespacedKey("ascent", "xp_levels");
+
   private EnchantKeys() {}
 }

@@ -56,7 +56,7 @@ public final class AscentCommand implements CommandExecutor, TabCompleter {
   private static final List<String> SUBCOMMANDS =
       List.of("version", "reload", "give", "rank", "debug", "item");
   private static final List<String> GIVE_KINDS =
-      List.of("money", "xp", "books", "dust", "scrolls", "spawners");
+      List.of("money", "xp", "books", "dust", "scrolls", "xpbottle", "spawners");
   private static final List<String> RANK_OPS = List.of("set", "add");
   private static final List<String> DEBUG_TOPICS = List.of("tps", "db", "items");
   private static final DateTimeFormatter TIME =
@@ -230,6 +230,21 @@ public final class AscentCommand implements CommandExecutor, TabCompleter {
             Placeholder.unparsed("amount", String.valueOf(amount)),
             Placeholder.unparsed("tier", tier.name()),
             Placeholder.unparsed("percent", String.valueOf(percent)));
+      }
+      case "xpbottle" -> {
+        long levels = args.length >= 4 ? parseLong(args[3]) : -1;
+        long amount = args.length >= 5 ? parseLong(args[4]) : 1;
+        if (levels < 1 || levels > 1000 || amount < 1 || amount > 64) {
+          messages.send(sender, "ascent.give.bad-xpbottle");
+          return;
+        }
+        report(
+            sender,
+            admin.giveXpBottles(actor, target, (int) levels, (int) amount),
+            "ascent.give.xpbottle",
+            player(target),
+            Placeholder.unparsed("amount", String.valueOf(amount)),
+            Placeholder.unparsed("levels", String.valueOf(levels)));
       }
       case "spawners" ->
           messages.send(sender, "ascent.give.not-yet", Placeholder.unparsed("kind", kind));

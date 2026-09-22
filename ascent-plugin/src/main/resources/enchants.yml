@@ -37,6 +37,25 @@ tiers:
     destroy: [30, 90]
     min-rank: 40
 
+# The Tinkerer (PRD E3-S7) buys opened books and enchanted gear for XP bottles.
+#   book-value-percent   an opened book pays this % of its tier's xp-levels
+#   gear-value-percent   enchanted gear pays this % of the sum of its enchants' book values
+#   dust-chance-percent  chance per book of dust-min-tier or above to also return
+#                        Magic Dust of the book's tier, with a percent from dust-percent
+# Unopened books, scrolls and dust are not accepted.
+tinkerer:
+  book-value-percent: 40
+  gear-value-percent: 50
+  dust-chance-percent: 10
+  dust-min-tier: ELITE
+  dust-percent: [1, 8]
+
+# The Alchemist (PRD E3-S8) fuses two identical books into the next level for
+# the tier's xp-levels times the books' level, and two dusts of one tier into a
+# dust of the next tier for a flat fee.
+alchemist:
+  dust-cost-levels: 5
+
 # The enchant catalog (PRD E3-S1). One entry per enchant:
 #   display        the name players see
 #   tier           SIMPLE | UNIQUE | ELITE | ULTIMATE | LEGENDARY

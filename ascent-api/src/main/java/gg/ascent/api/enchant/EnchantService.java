@@ -3,6 +3,7 @@ package gg.ascent.api.enchant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.UUID;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
@@ -25,6 +26,14 @@ public interface EnchantService {
    * @throws IllegalArgumentException if {@code unopened} is not an unopened book
    */
   ItemStack reveal(ItemStack unopened, @Nullable UUID player);
+
+  /**
+   * An opened book carrying exactly {@code book}, registry-tagged: what the Alchemist hands out
+   * (PRD E3-S8) and what staff give.
+   *
+   * @throws IllegalArgumentException if the enchant id is not in the catalog
+   */
+  ItemStack createOpenedBook(OpenedBook book, @Nullable UUID creator, String reason);
 
   /** The tier of an unopened book, or empty for anything else. */
   Optional<Tier> unopenedTier(@Nullable ItemStack item);
@@ -100,6 +109,17 @@ public interface EnchantService {
    * @param percent success points it adds, 1 to 15
    */
   record MagicDust(Tier tier, int percent) {}
+
+  // --- XP bottles (PRD E3-S7) ---------------------------------------------------------------
+
+  /**
+   * A registry-tagged XP bottle: a custom item that grants {@code levels} vanilla XP levels when
+   * right-clicked, never a thrown vanilla bottle. What the Tinkerer pays in.
+   */
+  ItemStack createXpBottle(int levels, int amount, @Nullable UUID creator, String reason);
+
+  /** The levels an XP bottle grants, or empty for anything else. */
+  OptionalInt xpBottleLevels(@Nullable ItemStack item);
 
   Optional<EnchantDefinition> definition(String enchantId);
 

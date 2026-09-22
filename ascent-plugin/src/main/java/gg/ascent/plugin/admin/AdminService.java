@@ -146,6 +146,21 @@ public final class AdminService {
     return new Result(Outcome.OK, amount);
   }
 
+  /** {@code /ascent give <player> xpbottle <levels> [amount]}: XP bottles to an online player. */
+  public Result giveXpBottles(UUID actor, String targetName, int levels, int amount) {
+    if (amount < 1 || amount > 64 || levels < 1 || levels > 1000) {
+      return Result.of(Outcome.BAD_AMOUNT);
+    }
+    Optional<PlayerProfile> target = onlineByName(targetName);
+    if (target.isEmpty()) {
+      return Result.of(Outcome.NOT_ONLINE);
+    }
+    giver.give(target.get().uuid(), enchants.createXpBottle(levels, amount, actor, "admin"));
+    log.record(
+        actor, "give.xpbottle", target.get().name(), args("levels", levels, "amount", amount));
+    return new Result(Outcome.OK, amount);
+  }
+
   /** {@code /ascent give <player> xp <amount>}: rank XP through the ladder, rank-ups included. */
   public Result giveXp(UUID actor, String targetName, long amount) {
     if (amount < 1 || amount > 1_000_000_000L) {

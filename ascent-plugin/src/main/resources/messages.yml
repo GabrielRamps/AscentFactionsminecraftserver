@@ -25,6 +25,9 @@ ascent:
     bad-tier: "<prefix><red>Tier must be one of SIMPLE, UNIQUE, ELITE, ULTIMATE, LEGENDARY."
     # <player>, <amount>, <tier>
     books: "<prefix><green>Gave <amount> unopened <tier> book(s) to <white><player></white>."
+    # <player>, <amount>, <levels>
+    xpbottle: "<prefix><green>Gave <amount> XP bottle(s) of <levels> levels to <white><player></white>."
+    bad-xpbottle: "<prefix><red>Usage: /ascent give <player> xpbottle <levels 1-1000> [amount 1-64]"
     # <player>, <amount>
     scrolls: "<prefix><green>Gave <amount> White Scroll(s) to <white><player></white>."
     bad-dust: "<prefix><red>Dust is <white>/ascent give <player> dust <tier> <percent 1-15> [amount]</white>."
@@ -224,6 +227,59 @@ enchanter:
   # <count>, <tier>, <cost>, <levels>
   too-poor: "<prefix><red>You need <white><cost></white> levels for <count> <tier> book(s); you have <levels>."
   bought: "<prefix><green>Bought <white><count></white> <tier> book(s) for <white><cost></white> levels."
+
+tinkerer:
+  console: "<prefix><gray>The Tinkerer is for players."
+  title: "<dark_gray>Tinkerer"
+  divider: "<gray>Offer on the left, returns on the right"
+  filler: " "
+  preview:
+    # <levels>: total for the stack
+    bottle: "<gray>Worth <green><levels></green> XP levels"
+    # <chance>, <tier>
+    dust: "<gray><chance>% chance of <tier> Magic Dust per book"
+    rejected: "<red>Not accepted"
+    rejected-hint: "<gray>Opened books and enchanted gear only."
+  confirm:
+    empty: "<gray>Place items in the left pane"
+    blocked: "<red>Remove the items marked red first"
+    ready: "<green><bold>Confirm trade</bold>"
+    # <items>, <levels>
+    ready-lore: "<gray><items> item(s) for <green><levels></green> XP levels"
+  # <items>, <levels>, <dust> (empty or traded-dust)
+  traded: "<prefix><green>Traded <white><items></white> item(s) for <white><levels></white> XP levels in bottles<dust>."
+  # <dust>: how many
+  traded-dust: " and <white><dust></white> Magic Dust"
+  rejected: "<prefix><red>The Tinkerer only takes opened books and enchanted gear."
+
+alchemist:
+  console: "<prefix><gray>The Alchemist is for players."
+  title: "<dark_gray>Alchemist"
+  plus: "<gray>+"
+  arrow: "<gray>→"
+  filler: " "
+  preview:
+    empty: "<gray>Place two matching books or dusts"
+    mismatch: "<red>These don't combine"
+    mismatch-hint: "<gray>Two books of one enchant and level (below max),"
+    mismatch-hint2: "<gray>or two Magic Dusts of one tier (not Legendary)."
+    # <cost>
+    cost: "<gray>Cost: <green><cost></green> XP levels"
+  confirm:
+    empty: "<gray>Nothing to combine"
+    blocked: "<red>These don't combine"
+    ready: "<green><bold>Combine</bold>"
+    # <cost>, <levels>
+    ready-lore: "<gray>Costs <green><cost></green> levels; you have <white><levels></white>"
+  # <result>, <cost>
+  combined: "<prefix><green>Combined into <white><result></white> for <white><cost></white> levels."
+  # <cost>, <levels>
+  too-poor: "<prefix><red>You need <white><cost></white> levels to combine these; you have <levels>."
+  mismatch: "<prefix><red>Those two don't combine."
+
+xp-bottle:
+  # <levels>
+  used: "<prefix><green>+<levels> XP levels."
 
 alerts:
   # Sent to everyone with ascent.staff.alerts.

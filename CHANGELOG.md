@@ -119,6 +119,18 @@ Sprint 1, the core platform (Epic 1).
   passive potions and extra hearts on worn gear. Auto Smelt, Telepathy,
   Reforged, Experience and Lightning work on tools and bows. Safezones are a
   seam Epic 9 fills.
+- Tinkerer (E3-S7). `/tinkerer` opens a two-pane menu: opened books pay 40% of
+  their tier's Enchanter cost in XP levels, enchanted gear half the sum of its
+  enchants' book values, each Elite+ book has a 10% chance of adding Magic Dust
+  of its tier; unopened books, scrolls and dust are refused. Payment is custom
+  XP bottles that grant levels on right-click and never throw. The table is
+  `tinkerer` in `enchants.yml`; `/ascent give <player> xpbottle` hands out
+  bottles.
+- Alchemist (E3-S8). `/alchemist` fuses two books of one enchant and level into
+  the next level (success and destroy averaged) for the tier's Enchanter cost
+  times the level, and two Magic Dusts of one tier into the next tier for a
+  flat fee (`alchemist.dust-cost-levels`). Legendary dust and max-level books
+  do not combine.
 - Lore renderer (E11-S3). One `LoreRenderer` writes all custom item lore:
   enchants by tier then name with the tier's color, `PROTECTED` when scrolled,
   a kind footer, and a `[n]` enchant count on the name. Idempotent.
