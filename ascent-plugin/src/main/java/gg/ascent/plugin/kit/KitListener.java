@@ -46,8 +46,10 @@ public final class KitListener implements Listener {
       return;
     }
     event.setCancelled(true);
+    // Compare by holder, not by object: Bukkit may hand out a fresh wrapper per call.
     if (!(event.getWhoClicked() instanceof Player player)
-        || event.getClickedInventory() != menu.getInventory()) {
+        || event.getClickedInventory() == null
+        || !(event.getClickedInventory().getHolder() instanceof KitMenu)) {
       return;
     }
     String kitId = menu.kitAt(event.getSlot());
