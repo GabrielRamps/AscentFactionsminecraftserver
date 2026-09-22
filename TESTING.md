@@ -208,6 +208,9 @@ higher. The preview is only a picture; the real item lands in your inventory
 when you press Combine. To test alone: `/ascent give <you> books SIMPLE 16`,
 reveal them until two match, then `/xp set <you> 100 levels` in the console.
 
+**Verified 2026-09-22** by the owner: `/tinkerer` pays out and `/alchemist`
+combines as documented. Closes E3-S7 and E3-S8.
+
 Applying a book: pick the opened book up onto your cursor and click it onto a
 piece of gear in your inventory. One roll decides: success puts the enchant on
 the item and rebuilds its lore, a failed roll that also hits the destroy chance
