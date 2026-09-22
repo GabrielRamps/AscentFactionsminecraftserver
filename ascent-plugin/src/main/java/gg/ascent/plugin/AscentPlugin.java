@@ -24,6 +24,14 @@ import gg.ascent.plugin.enchant.BookListener;
 import gg.ascent.plugin.enchant.EnchantServiceImpl;
 import gg.ascent.plugin.enchant.EnchanterCommand;
 import gg.ascent.plugin.enchant.SqlEnchantRollRepository;
+import gg.ascent.plugin.enchant.runtime.CombatResolver;
+import gg.ascent.plugin.enchant.runtime.Cooldowns;
+import gg.ascent.plugin.enchant.runtime.EffectApplier;
+import gg.ascent.plugin.enchant.runtime.EffectListener;
+import gg.ascent.plugin.enchant.runtime.FighterViews;
+import gg.ascent.plugin.enchant.runtime.PassiveTask;
+import gg.ascent.plugin.enchant.runtime.SafeZones;
+import gg.ascent.plugin.enchant.runtime.Silences;
 import gg.ascent.plugin.item.DupeScanTask;
 import gg.ascent.plugin.item.ItemAudit;
 import gg.ascent.plugin.item.ItemListener;
@@ -278,6 +286,33 @@ public final class AscentPlugin extends JavaPlugin {
         new EnchanterCommand(enchants, players, unlocks, config, messages);
     getServer().getPluginManager().registerEvents(enchanterCommand, this);
 
+    // PRD E3-S4: the effect runtime. Combat math is pure; these are its Bukkit hooks.
+    java.security.SecureRandom effectRandom = new java.security.SecureRandom();
+    Silences silences = new Silences();
+    Cooldowns cooldowns = new Cooldowns();
+    FighterViews views = new FighterViews(enchants, config, silences);
+    EffectApplier applier = new EffectApplier(this, silences, getSLF4JLogger());
+    getServer()
+        .getPluginManager()
+        .registerEvents(
+            new EffectListener(
+                views,
+                new CombatResolver(effectRandom, cooldowns),
+                applier,
+                cooldowns,
+                silences,
+                SafeZones.NONE,
+                items,
+                effectRandom),
+            this);
+    getServer()
+        .getScheduler()
+        .runTaskTimer(this, new PassiveTask(getServer(), views, applier, SafeZones.NONE), 20L, 20L);
+    getServer()
+        .getScheduler()
+        .runTaskTimer(
+            this, () -> cooldowns.prune(getServer().getCurrentTick()), 20L * 60, 20L * 60);
+
     kits =
         new KitManager(
             config,
@@ -317,7 +352,7 @@ public final class AscentPlugin extends JavaPlugin {
     plots.load();
     getServer()
         .getPluginManager()
-        .registerEvents(new MineListener(mines, ranks, progress, config, messages), this);
+        .registerEvents(new MineListener(mines, ranks, enchants, progress, config, messages), this);
     getServer().getScheduler().runTaskTimer(this, mines::sweep, 20L * 30, 20L * 30);
 
     api =

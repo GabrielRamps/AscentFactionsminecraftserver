@@ -110,6 +110,15 @@ Sprint 1, the core platform (Epic 1).
   allows, priced in vanilla XP levels from `enchants.yml`; left-click buys 1,
   right-click 8, shift-click 16 at no discount; too few levels is a red message
   with the menu kept open.
+- Effect runtime (E3-S4). Hits between players resolve through a pure
+  `CombatResolver`: attacker multipliers, then armor reductions summed and
+  capped at 60%, then lifesteal and heals; potion, fire, knockback and Silence
+  procs honour per-player cooldowns and chances, conditions (self/target below
+  a health fraction, what each side holds, projectiles) gate them, and a
+  silenced player's enchants do nothing. A one-second passive tick keeps
+  passive potions and extra hearts on worn gear. Auto Smelt, Telepathy,
+  Reforged, Experience and Lightning work on tools and bows. Safezones are a
+  seam Epic 9 fills.
 - Lore renderer (E11-S3). One `LoreRenderer` writes all custom item lore:
   enchants by tier then name with the tier's color, `PROTECTED` when scrolled,
   a kind footer, and a `[n]` enchant count on the name. Idempotent.

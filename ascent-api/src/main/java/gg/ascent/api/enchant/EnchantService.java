@@ -62,6 +62,9 @@ public interface EnchantService {
   /** Rebuilds the item's lore from what it carries. The one place gear lore is written. */
   void refreshLore(ItemStack gear);
 
+  /** Extra rank XP percent a tool grants for this block, after its chance roll; 0 for none. */
+  double bonusXpPercent(@Nullable ItemStack tool);
+
   // --- White Scrolls and Magic Dust (PRD E3-S5) --------------------------------------------
 
   /** A registry-tagged White Scroll stack. */

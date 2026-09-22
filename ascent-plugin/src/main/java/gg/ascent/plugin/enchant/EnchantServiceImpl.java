@@ -542,6 +542,18 @@ public final class EnchantServiceImpl implements EnchantService {
   }
 
   @Override
+  public double bonusXpPercent(@Nullable ItemStack tool) {
+    List<gg.ascent.plugin.enchant.runtime.GearEnchant> gear = new ArrayList<>();
+    for (Map.Entry<String, Integer> e : getEnchants(tool).entrySet()) {
+      settings()
+          .enchant(e.getKey())
+          .ifPresent(
+              def -> gear.add(new gg.ascent.plugin.enchant.runtime.GearEnchant(def, e.getValue())));
+    }
+    return gg.ascent.plugin.enchant.runtime.ToolEffects.bonusXpPercent(gear, random);
+  }
+
+  @Override
   public Optional<EnchantDefinition> definition(String enchantId) {
     return settings().enchant(enchantId);
   }

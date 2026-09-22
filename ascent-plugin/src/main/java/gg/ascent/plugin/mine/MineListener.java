@@ -1,6 +1,7 @@
 package gg.ascent.plugin.mine;
 
 import gg.ascent.api.config.ConfigService;
+import gg.ascent.api.enchant.EnchantService;
 import gg.ascent.api.message.Messages;
 import gg.ascent.api.progress.ObjectiveType;
 import gg.ascent.api.progress.ProgressBus;
@@ -33,6 +34,7 @@ public final class MineListener implements Listener {
 
   private final MineWorld mines;
   private final RankService ranks;
+  private final EnchantService enchants;
   private final ProgressBus progress;
   private final ConfigService config;
   private final Messages messages;
@@ -41,11 +43,13 @@ public final class MineListener implements Listener {
   public MineListener(
       MineWorld mines,
       RankService ranks,
+      EnchantService enchants,
       ProgressBus progress,
       ConfigService config,
       Messages messages) {
     this.mines = mines;
     this.ranks = ranks;
+    this.enchants = enchants;
     this.progress = progress;
     this.config = config;
     this.messages = messages;
@@ -68,7 +72,8 @@ public final class MineListener implements Listener {
     }
     Plot plot = mine.get();
     long xp = config.ranks().sources().mineBlockByTier().getOrDefault(plot.tier(), 0L);
-    ranks.addXp(player.getUniqueId(), XpSource.MINE_BLOCK, xp);
+    double bonus = enchants.bonusXpPercent(player.getInventory().getItemInMainHand());
+    ranks.addXp(player.getUniqueId(), XpSource.MINE_BLOCK, Math.round(xp * (1.0 + bonus / 100.0)));
     progress.publish(player.getUniqueId(), ObjectiveType.MINE_BLOCKS, 1, block.getType().name());
     mines.blockMined(plot);
   }

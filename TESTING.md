@@ -193,6 +193,24 @@ Both are registry-tagged. The Enchanter (`/enchanter`) sells unopened books for
 vanilla XP levels at the tier costs in `enchants.yml`; `/xp set <you> 100 levels`
 in the console is the quick way to test it.
 
+## Enchant effects
+
+Enchants act as soon as they are on gear. On every hit between players (or a
+player and a mob) the runtime applies the attacker's multipliers, then the
+victim's armor reductions summed across pieces and capped at 60%, then heals;
+potion procs, fire, knockback and Silence follow, each respecting its
+`cooldown-ticks` and chance. A silenced player's enchants do nothing until the
+timer runs out. Passive effects (Gears, Springs, Aquatic, Glowing, Haste,
+Overload's extra hearts) refresh every second while the piece is worn or held.
+Tools: Auto Smelt drops ingots, Telepathy sends drops to your inventory,
+Reforged skips durability loss, Experience adds rank XP in the mines, Lightning
+strikes where arrows land.
+
+To test alone: put Gears III on boots and feel the speed; put Overload on a
+chestplate and watch your hearts; hit a mob with a Lifesteal sword at low health.
+Hit effects between players need a second account. No effects run in safezones
+once Epic 9 defines them.
+
 ## Personal mines
 
 `/mine` puts you in a dedicated void world called `mines`, in your own 64x64
