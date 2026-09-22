@@ -556,8 +556,12 @@ public final class EnchantServiceImpl implements EnchantService {
   @Override
   public ItemStack createXpBottle(int levels, int amount, @Nullable UUID creator, String reason) {
     int l = Math.max(1, levels);
-    ItemStack bottle = new ItemStack(Material.EXPERIENCE_BOTTLE, Math.max(1, Math.min(64, amount)));
+    // Paper underneath, drawn as an experience bottle: a real EXPERIENCE_BOTTLE makes the client
+    // predict a throw and remove the item before the server cancels it, which looks like the
+    // bottle vanishing and coming back. Paper has no client-side use, so nothing flickers.
+    ItemStack bottle = new ItemStack(Material.PAPER, Math.max(1, Math.min(64, amount)));
     ItemMeta meta = bottle.getItemMeta();
+    meta.setItemModel(org.bukkit.NamespacedKey.minecraft("experience_bottle"));
     meta.displayName(plain(mini.deserialize(BottleLore.name(l))));
     List<Component> lines = new ArrayList<>();
     for (String line : BottleLore.lore(l)) {

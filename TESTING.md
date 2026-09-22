@@ -196,7 +196,10 @@ Click-and-place, shift-click and drag all put items into the left pane;
 anything left there comes back to you when the menu closes.
 
 Payment is XP bottles: custom items that grant their levels when right-clicked
-(sneak to drink a stack). They never throw like vanilla bottles.
+(sneak to drink a stack). They are drawn as experience bottles but are paper
+underneath, so the client never plays a throw; you get a chat line, a level-up
+sound and a higher level count. Bottles made before this change were real
+experience bottles and may flicker once as the server takes the throw back.
 
 The Alchemist (`/alchemist`) takes two items in its two left slots and shows
 the result on the right. Two opened books of the same enchant and level, below
