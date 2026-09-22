@@ -66,7 +66,7 @@ class SqlDeathLogRepositoryIntegrationTest {
               }
             });
     assertEquals(killer.toString(), killers[0]);
-    assertEquals("[\\"" + item + "\\"]", json[0]);
+    assertEquals("[\"" + item + "\"]", json[0]);
     assertNull(killers[1]);
     assertEquals("[]", json[1]);
   }
