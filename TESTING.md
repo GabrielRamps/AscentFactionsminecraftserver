@@ -140,6 +140,10 @@ contracts plug in as their epics land.
 SELECT source, SUM(amount) FROM xp_log WHERE player_uuid = '<uuid>' GROUP BY source;
 ```
 
+**Verified 2026-09-22** by the owner: `/rank`, `/rank unlocks`, `/rank top`
+and a rank-up from `/ascent give xp` with chat line, title and sound. Closes
+E2-S1 and E2-S2.
+
 ## Item registry and dupe alerts
 
 Every valuable item gets a permanent id when it is created (books, scrolls,
