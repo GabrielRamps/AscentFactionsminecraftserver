@@ -52,11 +52,6 @@ ascent:
     # <counterparty>
     with: " <gray>with <white><counterparty></white>"
     none: "<gray>(no events recorded)"
-
-alerts:
-  # Sent to everyone with ascent.staff.alerts.
-  # <item>, <observed>, <created>, <holders>
-  dupe: "<prefix><red><bold>DUPE ALERT</bold> <gray>item <white><item></white> seen <red><observed></red> times, created <white><created></white>. Held by <white><holders></white>. <gray>Check it with <white>/ascent item lookup <item>"
   # <version>
   version: "<prefix><gray>Version <white><version>"
   reload:
@@ -104,3 +99,8 @@ lore:
   protected: "<white>PROTECTED"
   # <count>: enchants on the item; appended to the display name
   name-count: "<gray>[<count>]"
+
+alerts:
+  # Sent to everyone with ascent.staff.alerts.
+  # <item>, <observed>, <created>, <holders>
+  dupe: "<prefix><red><bold>DUPE ALERT</bold> <gray>item <white><item></white> seen <red><observed></red> times, created <white><created></white>. Held by <white><holders></white>. <gray>Check it with <white>/ascent item lookup <item>"
