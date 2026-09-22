@@ -140,7 +140,7 @@ public final class ZoneListener implements Listener {
   }
 
   private void warn(Player player, String key) {
-    long now = System.currentTimeMillis();
+    long now = System.nanoTime() / 1_000_000; // monotonic: WSL2 wall clocks jump
     Long last = lastWarn.get(player.getUniqueId());
     if (last != null && now - last < WARN_INTERVAL_MS) {
       return;

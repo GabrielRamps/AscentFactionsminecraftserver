@@ -311,7 +311,8 @@ public final class AscentPlugin extends JavaPlugin {
     // PRD E8-S1: the spawn safezone and the warzone ring. Effects, combat and building ask here.
     RadiusZones zones = new RadiusZones(config);
     getServer().getPluginManager().registerEvents(new ZoneListener(zones, messages), this);
-    mirrorZonesInWorldGuard();
+    // On the first tick every plugin is enabled, whatever the load order.
+    getServer().getScheduler().runTask(this, this::mirrorZonesInWorldGuard);
 
     // PRD E9-S2: 1.8 gear rules, item cooldowns and the death log.
     getServer().getPluginManager().registerEvents(new GearListener(this, config, messages), this);
@@ -511,7 +512,7 @@ public final class AscentPlugin extends JavaPlugin {
   /** Mirrors the zones into WorldGuard when it is installed and enabled in events.yml. */
   private void mirrorZonesInWorldGuard() {
     EventsSettings.Zones zones = config.events().zones();
-    if (!zones.worldguard() || getServer().getPluginManager().getPlugin("WorldGuard") == null) {
+    if (!zones.worldguard() || !getServer().getPluginManager().isPluginEnabled("WorldGuard")) {
       return;
     }
     World world = getServer().getWorld(zones.world());

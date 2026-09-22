@@ -10,11 +10,13 @@ load: POSTWORLD
 #   Vault          economy bridge for third-party plugins
 #   PlaceholderAPI scoreboard, tab and chat placeholders
 #   LuckPerms      permissions and group lookups
+#   WorldGuard     the spawn and warzone regions are mirrored into it
 softdepend:
   - Vault
   - PlaceholderAPI
   - LuckPerms
   - FastAsyncWorldEdit
+  - WorldGuard
 
 commands:
   ascent:

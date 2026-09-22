@@ -137,7 +137,7 @@ public final class MineListener implements Listener {
   }
 
   private void warn(Player player) {
-    long now = System.currentTimeMillis();
+    long now = System.nanoTime() / 1_000_000; // monotonic: WSL2 wall clocks jump
     Long last = lastWarning.get(player.getUniqueId());
     if (last == null || now - last > 3000) {
       lastWarning.put(player.getUniqueId(), now);

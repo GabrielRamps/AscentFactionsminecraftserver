@@ -128,7 +128,7 @@ public final class GearListener implements Listener {
   }
 
   private void warnBanned(Player player, Material material) {
-    long now = System.currentTimeMillis();
+    long now = System.nanoTime() / 1_000_000; // monotonic: WSL2 wall clocks jump
     Long last = lastWarn.get(player.getUniqueId());
     if (last != null && now - last < WARN_INTERVAL_MS) {
       return;
