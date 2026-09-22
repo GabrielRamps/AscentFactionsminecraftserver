@@ -271,3 +271,17 @@ git push
 
 Day-to-day commands live in `TESTING.md`. What to build next is in
 `docs/ascent-factions-phase-1-prd.md`, section 10.2.
+
+## Troubleshooting
+
+**"already locked (possibly by other Minecraft instance?)" on boot, or you
+time out joining right after `./dev.sh`.** The previous server did not stop in
+time and its Java process is still alive, holding `world/session.lock` and the
+port; the new one refuses to start and your client connects to the half-dead
+old one. `dev.sh` now finds and kills that process before starting. To do it
+by hand (Ubuntu shell):
+
+```bash
+pkill -f 'paper.jar'; sleep 5; pgrep -af 'paper.jar' || echo "old server gone"
+./dev.sh
+```

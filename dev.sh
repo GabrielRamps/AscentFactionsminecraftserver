@@ -56,6 +56,33 @@ if ! command -v tmux >/dev/null 2>&1; then
   exit 1
 fi
 
+# PIDs of Paper JVMs running out of this server directory. Killing the tmux
+# session does not always take the JVM with it: a shutdown that hangs in a
+# plugin or a world save keeps running, holding world/session.lock and the
+# port, and the next boot then fails with "already locked" while players
+# time out against the half-dead old process.
+server_pids() {
+  local pid
+  for pid in $(pgrep -f -- "-jar ${ASCENT_PAPER_JAR:-paper.jar}" 2>/dev/null); do
+    if [ "$(readlink "/proc/$pid/cwd" 2>/dev/null)" = "$SERVER_DIR" ]; then
+      echo "$pid"
+    fi
+  done
+}
+
+# Waits up to $1 seconds for every server JVM to exit.
+wait_for_exit() {
+  local waited=0
+  while [ -n "$(server_pids)" ]; do
+    if [ "$waited" -ge "$1" ]; then
+      return 1
+    fi
+    sleep 1
+    waited=$((waited + 1))
+  done
+  return 0
+}
+
 if tmux has-session -t "$SESSION" 2>/dev/null; then
   echo "==> Stopping running server"
   # Ask Paper to shut down cleanly so worlds and player data are flushed.
@@ -70,6 +97,20 @@ if tmux has-session -t "$SESSION" 2>/dev/null; then
     sleep 1
     waited=$((waited + 1))
   done
+fi
+
+# The session is gone; make sure the JVM is too, or the new boot cannot lock
+# the world. Try a polite SIGTERM first, then SIGKILL.
+if [ -n "$(server_pids)" ]; then
+  echo "==> A Paper process is still running in $SERVER_DIR; stopping it"
+  # shellcheck disable=SC2046
+  kill $(server_pids) 2>/dev/null || true
+  if ! wait_for_exit 20; then
+    echo "    still running after 20s; force-killing" >&2
+    # shellcheck disable=SC2046
+    kill -9 $(server_pids) 2>/dev/null || true
+    wait_for_exit 10 || die "could not stop the old server; see: pgrep -af paper.jar"
+  fi
 fi
 
 echo "==> Starting server"
