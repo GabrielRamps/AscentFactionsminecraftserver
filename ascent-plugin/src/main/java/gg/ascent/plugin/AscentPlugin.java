@@ -19,12 +19,15 @@ import gg.ascent.plugin.economy.EconomyServiceImpl;
 import gg.ascent.plugin.economy.SellCommand;
 import gg.ascent.plugin.economy.SqlTransactionRepository;
 import gg.ascent.plugin.economy.VaultHook;
+import gg.ascent.plugin.enchant.ApplyListener;
 import gg.ascent.plugin.enchant.BookListener;
 import gg.ascent.plugin.enchant.EnchantServiceImpl;
+import gg.ascent.plugin.enchant.SqlEnchantRollRepository;
 import gg.ascent.plugin.item.DupeScanTask;
 import gg.ascent.plugin.item.ItemAudit;
 import gg.ascent.plugin.item.ItemListener;
 import gg.ascent.plugin.item.ItemRegistryImpl;
+import gg.ascent.plugin.item.LoreRenderer;
 import gg.ascent.plugin.item.SqlItemRepository;
 import gg.ascent.plugin.kit.BukkitKitGiver;
 import gg.ascent.plugin.kit.KitCommand;
@@ -252,6 +255,25 @@ public final class AscentPlugin extends JavaPlugin {
     long scanTicks = Math.max(20, config.core().items().dupeScanInterval().toSeconds() * 20);
     getServer().getScheduler().runTaskTimer(this, dupeScan, scanTicks, scanTicks);
 
+    enchants =
+        new EnchantServiceImpl(
+            getServer(),
+            config,
+            items,
+            players,
+            unlocks,
+            new LoreRenderer(config, messages),
+            messages,
+            database.executor(),
+            new SqlEnchantRollRepository(),
+            new java.security.SecureRandom(),
+            Clock.systemUTC(),
+            getSLF4JLogger());
+    getServer().getPluginManager().registerEvents(new BookListener(enchants, messages), this);
+    getServer()
+        .getPluginManager()
+        .registerEvents(new ApplyListener(enchants, players, messages), this);
+
     kits =
         new KitManager(
             config,
@@ -259,16 +281,13 @@ public final class AscentPlugin extends JavaPlugin {
             unlocks,
             database.executor(),
             new SqlKitCooldownRepository(),
-            new BukkitKitGiver(getServer(), items, messages, getSLF4JLogger()),
+            new BukkitKitGiver(getServer(), items, enchants, messages, getSLF4JLogger()),
             Clock.systemUTC(),
             getSLF4JLogger());
     KitCommand kitCommand = new KitCommand(kits, config, messages);
     getServer()
         .getPluginManager()
         .registerEvents(new KitListener(kits, kitCommand, config, messages), this);
-
-    enchants = new EnchantServiceImpl(config, items, new java.security.SecureRandom());
-    getServer().getPluginManager().registerEvents(new BookListener(enchants, messages), this);
 
     progress = new SimpleProgressBus(getSLF4JLogger());
     ConstantSellMultiplier sellMultiplier = new ConstantSellMultiplier(1.0);

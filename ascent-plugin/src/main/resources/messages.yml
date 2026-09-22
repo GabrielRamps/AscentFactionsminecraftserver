@@ -100,6 +100,8 @@ economy:
 # tier in enchants.yml.
 lore:
   protected: "<white>PROTECTED"
+  footer:
+    gear: "<dark_gray>Ascent gear"
   # <count>: enchants on the item; appended to the display name
   name-count: "<gray>[<count>]"
 
@@ -180,6 +182,16 @@ enchant:
   revealed: "<prefix><gray>Revealed <white><enchant></white>: <green><success>% success</green>, <red><destroy>% destroy</red>."
   # <count>
   revealed-stack: "<prefix><gray>Revealed <white><count></white> books."
+  apply:
+    # <enchant> in each, e.g. "Lifesteal III"; <applies>: what the book fits
+    not-gear: "<prefix><red>Books go on gear. <white><enchant></white> fits: <applies>."
+    wrong-item: "<prefix><red><enchant> does not fit that. It applies to: <white><applies></white>."
+    slots-full: "<prefix><red>That item has no free enchant slots at your rank."
+    already-has: "<prefix><red>That item already has <enchant> at this level or higher."
+    success: "<prefix><green><bold>SUCCESS!</bold> <gray><white><enchant></white> is on your item."
+    failed: "<prefix><yellow>The book crumbled. <gray>Your item is unchanged."
+    destroyed: "<prefix><red><bold>DESTROYED!</bold> <gray>The item shattered under <white><enchant></white>."
+    scroll-saved: "<prefix><white><bold>PROTECTED.</bold> <gray>The roll would have destroyed your item; the White Scroll took the blow."
 
 alerts:
   # Sent to everyone with ascent.staff.alerts.

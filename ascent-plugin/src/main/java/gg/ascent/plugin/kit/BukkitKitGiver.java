@@ -1,6 +1,7 @@
 package gg.ascent.plugin.kit;
 
 import gg.ascent.api.config.KitsSettings;
+import gg.ascent.api.enchant.EnchantService;
 import gg.ascent.api.item.ItemKind;
 import gg.ascent.api.item.ItemRegistry;
 import gg.ascent.api.message.Messages;
@@ -16,19 +17,21 @@ import org.slf4j.Logger;
 
 /**
  * Builds a kit's items and puts them in the inventory, dropping what does not fit. An item with
- * pre-applied enchants is registry-tagged as a KIT_ITEM; the enchants themselves are applied once
- * the enchant engine (E3-S1) exists, and are recorded in the item's data until then.
+ * pre-applied enchants is registry-tagged as a KIT_ITEM and gets its enchants without a roll.
  */
 public final class BukkitKitGiver implements KitGiver {
 
   private final Server server;
   private final ItemRegistry items;
+  private final EnchantService enchants;
   private final Messages messages;
   private final Logger log;
 
-  public BukkitKitGiver(Server server, ItemRegistry items, Messages messages, Logger log) {
+  public BukkitKitGiver(
+      Server server, ItemRegistry items, EnchantService enchants, Messages messages, Logger log) {
     this.server = server;
     this.items = items;
+    this.enchants = enchants;
     this.messages = messages;
     this.log = log;
   }
@@ -53,6 +56,16 @@ public final class BukkitKitGiver implements KitGiver {
         data.put("kit", kit.id());
         data.put("enchants", spec.enchants());
         items.tag(stack, ItemKind.KIT_ITEM, data, playerId, "kit:" + kit.id());
+        for (Map.Entry<String, Integer> e : spec.enchants().entrySet()) {
+          if (!enchants.setEnchant(stack, e.getKey(), e.getValue(), playerId, "kit:" + kit.id())) {
+            log.warn(
+                "kits.yml: kit {} names enchant {} {} which does not fit {}",
+                kit.id(),
+                e.getKey(),
+                e.getValue(),
+                spec.material());
+          }
+        }
       }
       Map<Integer, ItemStack> overflow = player.getInventory().addItem(stack);
       for (ItemStack rest : overflow.values()) {

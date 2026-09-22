@@ -167,7 +167,20 @@ likeliest), and success and destroy percentages from the tier's ranges in
 exact format. Both kinds are registry-tagged, so `/ascent item lookup` shows
 their history and the reveal is logged as CONSUMED on the unopened id.
 
-Applying a book onto gear is E3-S3.
+Applying a book: pick the opened book up onto your cursor and click it onto a
+piece of gear in your inventory. One roll decides: success puts the enchant on
+the item and rebuilds its lore, a failed roll that also hits the destroy chance
+shatters the item (or spends its White Scroll), and any other failure just
+consumes the book. A book that does not fit is refused in red and kept. Every
+roll writes an `enchant_rolls` row, which is how we prove the odds are honest:
+
+```sql
+SELECT outcome, COUNT(*) FROM enchant_rolls GROUP BY outcome;
+```
+
+Slots per item follow your rank (`/rank unlocks`); upgrading an enchant already
+on the item takes no new slot. Kit items with `enchants` in `kits.yml` now
+arrive enchanted.
 
 ## Personal mines
 

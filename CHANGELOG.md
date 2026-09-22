@@ -92,6 +92,14 @@ Sprint 1, the core platform (Epic 1).
   ranges, all proven by tests. Opened books carry enchant, level, success and
   destroy in their data and the PRD's exact lore. `/ascent give <player> books
   <tier> [amount]` hands out unopened books.
+- Applying books (E3-S3). Click an opened book from the cursor onto gear for
+  one honest roll: success applies (or upgrades) the enchant and rebuilds the
+  lore, a failed roll that hits the destroy chance shatters the item unless a
+  White Scroll takes the blow, any other failure consumes the book. Type,
+  slot cap and existing level are checked first and an incompatible book is
+  kept. `EnchantApplyEvent` (cancellable) and `EnchantAppliedEvent` fire; the
+  registry logs APPLIED, CONSUMED and DESTROYED; every roll lands in
+  `enchant_rolls`. Kit enchants are applied for real.
 - Lore renderer (E11-S3). One `LoreRenderer` writes all custom item lore:
   enchants by tier then name with the tier's color, `PROTECTED` when scrolled,
   a kind footer, and a `[n]` enchant count on the name. Idempotent.

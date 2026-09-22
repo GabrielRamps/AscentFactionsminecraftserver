@@ -5,12 +5,26 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import gg.ascent.api.config.ConfigService;
 import gg.ascent.api.config.EnchantsSettings;
+import gg.ascent.api.db.DbExecutor;
+import gg.ascent.api.enchant.ApplyResult;
 import gg.ascent.api.enchant.EnchantDefinition;
 import gg.ascent.api.enchant.EnchantService;
+import gg.ascent.api.enchant.Incompatibility;
 import gg.ascent.api.enchant.Tier;
+import gg.ascent.api.event.EnchantAppliedEvent;
+import gg.ascent.api.event.EnchantApplyEvent;
 import gg.ascent.api.item.ItemEvent;
 import gg.ascent.api.item.ItemKind;
 import gg.ascent.api.item.ItemRegistry;
+import gg.ascent.api.message.Messages;
+import gg.ascent.api.player.PlayerService;
+import gg.ascent.api.rank.UnlockService;
+import gg.ascent.plugin.item.LoreRenderer;
+import gg.ascent.plugin.item.LoreRenderer.EnchantLine;
+import gg.ascent.plugin.item.LoreRenderer.LoreSpec;
+import gg.ascent.plugin.util.Futures;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -23,33 +37,70 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Material;
+import org.bukkit.Server;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
 
-/** {@link EnchantService}: books as items, the reveal, and reading gear (PRD E3-S2). */
+/**
+ * {@link EnchantService}: books as items, the reveal, the apply roll, and gear (PRD E3-S2, E3-S3).
+ */
 public final class EnchantServiceImpl implements EnchantService {
 
   private static final Gson GSON = new Gson();
   private static final java.lang.reflect.Type ENCHANT_MAP =
       new TypeToken<Map<String, Integer>>() {}.getType();
 
+  private final Server server;
   private final ConfigService config;
   private final ItemRegistry items;
+  private final PlayerService players;
+  private final UnlockService unlocks;
+  private final LoreRenderer lore;
+  private final Messages messages;
+  private final DbExecutor db;
+  private final EnchantRollRepository rolls;
   private final RandomGenerator random;
+  private final Clock clock;
+  private final Logger log;
   private final MiniMessage mini = MiniMessage.miniMessage();
 
-  public EnchantServiceImpl(ConfigService config, ItemRegistry items, RandomGenerator random) {
+  public EnchantServiceImpl(
+      Server server,
+      ConfigService config,
+      ItemRegistry items,
+      PlayerService players,
+      UnlockService unlocks,
+      LoreRenderer lore,
+      Messages messages,
+      DbExecutor db,
+      EnchantRollRepository rolls,
+      RandomGenerator random,
+      Clock clock,
+      Logger log) {
+    this.server = server;
     this.config = config;
     this.items = items;
+    this.players = players;
+    this.unlocks = unlocks;
+    this.lore = lore;
+    this.messages = messages;
+    this.db = db;
+    this.rolls = rolls;
     this.random = random;
+    this.clock = clock;
+    this.log = log;
   }
 
   private EnchantsSettings settings() {
     return config.enchants();
   }
+
+  // --- books -----------------------------------------------------------------------------------
 
   @Override
   public ItemStack createUnopenedBook(
@@ -57,11 +108,11 @@ public final class EnchantServiceImpl implements EnchantService {
     ItemStack book = new ItemStack(Material.BOOK, Math.max(1, Math.min(64, amount)));
     ItemMeta meta = book.getItemMeta();
     meta.displayName(plain(mini.deserialize(BookLore.unopenedName(settings(), tier))));
-    List<Component> lore = new ArrayList<>();
+    List<Component> lines = new ArrayList<>();
     for (String line : BookLore.unopenedLore(settings(), tier)) {
-      lore.add(plain(mini.deserialize(line)));
+      lines.add(plain(mini.deserialize(line)));
     }
-    meta.lore(lore);
+    meta.lore(lines);
     meta.getPersistentDataContainer()
         .set(EnchantKeys.BOOK_TIER, PersistentDataType.STRING, tier.name());
     book.setItemMeta(meta);
@@ -98,11 +149,11 @@ public final class EnchantServiceImpl implements EnchantService {
     ItemMeta meta = book.getItemMeta();
     meta.displayName(
         plain(mini.deserialize(BookLore.openedName(settings(), enchant, roll.level()))));
-    List<Component> lore = new ArrayList<>();
+    List<Component> lines = new ArrayList<>();
     for (String line : BookLore.openedLore(enchant, roll)) {
-      lore.add(plain(mini.deserialize(line)));
+      lines.add(plain(mini.deserialize(line)));
     }
-    meta.lore(lore);
+    meta.lore(lines);
     PersistentDataContainer pdc = meta.getPersistentDataContainer();
     pdc.set(EnchantKeys.ENCHANT_ID, PersistentDataType.STRING, roll.enchantId());
     pdc.set(EnchantKeys.LEVEL, PersistentDataType.INTEGER, roll.level());
@@ -152,6 +203,8 @@ public final class EnchantServiceImpl implements EnchantService {
     return Optional.of(new OpenedBook(id, level, success, destroy));
   }
 
+  // --- gear ------------------------------------------------------------------------------------
+
   @Override
   public Map<String, Integer> getEnchants(@Nullable ItemStack item) {
     PersistentDataContainer pdc = pdc(item);
@@ -168,6 +221,189 @@ public final class EnchantServiceImpl implements EnchantService {
     } catch (JsonSyntaxException e) {
       return Map.of();
     }
+  }
+
+  /** Whether a White Scroll protects the item (E3-S5 sets it). */
+  public boolean isProtected(@Nullable ItemStack item) {
+    PersistentDataContainer pdc = pdc(item);
+    Byte flag = pdc == null ? null : pdc.get(EnchantKeys.WHITE_SCROLL, PersistentDataType.BYTE);
+    return flag != null && flag == 1;
+  }
+
+  private void writeEnchants(ItemStack gear, Map<String, Integer> enchants) {
+    ItemMeta meta = gear.getItemMeta();
+    if (enchants.isEmpty()) {
+      meta.getPersistentDataContainer().remove(EnchantKeys.ENCHANTS);
+    } else {
+      meta.getPersistentDataContainer()
+          .set(EnchantKeys.ENCHANTS, PersistentDataType.STRING, GSON.toJson(enchants));
+    }
+    gear.setItemMeta(meta);
+  }
+
+  @Override
+  public void refreshLore(ItemStack gear) {
+    Map<String, Integer> enchants = getEnchants(gear);
+    List<EnchantLine> lines = new ArrayList<>();
+    for (Map.Entry<String, Integer> e : enchants.entrySet()) {
+      settings()
+          .enchant(e.getKey())
+          .ifPresent(
+              def -> lines.add(new EnchantLine(def.id(), def.display(), def.tier(), e.getValue())));
+    }
+    Component footer = items.idOf(gear).isPresent() ? messages.render("lore.footer.gear") : null;
+    lore.apply(gear, new LoreSpec(lines, isProtected(gear), footer));
+  }
+
+  @Override
+  public boolean setEnchant(
+      ItemStack target, String enchantId, int level, @Nullable UUID actor, String reason) {
+    Optional<EnchantDefinition> def = settings().enchant(enchantId);
+    if (def.isEmpty() || level < 1 || level > def.get().maxLevel()) {
+      return false;
+    }
+    Optional<gg.ascent.api.enchant.ItemTarget> kind =
+        gg.ascent.api.enchant.ItemTarget.classify(target.getType().name());
+    if (kind.isEmpty() || !def.get().appliesTo(kind.get())) {
+      return false;
+    }
+    Map<String, Integer> enchants = new LinkedHashMap<>(getEnchants(target));
+    enchants.put(enchantId, level);
+    writeEnchants(target, enchants);
+    UUID id = ensureTagged(target, actor, reason);
+    items.record(
+        id,
+        ItemEvent.APPLIED,
+        actor,
+        null,
+        Map.of("enchant", enchantId, "level", level, "reason", reason));
+    refreshLore(target);
+    return true;
+  }
+
+  private UUID ensureTagged(ItemStack gear, @Nullable UUID actor, String reason) {
+    Optional<UUID> existing = items.idOf(gear);
+    if (existing.isPresent()) {
+      return existing.get();
+    }
+    items.tag(gear, ItemKind.GEAR, Map.of("material", gear.getType().name()), actor, reason);
+    return items.idOf(gear).orElseThrow();
+  }
+
+  // --- the roll --------------------------------------------------------------------------------
+
+  @Override
+  public Optional<Incompatibility> checkCompatible(ItemStack book, ItemStack target, int rank) {
+    Optional<OpenedBook> opened = openedBook(book);
+    if (opened.isEmpty() || target == null || target.getType().isAir()) {
+      return Optional.of(Incompatibility.NOT_GEAR);
+    }
+    Optional<EnchantDefinition> def = settings().enchant(opened.get().enchantId());
+    if (def.isEmpty()) {
+      return Optional.of(Incompatibility.NOT_GEAR);
+    }
+    return ApplyRules.check(
+        def.get(),
+        opened.get().level(),
+        target.getType().name(),
+        getEnchants(target),
+        unlocks.enchantSlotCap(rank));
+  }
+
+  @Override
+  public ApplyResult apply(ItemStack book, ItemStack target, Player player) {
+    int rank = players.require(player.getUniqueId()).rank();
+    if (checkCompatible(book, target, rank).isPresent()) {
+      return ApplyResult.INCOMPATIBLE;
+    }
+    OpenedBook opened = openedBook(book).orElseThrow();
+    EnchantDefinition def = settings().enchant(opened.enchantId()).orElseThrow();
+
+    EnchantApplyEvent event =
+        new EnchantApplyEvent(player, book, target, opened.enchantId(), opened.level());
+    server.getPluginManager().callEvent(event);
+    if (event.isCancelled()) {
+      return ApplyResult.INCOMPATIBLE;
+    }
+
+    UUID actor = player.getUniqueId();
+    UUID bookId = items.idOf(book).orElse(null);
+    UUID targetId = ensureTagged(target, actor, "apply");
+    boolean scrolled = isProtected(target);
+    ApplyResult result = ApplyRoller.roll(opened.success(), opened.destroy(), scrolled, random);
+    event.setResult(result);
+
+    Map<String, Object> context =
+        Map.of(
+            "enchant", opened.enchantId(),
+            "level", opened.level(),
+            "success", opened.success(),
+            "destroy", opened.destroy(),
+            "outcome", result.name(),
+            "target", targetId.toString());
+    if (bookId != null) {
+      items.record(
+          bookId,
+          result == ApplyResult.SUCCESS ? ItemEvent.APPLIED : ItemEvent.CONSUMED,
+          actor,
+          null,
+          context);
+    }
+    switch (result) {
+      case SUCCESS -> {
+        Map<String, Integer> enchants = new LinkedHashMap<>(getEnchants(target));
+        enchants.put(opened.enchantId(), opened.level());
+        writeEnchants(target, enchants);
+        items.record(targetId, ItemEvent.APPLIED, actor, null, context);
+        refreshLore(target);
+      }
+      case DESTROYED -> {
+        items.record(targetId, ItemEvent.DESTROYED, actor, null, context);
+        target.setAmount(0);
+      }
+      case SCROLL_SAVED -> {
+        ItemMeta meta = target.getItemMeta();
+        meta.getPersistentDataContainer().remove(EnchantKeys.WHITE_SCROLL);
+        target.setItemMeta(meta);
+        items.record(
+            targetId,
+            ItemEvent.CONSUMED,
+            actor,
+            null,
+            Map.of("what", "white_scroll", "enchant", opened.enchantId()));
+        refreshLore(target);
+      }
+      case FAILED, INCOMPATIBLE -> {
+        // nothing on the item
+      }
+    }
+    book.setAmount(book.getAmount() - 1);
+
+    Instant now = clock.instant();
+    if (bookId != null) {
+      UUID finalBookId = bookId;
+      Futures.logFailure(
+          db.run(
+              c ->
+                  rolls.record(
+                      c,
+                      actor,
+                      finalBookId,
+                      targetId,
+                      opened.enchantId(),
+                      opened.level(),
+                      opened.success(),
+                      opened.destroy(),
+                      result,
+                      now)),
+          log,
+          "recording enchant roll");
+    }
+    server
+        .getPluginManager()
+        .callEvent(
+            new EnchantAppliedEvent(player, target, opened.enchantId(), opened.level(), result));
+    return result;
   }
 
   @Override

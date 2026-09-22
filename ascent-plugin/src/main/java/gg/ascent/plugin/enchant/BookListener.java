@@ -4,6 +4,7 @@ import gg.ascent.api.enchant.EnchantDefinition;
 import gg.ascent.api.enchant.EnchantService;
 import gg.ascent.api.enchant.EnchantService.OpenedBook;
 import gg.ascent.api.enchant.Tier;
+import gg.ascent.api.event.BookRevealedEvent;
 import gg.ascent.api.message.Messages;
 import gg.ascent.plugin.item.LoreRenderer;
 import java.util.Optional;
@@ -49,6 +50,10 @@ public final class BookListener implements Listener {
     for (int i = 0; i < count; i++) {
       ItemStack opened = enchants.reveal(held, player.getUniqueId());
       last = enchants.openedBook(opened).orElseThrow();
+      player
+          .getServer()
+          .getPluginManager()
+          .callEvent(new BookRevealedEvent(player, tier.get(), last));
       for (ItemStack rest : player.getInventory().addItem(opened).values()) {
         player.getWorld().dropItemNaturally(player.getLocation(), rest);
       }
