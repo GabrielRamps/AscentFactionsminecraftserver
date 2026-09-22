@@ -3,18 +3,27 @@ package gg.ascent.plugin.command;
 import gg.ascent.api.config.ConfigService;
 import gg.ascent.api.config.ReloadReport;
 import gg.ascent.api.db.DbStats;
+import gg.ascent.api.item.ItemEventRecord;
+import gg.ascent.api.item.ItemRecord;
+import gg.ascent.api.item.ItemRegistry;
 import gg.ascent.api.message.Messages;
 import gg.ascent.plugin.AscentPlugin;
 import gg.ascent.plugin.admin.AdminActionLog;
 import gg.ascent.plugin.admin.AdminService;
 import gg.ascent.plugin.admin.AdminService.Result;
 import gg.ascent.plugin.economy.Money;
+import gg.ascent.plugin.item.DupeScanTask;
+import gg.ascent.plugin.item.ItemAudit;
 import gg.ascent.plugin.util.Futures;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.OptionalLong;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.Bukkit;
@@ -23,6 +32,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 /**
@@ -43,11 +53,13 @@ import org.slf4j.Logger;
 public final class AscentCommand implements CommandExecutor, TabCompleter {
 
   private static final List<String> SUBCOMMANDS =
-      List.of("version", "reload", "give", "rank", "debug");
+      List.of("version", "reload", "give", "rank", "debug", "item");
   private static final List<String> GIVE_KINDS =
       List.of("money", "xp", "books", "dust", "scrolls", "spawners");
   private static final List<String> RANK_OPS = List.of("set", "add");
   private static final List<String> DEBUG_TOPICS = List.of("tps", "db", "items");
+  private static final DateTimeFormatter TIME =
+      DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ROOT).withZone(ZoneOffset.UTC);
 
   private final AscentPlugin plugin;
   private final ConfigService config;
@@ -80,6 +92,7 @@ public final class AscentCommand implements CommandExecutor, TabCompleter {
       case "give" -> give(sender, args);
       case "rank" -> rank(sender, args);
       case "debug" -> debug(sender, args);
+      case "item" -> item(sender, args);
       default -> messages.send(sender, "ascent.usage");
     }
     return true;
@@ -243,9 +256,115 @@ public final class AscentCommand implements CommandExecutor, TabCompleter {
             log,
             "/ascent debug db");
       }
-      case "items" -> messages.send(sender, "ascent.debug.items-not-yet");
+      case "items" -> {
+        ItemAudit audit = plugin.items().audit();
+        DupeScanTask scan = plugin.dupeScan();
+        Futures.logFailure(
+            audit
+                .openAlertCount()
+                .thenAccept(
+                    open ->
+                        messages.send(
+                            sender,
+                            "ascent.debug.items",
+                            Placeholder.unparsed("tagged", String.valueOf(audit.taggedCount())),
+                            Placeholder.unparsed("events", String.valueOf(audit.recordedCount())),
+                            Placeholder.unparsed("seen", String.valueOf(scan.lastSeen())),
+                            Placeholder.unparsed("findings", String.valueOf(scan.lastFindings())),
+                            Placeholder.unparsed("open", open.toString()),
+                            Placeholder.unparsed(
+                                "discord",
+                                plugin.alerts().discordEnabled() ? "configured" : "off"))),
+            log,
+            "/ascent debug items");
+      }
       default -> messages.send(sender, "ascent.debug.usage");
     }
+  }
+
+  /** {@code /ascent item lookup <uuid>}: the item's row and its full history (PRD E1-S5). */
+  private void item(CommandSender sender, String[] args) {
+    if (args.length != 3 || !args[1].equalsIgnoreCase("lookup")) {
+      messages.send(sender, "ascent.item.usage");
+      return;
+    }
+    UUID itemId;
+    try {
+      itemId = UUID.fromString(args[2]);
+    } catch (IllegalArgumentException e) {
+      messages.send(sender, "ascent.item.bad-id");
+      return;
+    }
+    actionLog.record(actorOf(sender), "item.lookup", itemId.toString(), null);
+    ItemRegistry registry = plugin.items();
+    Futures.logFailure(
+        registry
+            .lookup(itemId)
+            .thenCompose(
+                found -> {
+                  if (found.isEmpty()) {
+                    messages.send(
+                        sender,
+                        "ascent.item.unknown",
+                        Placeholder.unparsed("item", itemId.toString()));
+                    return CompletableFuture.<Void>completedFuture(null);
+                  }
+                  ItemRecord item = found.get();
+                  messages.send(
+                      sender,
+                      "ascent.item.header",
+                      Placeholder.unparsed("item", item.itemId().toString()),
+                      Placeholder.unparsed("kind", item.kind().name()),
+                      Placeholder.unparsed("quantity", String.valueOf(item.quantityCreated())),
+                      Placeholder.unparsed("creator", nameOf(item.createdBy())),
+                      Placeholder.unparsed("reason", item.createdReason()),
+                      Placeholder.unparsed("created", TIME.format(item.createdAt())),
+                      Placeholder.unparsed(
+                          "destroyed",
+                          item.destroyedAt() == null ? "no" : TIME.format(item.destroyedAt())));
+                  if (!"{}".equals(item.data())) {
+                    messages.send(
+                        sender, "ascent.item.data", Placeholder.unparsed("data", item.data()));
+                  }
+                  return registry.history(itemId).thenAccept(events -> printEvents(sender, events));
+                }),
+        log,
+        "/ascent item lookup " + itemId);
+  }
+
+  private void printEvents(CommandSender sender, List<ItemEventRecord> events) {
+    if (events.isEmpty()) {
+      messages.send(sender, "ascent.item.none");
+      return;
+    }
+    for (ItemEventRecord e : events) {
+      Component with =
+          e.counterparty() == null
+              ? Component.empty()
+              : messages.render(
+                  "ascent.item.with",
+                  Placeholder.unparsed("counterparty", nameOf(e.counterparty())));
+      messages.send(
+          sender,
+          "ascent.item.event",
+          Placeholder.unparsed("time", TIME.format(e.createdAt())),
+          Placeholder.unparsed("event", e.event().name()),
+          Placeholder.unparsed("actor", nameOf(e.actor())),
+          Placeholder.component("counterparty", with),
+          Placeholder.unparsed("context", e.context() == null ? "" : e.context()));
+    }
+  }
+
+  /** A player's last known name, from the server's cache; the UUID when it has none. */
+  private static String nameOf(@Nullable UUID uuid) {
+    if (uuid == null) {
+      return "server";
+    }
+    if (AdminActionLog.CONSOLE.equals(uuid)) {
+      return "console";
+    }
+    String name = Bukkit.getOfflinePlayer(uuid).getName();
+    return name == null ? uuid.toString() : name;
   }
 
   private void report(CommandSender sender, Result result, String okKey, TagResolver... tags) {
@@ -302,6 +421,7 @@ public final class AscentCommand implements CommandExecutor, TabCompleter {
             default -> List.of();
           };
       case "debug" -> args.length == 2 ? filter(DEBUG_TOPICS, args[1]) : List.of();
+      case "item" -> args.length == 2 ? filter(List.of("lookup"), args[1]) : List.of();
       default -> List.of();
     };
   }

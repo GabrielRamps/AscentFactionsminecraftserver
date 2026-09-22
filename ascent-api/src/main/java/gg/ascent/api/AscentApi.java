@@ -3,6 +3,7 @@ package gg.ascent.api;
 import gg.ascent.api.config.ConfigService;
 import gg.ascent.api.db.DbExecutor;
 import gg.ascent.api.economy.EconomyService;
+import gg.ascent.api.item.ItemRegistry;
 import gg.ascent.api.message.Messages;
 import gg.ascent.api.player.PlayerService;
 
@@ -42,4 +43,7 @@ public interface AscentApi {
 
   /** Money. */
   EconomyService economy();
+
+  /** Tagged items and their audit trail. */
+  ItemRegistry items();
 }

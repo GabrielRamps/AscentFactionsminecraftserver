@@ -90,7 +90,19 @@ public final class SettingsParsers {
                 new CoreSettings.Players(
                     players.longAtLeast("starting-balance", 0),
                     players.duration("autosave-interval")));
-    return new CoreSettings(root.bool("debug"), zoneId, database, redisSettings, playerSettings);
+    Node items = root.section("items");
+    CoreSettings.Items itemSettings =
+        wrap(root, "items", () -> new CoreSettings.Items(items.duration("dupe-scan-interval")));
+    CoreSettings.Alerts alertSettings =
+        new CoreSettings.Alerts(envOr(env, "DISCORD_WEBHOOK_URL", null));
+    return new CoreSettings(
+        root.bool("debug"),
+        zoneId,
+        database,
+        redisSettings,
+        playerSettings,
+        itemSettings,
+        alertSettings);
   }
 
   private static @Nullable String envOr(

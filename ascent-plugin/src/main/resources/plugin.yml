@@ -41,3 +41,6 @@ permissions:
   ascent.economy.use:
     description: /bal, /pay and /baltop.
     default: true
+  ascent.staff.alerts:
+    description: Receive dupe and other staff alerts in game.
+    default: op

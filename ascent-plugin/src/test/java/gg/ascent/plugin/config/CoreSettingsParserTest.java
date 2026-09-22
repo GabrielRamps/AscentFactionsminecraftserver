@@ -32,6 +32,8 @@ class CoreSettingsParserTest {
       players:
         starting-balance: 1000
         autosave-interval: 60s
+      items:
+        dupe-scan-interval: 5m
       """;
 
   @Test
@@ -47,6 +49,8 @@ class CoreSettingsParserTest {
     assertNull(s.redis().password());
     assertEquals(1000, s.players().startingBalance());
     assertEquals(Duration.ofSeconds(60), s.players().autosaveInterval());
+    assertEquals(Duration.ofMinutes(5), s.items().dupeScanInterval());
+    assertNull(s.alerts().discordWebhookUrl());
   }
 
   @Test

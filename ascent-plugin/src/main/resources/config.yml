@@ -43,3 +43,10 @@ players:
   # How often changed profiles are written to the database. Every profile is
   # also written on quit and at shutdown.
   autosave-interval: 60s
+
+# Item registry (PRD E1-S5). Every valuable item carries an id; this is how
+# often online inventories are checked for the same id appearing more times
+# than it was created. Alerts go to staff in game and to Discord when
+# DISCORD_WEBHOOK_URL is set in .env (never put the URL in this file).
+items:
+  dupe-scan-interval: 5m

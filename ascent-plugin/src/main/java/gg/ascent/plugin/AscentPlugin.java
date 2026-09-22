@@ -7,6 +7,8 @@ import gg.ascent.api.db.DbException;
 import gg.ascent.plugin.admin.AdminActionLog;
 import gg.ascent.plugin.admin.AdminService;
 import gg.ascent.plugin.admin.SqlAdminActionRepository;
+import gg.ascent.plugin.alert.DiscordWebhook;
+import gg.ascent.plugin.alert.StaffAlerts;
 import gg.ascent.plugin.command.AscentCommand;
 import gg.ascent.plugin.config.YamlConfigService;
 import gg.ascent.plugin.db.BukkitMainThread;
@@ -16,6 +18,11 @@ import gg.ascent.plugin.economy.EconomyCommands;
 import gg.ascent.plugin.economy.EconomyServiceImpl;
 import gg.ascent.plugin.economy.SqlTransactionRepository;
 import gg.ascent.plugin.economy.VaultHook;
+import gg.ascent.plugin.item.DupeScanTask;
+import gg.ascent.plugin.item.ItemAudit;
+import gg.ascent.plugin.item.ItemListener;
+import gg.ascent.plugin.item.ItemRegistryImpl;
+import gg.ascent.plugin.item.SqlItemRepository;
 import gg.ascent.plugin.message.YamlMessages;
 import gg.ascent.plugin.player.PlayerListener;
 import gg.ascent.plugin.player.PlayerManager;
@@ -46,6 +53,9 @@ public final class AscentPlugin extends JavaPlugin {
   private PlayerManager players;
   private EconomyServiceImpl economy;
   private BaltopCache baltop;
+  private ItemRegistryImpl items;
+  private DupeScanTask dupeScan;
+  private StaffAlerts alerts;
 
   @Override
   public void onEnable() {
@@ -123,7 +133,32 @@ public final class AscentPlugin extends JavaPlugin {
       getSLF4JLogger().info("Vault is not installed; third-party plugins cannot see balances.");
     }
 
-    api = new AscentApiImpl(this, config, messages, database.executor(), players, economy);
+    alerts =
+        new StaffAlerts(
+            getServer(),
+            messages,
+            new DiscordWebhook(config.core().alerts().discordWebhookUrl(), getSLF4JLogger()));
+    if (!alerts.discordEnabled()) {
+      getSLF4JLogger().info("No DISCORD_WEBHOOK_URL in the environment; alerts stay in game.");
+    }
+    SqlItemRepository itemRepo = new SqlItemRepository();
+    items =
+        new ItemRegistryImpl(
+            this,
+            new ItemAudit(database.executor(), itemRepo, Clock.systemUTC(), getSLF4JLogger()));
+    getServer().getPluginManager().registerEvents(new ItemListener(items), this);
+    dupeScan =
+        new DupeScanTask(
+            getServer(),
+            database.executor(),
+            itemRepo,
+            alerts,
+            Clock.systemUTC(),
+            getSLF4JLogger());
+    long scanTicks = Math.max(20, config.core().items().dupeScanInterval().toSeconds() * 20);
+    getServer().getScheduler().runTaskTimer(this, dupeScan, scanTicks, scanTicks);
+
+    api = new AscentApiImpl(this, config, messages, database.executor(), players, economy, items);
     AscentProvider.register(api);
     getServer().getServicesManager().register(AscentApi.class, api, this, ServicePriority.Normal);
 
@@ -172,6 +207,9 @@ public final class AscentPlugin extends JavaPlugin {
     }
     economy = null;
     baltop = null;
+    items = null;
+    dupeScan = null;
+    alerts = null;
     if (redis != null) {
       redis.close();
       redis = null;
@@ -213,5 +251,20 @@ public final class AscentPlugin extends JavaPlugin {
   /** Money. Null only while disabled. */
   public EconomyServiceImpl economy() {
     return economy;
+  }
+
+  /** The item registry. Null only while disabled. */
+  public ItemRegistryImpl items() {
+    return items;
+  }
+
+  /** The dupe scan, for the debug command. Null only while disabled. */
+  public DupeScanTask dupeScan() {
+    return dupeScan;
+  }
+
+  /** Staff alert routing. Null only while disabled. */
+  public StaffAlerts alerts() {
+    return alerts;
   }
 }

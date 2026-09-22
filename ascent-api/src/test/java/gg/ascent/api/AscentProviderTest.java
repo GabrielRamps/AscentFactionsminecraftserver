@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import gg.ascent.api.config.ConfigService;
 import gg.ascent.api.db.DbExecutor;
 import gg.ascent.api.economy.EconomyService;
+import gg.ascent.api.item.ItemRegistry;
 import gg.ascent.api.message.Messages;
 import gg.ascent.api.player.PlayerService;
 import org.junit.jupiter.api.AfterEach;
@@ -49,6 +50,11 @@ class AscentProviderTest {
 
         @Override
         public EconomyService economy() {
+          throw new UnsupportedOperationException("not needed by this test");
+        }
+
+        @Override
+        public ItemRegistry items() {
           throw new UnsupportedOperationException("not needed by this test");
         }
       };

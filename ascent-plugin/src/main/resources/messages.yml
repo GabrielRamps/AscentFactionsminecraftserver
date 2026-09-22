@@ -8,7 +8,7 @@
 prefix: "<gradient:#f2c14e:#f78154>Ascent</gradient> <dark_gray>»</dark_gray> "
 
 ascent:
-  usage: "<prefix><gray>Usage: <white>/ascent <version|reload|give|rank|debug>"
+  usage: "<prefix><gray>Usage: <white>/ascent <version|reload|give|rank|debug|item>"
   # <player>: the name that was typed
   unknown-player: "<prefix><red>No player named <white><player></white> has ever joined."
   # <player>
@@ -36,7 +36,27 @@ ascent:
     db: "<prefix><gray>Pool <white><active></white> active, <white><idle></white> idle of <white><total></white>; <white><waiting></white> waiting. Tasks: <white><queued></white> queued, <white><completed></white> done, <red><failed></red> failed. Redis <white><redis></white>. Players: <white><online></white> online, <white><pending></white> logging in."
     # <ms>
     db-ping: "<prefix><gray>Database round trip: <white><ms> ms"
-    items-not-yet: "<prefix><yellow>The item registry arrives with E1-S5."
+    # <tagged>, <events>, <seen>, <findings>, <open>, <discord>
+    items: "<prefix><gray>Registry: <white><tagged></white> items tagged and <white><events></white> events logged since startup. Last dupe scan saw <white><seen></white> tagged item(s) and raised <red><findings></red> alert(s); <white><open></white> alert(s) still open. Discord <white><discord></white>."
+  item:
+    usage: "<prefix><gray>Usage: <white>/ascent item lookup <item-id>"
+    bad-id: "<prefix><red>That is not an item id. Ids look like <white>0199a0c4-4f2a-7c3e-9a1b-2f3c4d5e6f70</white>."
+    # <item>
+    unknown: "<prefix><red>No item with id <white><item></white> is registered."
+    # <item>, <kind>, <quantity>, <creator>, <reason>, <created>, <destroyed>
+    header: "<prefix><gold><kind></gold> <gray>x<quantity>, id <white><item></white><newline><gray>Created <white><created></white> by <white><creator></white> (<reason>); destroyed: <white><destroyed>"
+    # <data>
+    data: "<dark_gray>  data: <gray><data>"
+    # <time>, <event>, <actor>, <counterparty>, <context>
+    event: "<dark_gray> - <gray><time> <white><event></white> by <white><actor></white><counterparty> <dark_gray><context>"
+    # <counterparty>
+    with: " <gray>with <white><counterparty></white>"
+    none: "<gray>(no events recorded)"
+
+alerts:
+  # Sent to everyone with ascent.staff.alerts.
+  # <item>, <observed>, <created>, <holders>
+  dupe: "<prefix><red><bold>DUPE ALERT</bold> <gray>item <white><item></white> seen <red><observed></red> times, created <white><created></white>. Held by <white><holders></white>. <gray>Check it with <white>/ascent item lookup <item>"
   # <version>
   version: "<prefix><gray>Version <white><version>"
   reload:

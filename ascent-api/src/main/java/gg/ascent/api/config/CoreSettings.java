@@ -12,9 +12,50 @@ import org.jetbrains.annotations.Nullable;
  * @param database the MariaDB connection and pool
  * @param redis the Redis connection, used only for leaderboard caches in Phase 1
  * @param players player data defaults and persistence timing
+ * @param items item registry timing
+ * @param alerts where staff alerts go besides the console
  */
 public record CoreSettings(
-    boolean debug, ZoneId timeZone, Database database, Redis redis, Players players) {
+    boolean debug,
+    ZoneId timeZone,
+    Database database,
+    Redis redis,
+    Players players,
+    Items items,
+    Alerts alerts) {
+
+  /**
+   * Item registry (PRD E1-S5).
+   *
+   * @param dupeScanInterval how often online inventories are scanned for duplicated ids
+   */
+  public record Items(Duration dupeScanInterval) {
+    public Items {
+      if (dupeScanInterval == null || dupeScanInterval.isZero() || dupeScanInterval.isNegative()) {
+        throw new IllegalArgumentException("dupe-scan-interval must be positive");
+      }
+    }
+  }
+
+  /**
+   * Alert routing (PRD §6.6).
+   *
+   * @param discordWebhookUrl an outgoing Discord webhook, or null for none; comes from the {@code
+   *     DISCORD_WEBHOOK_URL} environment variable, never from a file
+   */
+  public record Alerts(@Nullable String discordWebhookUrl) {
+    public Alerts {
+      if (discordWebhookUrl != null && discordWebhookUrl.isBlank()) {
+        discordWebhookUrl = null;
+      }
+    }
+
+    /** Never prints the URL: it is a secret. */
+    @Override
+    public String toString() {
+      return "Alerts[discord=" + (discordWebhookUrl == null ? "off" : "configured") + "]";
+    }
+  }
 
   /**
    * Player data (PRD E1-S3).

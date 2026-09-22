@@ -4,6 +4,7 @@ import gg.ascent.api.AscentApi;
 import gg.ascent.api.config.ConfigService;
 import gg.ascent.api.db.DbExecutor;
 import gg.ascent.api.economy.EconomyService;
+import gg.ascent.api.item.ItemRegistry;
 import gg.ascent.api.message.Messages;
 import gg.ascent.api.player.PlayerService;
 
@@ -16,6 +17,7 @@ final class AscentApiImpl implements AscentApi {
   private final DbExecutor db;
   private final PlayerService players;
   private final EconomyService economy;
+  private final ItemRegistry items;
   private volatile boolean ready;
 
   AscentApiImpl(
@@ -24,13 +26,15 @@ final class AscentApiImpl implements AscentApi {
       Messages messages,
       DbExecutor db,
       PlayerService players,
-      EconomyService economy) {
+      EconomyService economy,
+      ItemRegistry items) {
     this.plugin = plugin;
     this.config = config;
     this.messages = messages;
     this.db = db;
     this.players = players;
     this.economy = economy;
+    this.items = items;
   }
 
   @Override
@@ -66,6 +70,11 @@ final class AscentApiImpl implements AscentApi {
   @Override
   public EconomyService economy() {
     return economy;
+  }
+
+  @Override
+  public ItemRegistry items() {
+    return items;
   }
 
   void markReady() {

@@ -44,6 +44,18 @@ Sprint 1, the core platform (Epic 1).
   `/ascent rank set|add`, `/ascent debug tps|db|items`, all behind
   `ascent.admin` and each written to `admin_actions`. Books, dust, scrolls and
   spawners are reserved until their epics.
+- Item registry and audit log (E1-S5). `ItemRegistry.tag` stamps a UUIDv7 into
+  the item's persistent data and records an `items` row with a CREATED event;
+  `record` logs every later event (drops, pickups and destruction are logged
+  automatically). A scan every five minutes counts each id across online
+  inventories and ender chests, writes `dupe_alerts` when an id outnumbers
+  what was created, and alerts staff in game and on Discord (webhook from
+  `DISCORD_WEBHOOK_URL`). `/ascent item lookup <id>` prints an item's history
+  and `/ascent debug items` the registry state. `ItemRegisteredEvent` fires on
+  every tag.
+- Config files written by an older build gain any setting a newer build adds,
+  copied from the bundled default with its comments; the operator's own values
+  are never touched.
 - Lore renderer (E11-S3). One `LoreRenderer` writes all custom item lore:
   enchants by tier then name with the tier's color, `PROTECTED` when scrolled,
   a kind footer, and a `[n]` enchant count on the name. Idempotent.

@@ -101,7 +101,8 @@ below says what the command does and which story added it.
 | `/ascent rank add <player> <n>` | Move an online player's rank by `n`, negative allowed, clamped to 1..100 | E1-S6 |
 | `/ascent debug tps` | TPS over 1/5/15 minutes and ms per tick | E1-S6 |
 | `/ascent debug db` | Pool usage, queued and failed tasks, Redis state, players online and logging in, then a database round-trip time | E1-S6 |
-| `/ascent debug items` | Reserved for the item registry (E1-S5) | E1-S6 |
+| `/ascent debug items` | Items tagged and events logged since startup, what the last dupe scan saw, open alerts, whether Discord is wired | E1-S5 |
+| `/ascent item lookup <item-id>` | An item's row and full event history. The id is in the item's persistent data; dupe alerts print it | E1-S5 |
 
 Player commands you can use to check economy stories (permission
 `ascent.economy.use`, granted to everyone by default):
@@ -111,6 +112,25 @@ Player commands you can use to check economy stories (permission
 | `/bal [player]` | Your balance, or anyone's who has ever joined | E1-S4 |
 | `/pay <player> <amount>` | Send money; the target may be offline | E1-S4 |
 | `/baltop` | Top 10 balances, refreshed every 60 seconds | E1-S4 |
+
+**Verified 2026-09-22** on Paper 1.21.11 build 132 by the owner: first join
+created the row with $1,000; `/ascent give money`, `/ascent rank set`,
+`/baltop` and `/ascent debug db` answered as documented; the balance survived
+a rejoin and a full server restart. Closes E1-S2, E1-S3, E1-S4 and E1-S6.
+
+## Item registry and dupe alerts
+
+Every valuable item gets a permanent id when it is created (books, scrolls,
+dust, spawners, enchanted gear, kit items). Every five minutes
+(`items.dupe-scan-interval` in `config.yml`) the plugin counts each id across
+online inventories and ender chests; an id seen more times than it was
+created raises a `dupe_alerts` row, a red message to everyone with
+`ascent.staff.alerts` (ops have it), and a Discord post when
+`DISCORD_WEBHOOK_URL` is set in `.env`. Splitting a stack does not trigger it.
+
+Nothing creates tagged items until Epic 3, so until then the scan reports zero.
+To see the machinery work before that, watch `/ascent debug items` and the
+`items`, `item_events` and `dupe_alerts` tables.
 
 ## Database
 
