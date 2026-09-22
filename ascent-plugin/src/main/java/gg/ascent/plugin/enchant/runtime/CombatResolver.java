@@ -78,7 +78,7 @@ public final class CombatResolver {
         }
         switch (type) {
           case DAMAGE_REDUCTION_STACKABLE -> reduction += param(g, "percent", 0.0);
-          case POTION_ON_HURT -> procs.add(potion(g, Side.VICTIM, Side.ATTACKER));
+          case POTION_ON_HURT -> procs.add(potion(g, Side.ATTACKER, Side.VICTIM));
           default -> {
             // not a hurt effect
           }
