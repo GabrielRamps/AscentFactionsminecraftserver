@@ -43,8 +43,13 @@ public final class ApplyListener implements Listener {
     }
     ItemStack cursor = event.getCursor();
     ItemStack target = event.getCurrentItem();
+    if (target == null || target.getType().isAir()) {
+      return;
+    }
+    boolean scroll = enchants.isWhiteScroll(cursor);
+    boolean dust = enchants.magicDust(cursor).isPresent();
     Optional<OpenedBook> book = enchants.openedBook(cursor);
-    if (book.isEmpty() || target == null || target.getType().isAir()) {
+    if (book.isEmpty() && !scroll && !dust) {
       return;
     }
     if (event.getClick() != ClickType.LEFT && event.getClick() != ClickType.RIGHT) {
@@ -57,6 +62,14 @@ public final class ApplyListener implements Listener {
     // From here the click means "apply", never "swap the items".
     event.setCancelled(true);
     if (players.profile(player.getUniqueId()).isEmpty()) {
+      return;
+    }
+    if (scroll) {
+      applyScroll(event, player, cursor, target);
+      return;
+    }
+    if (dust) {
+      applyDust(event, player, cursor, target);
       return;
     }
     EnchantDefinition def = enchants.definition(book.get().enchantId()).orElse(null);
@@ -106,10 +119,64 @@ public final class ApplyListener implements Listener {
       }
     }
     // The service consumed one book from the stack; show the cursor as it now is.
-    event.setCursor(cursor.getAmount() <= 0 ? null : cursor);
+    event.getView().setCursor(cursor.getAmount() <= 0 ? null : cursor);
     if (result != ApplyResult.DESTROYED) {
       event.setCurrentItem(target);
     }
+  }
+
+  /** PRD E3-S5: a White Scroll on gear. */
+  private void applyScroll(
+      InventoryClickEvent event, Player player, ItemStack scroll, ItemStack gear) {
+    if (enchants.isProtected(gear)) {
+      messages.send(player, "enchant.scroll.already");
+      play(player, "block.note_block.bass", 0.8f);
+      return;
+    }
+    if (!enchants.applyScroll(scroll, gear, player.getUniqueId())) {
+      messages.send(player, "enchant.scroll.not-gear");
+      play(player, "block.note_block.bass", 0.8f);
+      return;
+    }
+    messages.send(player, "enchant.scroll.applied");
+    play(player, "item.armor.equip_chain", 1.0f);
+    event.getView().setCursor(scroll.getAmount() <= 0 ? null : scroll);
+    event.setCurrentItem(gear);
+  }
+
+  /** PRD E3-S5: Magic Dust on an opened book. */
+  private void applyDust(InventoryClickEvent event, Player player, ItemStack dust, ItemStack book) {
+    Optional<OpenedBook> opened = enchants.openedBook(book);
+    var d = enchants.magicDust(dust).orElseThrow();
+    if (opened.isEmpty()) {
+      messages.send(player, "enchant.dust.not-book");
+      play(player, "block.note_block.bass", 0.8f);
+      return;
+    }
+    EnchantDefinition def = enchants.definition(opened.get().enchantId()).orElse(null);
+    if (def == null || def.tier() != d.tier()) {
+      messages.send(
+          player,
+          "enchant.dust.wrong-tier",
+          Placeholder.unparsed("tier", BookLore.tierName(d.tier())));
+      play(player, "block.note_block.bass", 0.8f);
+      return;
+    }
+    if (opened.get().success() >= 100) {
+      messages.send(player, "enchant.dust.already-max");
+      play(player, "block.note_block.bass", 0.8f);
+      return;
+    }
+    enchants.applyDust(dust, book, player.getUniqueId());
+    int after = enchants.openedBook(book).map(OpenedBook::success).orElse(100);
+    messages.send(
+        player,
+        "enchant.dust.applied",
+        Placeholder.unparsed("percent", String.valueOf(d.percent())),
+        Placeholder.unparsed("success", String.valueOf(after)));
+    play(player, "block.amethyst_block.chime", 1.2f);
+    event.getView().setCursor(dust.getAmount() <= 0 ? null : dust);
+    event.setCurrentItem(book);
   }
 
   private static void play(Player player, String key, float pitch) {

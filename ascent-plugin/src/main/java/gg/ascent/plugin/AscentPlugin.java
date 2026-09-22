@@ -22,6 +22,7 @@ import gg.ascent.plugin.economy.VaultHook;
 import gg.ascent.plugin.enchant.ApplyListener;
 import gg.ascent.plugin.enchant.BookListener;
 import gg.ascent.plugin.enchant.EnchantServiceImpl;
+import gg.ascent.plugin.enchant.EnchanterCommand;
 import gg.ascent.plugin.enchant.SqlEnchantRollRepository;
 import gg.ascent.plugin.item.DupeScanTask;
 import gg.ascent.plugin.item.ItemAudit;
@@ -273,6 +274,9 @@ public final class AscentPlugin extends JavaPlugin {
     getServer()
         .getPluginManager()
         .registerEvents(new ApplyListener(enchants, players, messages), this);
+    EnchanterCommand enchanterCommand =
+        new EnchanterCommand(enchants, players, unlocks, config, messages);
+    getServer().getPluginManager().registerEvents(enchanterCommand, this);
 
     kits =
         new KitManager(
@@ -377,7 +381,8 @@ public final class AscentPlugin extends JavaPlugin {
         || !bind("rank", rank, rank)
         || !bind("kit", kitCommand, kitCommand)
         || !bind("mine", mineCommand, mineCommand)
-        || !bind("sell", sellCommand, sellCommand)) {
+        || !bind("sell", sellCommand, sellCommand)
+        || !bind("enchanter", enchanterCommand, enchanterCommand)) {
       getServer().getPluginManager().disablePlugin(this);
       return;
     }

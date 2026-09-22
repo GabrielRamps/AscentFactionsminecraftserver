@@ -97,7 +97,9 @@ below says what the command does and which story added it.
 | `/ascent give <player> money <amount>` | Add money; works for offline players. `k`, `m` and `b` suffixes are accepted (`2k`, `3m`); whole numbers only, so write `1500k` rather than `1.5m` | E1-S6 |
 | `/ascent give <player> xp <amount>` | Add rank XP to an online player. Until E2-S1 this only moves the counters; no rank-up fires | E1-S6 |
 | `/ascent give <player> books <tier> [amount]` | Unopened books of a tier (SIMPLE, UNIQUE, ELITE, ULTIMATE, LEGENDARY), up to 64 | E3-S2 |
-| `/ascent give <player> dust\|scrolls\|spawners` | Reserved; answers "not yet" until E3-S5 and Epic 5 | E1-S6 |
+| `/ascent give <player> scrolls [amount]` | White Scrolls | E3-S5 |
+| `/ascent give <player> dust <tier> <percent> [amount]` | Magic Dust for a tier, adding 1 to 15 success points | E3-S5 |
+| `/ascent give <player> spawners` | Reserved; answers "not yet" until Epic 5 | E1-S6 |
 | `/ascent rank set <player> <1-100>` | Set an online player's rank (XP toward next resets to 0) | E1-S6 |
 | `/ascent rank add <player> <n>` | Move an online player's rank by `n`, negative allowed, clamped to 1..100 | E1-S6 |
 | `/ascent debug tps` | TPS over 1/5/15 minutes and ms per tick | E1-S6 |
@@ -120,6 +122,7 @@ Player commands you can use to check economy stories (permission
 | `/kit <name>` | Claim a kit directly, for example `/kit starter` | E2-S3 |
 | `/mine` | Teleport to your personal mine; builds it on first use, upgrades the tier when your rank allows | E4-S1 |
 | `/sell` | Sell every sellable item in your inventory at `prices.yml` values, with a receipt | E4-S2 |
+| `/enchanter` | Buy unopened books with vanilla XP levels; left-click 1, right-click 8, shift-click 16 | E3-S6 |
 
 **Verified 2026-09-22** on Paper 1.21.11 build 132 by the owner: first join
 created the row with $1,000; `/ascent give money`, `/ascent rank set`,
@@ -181,6 +184,14 @@ SELECT outcome, COUNT(*) FROM enchant_rolls GROUP BY outcome;
 Slots per item follow your rank (`/rank unlocks`); upgrading an enchant already
 on the item takes no new slot. Kit items with `enchants` in `kits.yml` now
 arrive enchanted.
+
+White Scrolls (paper) go onto gear the same way and add a `PROTECTED` line; the
+next destroy roll spends the scroll instead of the item. Magic Dust (glowstone
+dust) goes onto an opened book of the same tier and raises its success chance
+by the dust's percent, capped at 100; dust of 10% or more has a purple name.
+Both are registry-tagged. The Enchanter (`/enchanter`) sells unopened books for
+vanilla XP levels at the tier costs in `enchants.yml`; `/xp set <you> 100 levels`
+in the console is the quick way to test it.
 
 ## Personal mines
 

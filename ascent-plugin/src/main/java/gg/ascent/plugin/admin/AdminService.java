@@ -114,6 +114,38 @@ public final class AdminService {
             });
   }
 
+  /** {@code /ascent give <player> scrolls [amount]}: White Scrolls to an online player. */
+  public Result giveScrolls(UUID actor, String targetName, int amount) {
+    if (amount < 1 || amount > 64) {
+      return Result.of(Outcome.BAD_AMOUNT);
+    }
+    Optional<PlayerProfile> target = onlineByName(targetName);
+    if (target.isEmpty()) {
+      return Result.of(Outcome.NOT_ONLINE);
+    }
+    giver.give(target.get().uuid(), enchants.createWhiteScroll(amount, actor, "admin"));
+    log.record(actor, "give.scrolls", target.get().name(), Map.of("amount", amount));
+    return new Result(Outcome.OK, amount);
+  }
+
+  /**
+   * {@code /ascent give <player> dust <tier> <percent> [amount]}: Magic Dust to an online player.
+   */
+  public Result giveDust(UUID actor, String targetName, Tier tier, int percent, int amount) {
+    if (amount < 1 || amount > 64 || percent < 1 || percent > 15) {
+      return Result.of(Outcome.BAD_AMOUNT);
+    }
+    Optional<PlayerProfile> target = onlineByName(targetName);
+    if (target.isEmpty()) {
+      return Result.of(Outcome.NOT_ONLINE);
+    }
+    giver.give(
+        target.get().uuid(), enchants.createMagicDust(tier, percent, amount, actor, "admin"));
+    log.record(
+        actor, "give.dust", target.get().name(), args("tier", tier.name(), "percent", percent));
+    return new Result(Outcome.OK, amount);
+  }
+
   /** {@code /ascent give <player> xp <amount>}: rank XP through the ladder, rank-ups included. */
   public Result giveXp(UUID actor, String targetName, long amount) {
     if (amount < 1 || amount > 1_000_000_000L) {

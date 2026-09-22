@@ -223,7 +223,7 @@ public final class EnchantServiceImpl implements EnchantService {
     }
   }
 
-  /** Whether a White Scroll protects the item (E3-S5 sets it). */
+  @Override
   public boolean isProtected(@Nullable ItemStack item) {
     PersistentDataContainer pdc = pdc(item);
     Byte flag = pdc == null ? null : pdc.get(EnchantKeys.WHITE_SCROLL, PersistentDataType.BYTE);
@@ -404,6 +404,141 @@ public final class EnchantServiceImpl implements EnchantService {
         .callEvent(
             new EnchantAppliedEvent(player, target, opened.enchantId(), opened.level(), result));
     return result;
+  }
+
+  // --- scrolls and dust (PRD E3-S5) ---------------------------------------------------------
+
+  @Override
+  public ItemStack createWhiteScroll(int amount, @Nullable UUID creator, String reason) {
+    ItemStack scroll = new ItemStack(Material.PAPER, Math.max(1, Math.min(64, amount)));
+    ItemMeta meta = scroll.getItemMeta();
+    meta.displayName(plain(mini.deserialize(DustLore.scrollName())));
+    List<Component> lines = new ArrayList<>();
+    for (String line : DustLore.scrollLore()) {
+      lines.add(plain(mini.deserialize(line)));
+    }
+    meta.lore(lines);
+    meta.getPersistentDataContainer()
+        .set(EnchantKeys.SCROLL_ITEM, PersistentDataType.BYTE, (byte) 1);
+    scroll.setItemMeta(meta);
+    items.tag(scroll, ItemKind.WHITE_SCROLL, Map.of(), creator, reason);
+    return scroll;
+  }
+
+  @Override
+  public ItemStack createMagicDust(
+      Tier tier, int percent, int amount, @Nullable UUID creator, String reason) {
+    int p = Math.max(1, Math.min(15, percent));
+    ItemStack dust = new ItemStack(Material.GLOWSTONE_DUST, Math.max(1, Math.min(64, amount)));
+    ItemMeta meta = dust.getItemMeta();
+    meta.displayName(plain(mini.deserialize(DustLore.dustName(settings(), tier, p))));
+    List<Component> lines = new ArrayList<>();
+    for (String line : DustLore.dustLore(settings(), tier, p)) {
+      lines.add(plain(mini.deserialize(line)));
+    }
+    meta.lore(lines);
+    PersistentDataContainer pdc = meta.getPersistentDataContainer();
+    pdc.set(EnchantKeys.DUST_TIER, PersistentDataType.STRING, tier.name());
+    pdc.set(EnchantKeys.DUST_PERCENT, PersistentDataType.INTEGER, p);
+    dust.setItemMeta(meta);
+    items.tag(
+        dust, ItemKind.MAGIC_DUST, Map.of("tier", tier.name(), "percent", p), creator, reason);
+    return dust;
+  }
+
+  @Override
+  public boolean isWhiteScroll(@Nullable ItemStack item) {
+    PersistentDataContainer pdc = pdc(item);
+    Byte flag = pdc == null ? null : pdc.get(EnchantKeys.SCROLL_ITEM, PersistentDataType.BYTE);
+    return flag != null && flag == 1;
+  }
+
+  @Override
+  public Optional<MagicDust> magicDust(@Nullable ItemStack item) {
+    PersistentDataContainer pdc = pdc(item);
+    if (pdc == null) {
+      return Optional.empty();
+    }
+    String tier = pdc.get(EnchantKeys.DUST_TIER, PersistentDataType.STRING);
+    Integer percent = pdc.get(EnchantKeys.DUST_PERCENT, PersistentDataType.INTEGER);
+    if (tier == null || percent == null) {
+      return Optional.empty();
+    }
+    try {
+      return Optional.of(new MagicDust(Tier.valueOf(tier), percent));
+    } catch (IllegalArgumentException e) {
+      return Optional.empty();
+    }
+  }
+
+  @Override
+  public boolean applyScroll(ItemStack scroll, ItemStack gear, @Nullable UUID actor) {
+    if (!isWhiteScroll(scroll)
+        || gear == null
+        || gg.ascent.api.enchant.ItemTarget.classify(gear.getType().name()).isEmpty()
+        || isProtected(gear)) {
+      return false;
+    }
+    ItemMeta meta = gear.getItemMeta();
+    meta.getPersistentDataContainer()
+        .set(EnchantKeys.WHITE_SCROLL, PersistentDataType.BYTE, (byte) 1);
+    gear.setItemMeta(meta);
+    UUID gearId = ensureTagged(gear, actor, "scroll");
+    items
+        .idOf(scroll)
+        .ifPresent(
+            id ->
+                items.record(
+                    id, ItemEvent.CONSUMED, actor, null, Map.of("gear", gearId.toString())));
+    items.record(gearId, ItemEvent.APPLIED, actor, null, Map.of("what", "white_scroll"));
+    scroll.setAmount(scroll.getAmount() - 1);
+    refreshLore(gear);
+    return true;
+  }
+
+  @Override
+  public boolean applyDust(ItemStack dust, ItemStack book, @Nullable UUID actor) {
+    Optional<MagicDust> d = magicDust(dust);
+    Optional<OpenedBook> b = openedBook(book);
+    if (d.isEmpty() || b.isEmpty() || b.get().success() >= 100) {
+      return false;
+    }
+    EnchantDefinition def = settings().enchant(b.get().enchantId()).orElse(null);
+    if (def == null || def.tier() != d.get().tier()) {
+      return false;
+    }
+    int success = DustLore.boostedSuccess(b.get().success(), d.get().percent());
+    OpenedBook boosted =
+        new OpenedBook(b.get().enchantId(), b.get().level(), success, b.get().destroy());
+    ItemMeta meta = book.getItemMeta();
+    meta.getPersistentDataContainer().set(EnchantKeys.SUCCESS, PersistentDataType.INTEGER, success);
+    List<Component> lines = new ArrayList<>();
+    for (String line : BookLore.openedLore(def, boosted)) {
+      lines.add(plain(mini.deserialize(line)));
+    }
+    meta.lore(lines);
+    book.setItemMeta(meta);
+    Optional<UUID> bookId = items.idOf(book);
+    items
+        .idOf(dust)
+        .ifPresent(
+            id ->
+                items.record(
+                    id,
+                    ItemEvent.CONSUMED,
+                    actor,
+                    null,
+                    Map.of("book", bookId.map(UUID::toString).orElse("?"), "success", success)));
+    bookId.ifPresent(
+        id ->
+            items.record(
+                id,
+                ItemEvent.APPLIED,
+                actor,
+                null,
+                Map.of("what", "magic_dust", "percent", d.get().percent(), "success", success)));
+    dust.setAmount(dust.getAmount() - 1);
+    return true;
   }
 
   @Override

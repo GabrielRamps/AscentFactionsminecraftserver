@@ -26,5 +26,14 @@ public final class EnchantKeys {
   /** Gear: 1 when a White Scroll protects the item. */
   public static final NamespacedKey WHITE_SCROLL = new NamespacedKey("ascent", "white_scroll");
 
+  /** The White Scroll item itself: 1. */
+  public static final NamespacedKey SCROLL_ITEM = new NamespacedKey("ascent", "scroll_item");
+
+  /** Magic Dust: the tier it works on. */
+  public static final NamespacedKey DUST_TIER = new NamespacedKey("ascent", "dust_tier");
+
+  /** Magic Dust: the success points it adds. */
+  public static final NamespacedKey DUST_PERCENT = new NamespacedKey("ascent", "dust_percent");
+
   private EnchantKeys() {}
 }

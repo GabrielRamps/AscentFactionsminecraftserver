@@ -100,6 +100,16 @@ Sprint 1, the core platform (Epic 1).
   kept. `EnchantApplyEvent` (cancellable) and `EnchantAppliedEvent` fire; the
   registry logs APPLIED, CONSUMED and DESTROYED; every roll lands in
   `enchant_rolls`. Kit enchants are applied for real.
+- White Scrolls and Magic Dust (E3-S5). A scroll dragged onto gear protects it
+  (one per item, `PROTECTED` in the lore) and is spent instead of the item on a
+  destroy roll; dust dragged onto an opened book of its tier adds its percent
+  to the success chance, capped at 100, with strong dust named in purple. Both
+  registry-tagged; `/ascent give` hands them out until the Tinkerer, contracts
+  and events do.
+- Enchanter (E3-S6). `/enchanter` opens a menu with one slot per tier the rank
+  allows, priced in vanilla XP levels from `enchants.yml`; left-click buys 1,
+  right-click 8, shift-click 16 at no discount; too few levels is a red message
+  with the menu kept open.
 - Lore renderer (E11-S3). One `LoreRenderer` writes all custom item lore:
   enchants by tier then name with the tier's color, `PROTECTED` when scrolled,
   a kind footer, and a `[n]` enchant count on the name. Idempotent.

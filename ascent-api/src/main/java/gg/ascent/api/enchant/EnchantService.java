@@ -62,6 +62,42 @@ public interface EnchantService {
   /** Rebuilds the item's lore from what it carries. The one place gear lore is written. */
   void refreshLore(ItemStack gear);
 
+  // --- White Scrolls and Magic Dust (PRD E3-S5) --------------------------------------------
+
+  /** A registry-tagged White Scroll stack. */
+  ItemStack createWhiteScroll(int amount, @Nullable UUID creator, String reason);
+
+  /**
+   * A registry-tagged Magic Dust stack of {@code tier} adding {@code percent} (1 to 15) success.
+   */
+  ItemStack createMagicDust(
+      Tier tier, int percent, int amount, @Nullable UUID creator, String reason);
+
+  boolean isWhiteScroll(@Nullable ItemStack item);
+
+  Optional<MagicDust> magicDust(@Nullable ItemStack item);
+
+  /** Whether a White Scroll protects the gear. */
+  boolean isProtected(@Nullable ItemStack gear);
+
+  /**
+   * Protects {@code gear} with one scroll from {@code scroll}. Nothing happens, and false is
+   * answered, when the item is not gear or is already protected.
+   */
+  boolean applyScroll(ItemStack scroll, ItemStack gear, @Nullable UUID actor);
+
+  /**
+   * Adds one dust's percent to an opened book's success chance, capped at 100. Nothing happens, and
+   * false is answered, unless the dust and the book share a tier and the book is below 100.
+   */
+  boolean applyDust(ItemStack dust, ItemStack book, @Nullable UUID actor);
+
+  /**
+   * @param tier the book tier the dust works on
+   * @param percent success points it adds, 1 to 15
+   */
+  record MagicDust(Tier tier, int percent) {}
+
   Optional<EnchantDefinition> definition(String enchantId);
 
   /** The catalog for one tier, in file order. */

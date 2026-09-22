@@ -197,7 +197,41 @@ public final class AscentCommand implements CommandExecutor, TabCompleter {
             Placeholder.unparsed("amount", String.valueOf(amount)),
             Placeholder.unparsed("tier", tier.name()));
       }
-      case "dust", "scrolls", "spawners" ->
+      case "scrolls" -> {
+        long amount = args.length >= 4 ? parseLong(args[3]) : 1;
+        if (amount < 1 || amount > 64) {
+          messages.send(sender, "ascent.give.bad-amount");
+          return;
+        }
+        report(
+            sender,
+            admin.giveScrolls(actor, target, (int) amount),
+            "ascent.give.scrolls",
+            player(target),
+            Placeholder.unparsed("amount", String.valueOf(amount)));
+      }
+      case "dust" -> {
+        Tier tier = args.length >= 4 ? tierOf(args[3]) : null;
+        long percent = args.length >= 5 ? parseLong(args[4]) : -1;
+        long amount = args.length >= 6 ? parseLong(args[5]) : 1;
+        if (tier == null) {
+          messages.send(sender, "ascent.give.bad-tier");
+          return;
+        }
+        if (percent < 1 || percent > 15 || amount < 1 || amount > 64) {
+          messages.send(sender, "ascent.give.bad-dust");
+          return;
+        }
+        report(
+            sender,
+            admin.giveDust(actor, target, tier, (int) percent, (int) amount),
+            "ascent.give.dust",
+            player(target),
+            Placeholder.unparsed("amount", String.valueOf(amount)),
+            Placeholder.unparsed("tier", tier.name()),
+            Placeholder.unparsed("percent", String.valueOf(percent)));
+      }
+      case "spawners" ->
           messages.send(sender, "ascent.give.not-yet", Placeholder.unparsed("kind", kind));
       default -> messages.send(sender, "ascent.give.usage");
     }
@@ -415,6 +449,14 @@ public final class AscentCommand implements CommandExecutor, TabCompleter {
     return String.format(Locale.ROOT, "%.2f", value);
   }
 
+  private static @Nullable Tier tierOf(String text) {
+    try {
+      return Tier.valueOf(text.toUpperCase(Locale.ROOT));
+    } catch (IllegalArgumentException e) {
+      return null;
+    }
+  }
+
   /** Long.MIN_VALUE when {@code text} is not a whole number. */
   private static long parseLong(String text) {
     try {
@@ -441,7 +483,7 @@ public final class AscentCommand implements CommandExecutor, TabCompleter {
             case 2 -> onlineNames(args[1]);
             case 3 -> filter(GIVE_KINDS, args[2]);
             case 4 ->
-                args[2].equalsIgnoreCase("books")
+                args[2].equalsIgnoreCase("books") || args[2].equalsIgnoreCase("dust")
                     ? filter(List.of("simple", "unique", "elite", "ultimate", "legendary"), args[3])
                     : List.of();
             default -> List.of();

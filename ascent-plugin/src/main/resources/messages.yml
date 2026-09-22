@@ -25,6 +25,11 @@ ascent:
     bad-tier: "<prefix><red>Tier must be one of SIMPLE, UNIQUE, ELITE, ULTIMATE, LEGENDARY."
     # <player>, <amount>, <tier>
     books: "<prefix><green>Gave <amount> unopened <tier> book(s) to <white><player></white>."
+    # <player>, <amount>
+    scrolls: "<prefix><green>Gave <amount> White Scroll(s) to <white><player></white>."
+    bad-dust: "<prefix><red>Dust is <white>/ascent give <player> dust <tier> <percent 1-15> [amount]</white>."
+    # <player>, <amount>, <tier>, <percent>
+    dust: "<prefix><green>Gave <amount> <tier> Magic Dust +<percent>% to <white><player></white>."
   rank:
     usage: "<prefix><gray>Usage: <white>/ascent rank <set|add> <player> <number>"
     # <max>
@@ -192,6 +197,32 @@ enchant:
     failed: "<prefix><yellow>The book crumbled. <gray>Your item is unchanged."
     destroyed: "<prefix><red><bold>DESTROYED!</bold> <gray>The item shattered under <white><enchant></white>."
     scroll-saved: "<prefix><white><bold>PROTECTED.</bold> <gray>The roll would have destroyed your item; the White Scroll took the blow."
+  scroll:
+    applied: "<prefix><white><bold>PROTECTED.</bold> <gray>The next destroy roll spends the scroll instead of the item."
+    already: "<prefix><red>That item is already protected."
+    not-gear: "<prefix><red>White Scrolls go on gear."
+  dust:
+    not-book: "<prefix><red>Magic Dust goes on an opened book."
+    # <tier>
+    wrong-tier: "<prefix><red>That dust only works on <white><tier></white> books."
+    already-max: "<prefix><red>That book already has 100% success."
+    # <percent>, <success>
+    applied: "<prefix><green>+<percent>% <gray>success. The book is now at <white><success>%</white>."
+
+enchanter:
+  console: "<prefix><gray>The Enchanter is for players."
+  title: "<dark_gray>Enchanter"
+  lore:
+    # <cost>
+    cost: "<gray>Cost: <green><cost> levels</green> each"
+    # <levels>
+    have: "<gray>You have <white><levels></white> levels"
+    buy: "<dark_gray>Left-click 1, right-click 8, shift-click 16"
+    # <rank>
+    locked: "<red>Unlocks at rank <rank>"
+  # <count>, <tier>, <cost>, <levels>
+  too-poor: "<prefix><red>You need <white><cost></white> levels for <count> <tier> book(s); you have <levels>."
+  bought: "<prefix><green>Bought <white><count></white> <tier> book(s) for <white><cost></white> levels."
 
 alerts:
   # Sent to everyone with ascent.staff.alerts.
