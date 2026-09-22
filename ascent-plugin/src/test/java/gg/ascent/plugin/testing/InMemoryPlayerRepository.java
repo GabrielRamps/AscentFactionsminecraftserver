@@ -105,6 +105,19 @@ public final class InMemoryPlayerRepository implements PlayerRepository {
   }
 
   @Override
+  public synchronized List<RankEntry> topRanks(Connection c, int limit) {
+    calls.add("topRanks");
+    return rows.values().stream()
+        .sorted(
+            Comparator.comparingInt(PlayerSnapshot::rank)
+                .thenComparingLong(PlayerSnapshot::xp)
+                .reversed())
+        .limit(limit)
+        .map(r -> new RankEntry(r.uuid(), r.name(), r.rank(), r.xp()))
+        .toList();
+  }
+
+  @Override
   public synchronized List<BalanceEntry> topBalances(Connection c, int limit) {
     calls.add("topBalances");
     return rows.values().stream()

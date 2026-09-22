@@ -7,11 +7,13 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Typed, validating access to one YAML section.
@@ -26,10 +28,19 @@ public final class Node {
 
   private final String file;
   private final ConfigurationSection section;
+  private final @Nullable String label;
 
   public Node(String file, ConfigurationSection section) {
+    this(file, section, null);
+  }
+
+  /**
+   * @param label replaces the section path in error messages, for list items
+   */
+  private Node(String file, ConfigurationSection section, @Nullable String label) {
     this.file = file;
     this.section = section;
+    this.label = label;
   }
 
   /** The child section at {@code path}, which must exist. */
@@ -45,6 +56,18 @@ public final class Node {
   public Node sectionOrEmpty(String path) {
     ConfigurationSection child = section.getConfigurationSection(path);
     return new Node(file, child == null ? new MemoryConfiguration() : child);
+  }
+
+  /** A list of mappings at {@code path}, each as its own node; an absent list is empty. */
+  public List<Node> sections(String path) {
+    List<Map<?, ?>> maps = section.getMapList(path);
+    List<Node> out = new ArrayList<>(maps.size());
+    for (int i = 0; i < maps.size(); i++) {
+      MemoryConfiguration holder = new MemoryConfiguration();
+      ConfigurationSection item = holder.createSection("item", maps.get(i));
+      out.add(new Node(file, item, at(path) + "[" + i + "]"));
+    }
+    return out;
   }
 
   public Set<String> keys() {
@@ -244,6 +267,9 @@ public final class Node {
 
   /** A path for error messages: {@code file: a.b.c}. */
   public String at(String path) {
+    if (label != null) {
+      return label + "." + path;
+    }
     String base = section.getCurrentPath();
     String full = base == null || base.isEmpty() ? path : base + "." + path;
     return file + ": " + full;

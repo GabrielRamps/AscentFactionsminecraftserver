@@ -1,8 +1,7 @@
-package gg.ascent.plugin.economy;
+package gg.ascent.plugin.leaderboard;
 
 import gg.ascent.api.db.DbExecutor;
-import gg.ascent.plugin.player.PlayerRepository;
-import gg.ascent.plugin.player.PlayerRepository.BalanceEntry;
+import gg.ascent.api.db.SqlFunction;
 import gg.ascent.plugin.redis.RedisConnector;
 import gg.ascent.plugin.util.Futures;
 import java.util.ArrayList;
@@ -16,80 +15,88 @@ import redis.clients.jedis.Transaction;
 import redis.clients.jedis.resps.Tuple;
 
 /**
- * The {@code /baltop} leaderboard: a Redis sorted set rebuilt from the database every autosave (PRD
- * E1-S4), with the last database answer kept in memory for when Redis is away.
+ * A top-N board kept in a Redis sorted set and rebuilt from the database after every autosave, with
+ * the last database answer kept in memory for when Redis is away. Used for {@code /baltop} (PRD
+ * E1-S4) and {@code /rank top} (E2-S1).
  *
- * <p>{@link #refresh} runs right after the autosave so the query sees the balances just written.
- * {@link #read} is for an async thread: it asks Redis first and falls back to the snapshot.
+ * <p>{@link #refresh} runs on the main thread and completes there; {@link #read} is for an async
+ * thread, since Redis is a network hop.
  */
-public final class BaltopCache {
-
-  /** Sorted set of {@code uuid|name} scored by balance. */
-  public static final String KEY = "ascent:baltop";
+public final class Leaderboard {
 
   public static final int SIZE = 10;
 
+  /** One row: who, their last known name, and the sort score. */
+  public record Entry(UUID uuid, String name, long score) {}
+
+  private final String key;
   private final DbExecutor db;
-  private final PlayerRepository players;
+  private final SqlFunction<List<Entry>> query;
   private final RedisConnector redis;
   private final Logger log;
-  private volatile List<BalanceEntry> snapshot = List.of();
+  private volatile List<Entry> snapshot = List.of();
 
-  public BaltopCache(DbExecutor db, PlayerRepository players, RedisConnector redis, Logger log) {
+  /**
+   * @param key the Redis key, like {@code ascent:baltop}
+   * @param query the database query for the top {@link #SIZE}, highest score first
+   */
+  public Leaderboard(
+      String key, DbExecutor db, SqlFunction<List<Entry>> query, RedisConnector redis, Logger log) {
+    this.key = key;
     this.db = db;
-    this.players = players;
+    this.query = query;
     this.redis = redis;
     this.log = log;
   }
 
-  /** Queries the top balances and rewrites the sorted set. Completes on the main thread. */
+  /** Queries the database and rewrites the sorted set. Completes on the main thread. */
   public CompletableFuture<Void> refresh() {
     return Futures.logFailure(
         db.supply(
                 c -> {
-                  List<BalanceEntry> top = players.topBalances(c, SIZE);
+                  List<Entry> top = query.apply(c);
                   // Still on the worker thread: the Redis round trip belongs here, not on main.
                   write(top);
                   return top;
                 })
             .thenAccept(top -> snapshot = top),
         log,
-        "refreshing baltop");
+        "refreshing " + key);
   }
 
-  private void write(List<BalanceEntry> top) {
+  private void write(List<Entry> top) {
     Map<String, Double> scores = new LinkedHashMap<>();
-    for (BalanceEntry entry : top) {
-      scores.put(entry.uuid() + "|" + entry.name(), (double) entry.balance());
+    for (Entry entry : top) {
+      scores.put(entry.uuid() + "|" + entry.name(), (double) entry.score());
     }
     redis.with(
         jedis -> {
           Transaction tx = jedis.multi();
-          tx.del(KEY);
+          tx.del(key);
           if (!scores.isEmpty()) {
-            tx.zadd(KEY, scores);
+            tx.zadd(key, scores);
           }
           tx.exec();
           return true;
         });
   }
 
-  /** The leaderboard, highest first. Blocking: call from an async task, never the main thread. */
-  public List<BalanceEntry> read() {
+  /** The board, highest first. Blocking: call from an async task, never the main thread. */
+  public List<Entry> read() {
     return redis
-        .with(jedis -> jedis.zrevrangeWithScores(KEY, 0, SIZE - 1))
-        .map(BaltopCache::decode)
+        .with(jedis -> jedis.zrevrangeWithScores(key, 0, SIZE - 1))
+        .map(Leaderboard::decode)
         .filter(list -> !list.isEmpty())
         .orElse(snapshot);
   }
 
   /** The last database answer, without touching Redis. Safe on any thread. */
-  public List<BalanceEntry> snapshot() {
+  public List<Entry> snapshot() {
     return snapshot;
   }
 
-  static List<BalanceEntry> decode(List<Tuple> tuples) {
-    List<BalanceEntry> out = new ArrayList<>(tuples.size());
+  static List<Entry> decode(List<Tuple> tuples) {
+    List<Entry> out = new ArrayList<>(tuples.size());
     for (Tuple t : tuples) {
       String member = t.getElement();
       int bar = member.indexOf('|');
@@ -98,7 +105,7 @@ public final class BaltopCache {
       }
       try {
         out.add(
-            new BalanceEntry(
+            new Entry(
                 UUID.fromString(member.substring(0, bar)),
                 member.substring(bar + 1),
                 (long) t.getScore()));

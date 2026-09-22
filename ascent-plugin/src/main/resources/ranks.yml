@@ -31,3 +31,22 @@ sources:
     repeat-multiplier: 0.1
   koth-win: 2000
   envoy-crate: 300
+
+# Rank gates (PRD E2-S2). Book tiers unlock at the min-rank of each tier in
+# enchants.yml; kits at the min-rank of each kit in kits.yml.
+unlocks:
+  # Custom-enchant slots per item: base + rank / per-ranks, at most max.
+  # 6 at rank 1, 7 at rank 10 ... 16 at rank 100.
+  enchant-slots:
+    base: 6
+    per-ranks: 10
+    max: 16
+  # Personal mine tier by the rank that opens it.
+  mine-tiers:
+    tier1: 1
+    tier2: 20
+    tier3: 40
+
+rank-up:
+  # Sound played on rank-up. Any Minecraft sound key.
+  sound: entity.player.levelup

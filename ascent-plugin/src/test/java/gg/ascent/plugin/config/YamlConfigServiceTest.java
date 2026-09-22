@@ -36,7 +36,7 @@ class YamlConfigServiceTest {
     ReloadReport report = service.load();
 
     assertTrue(report.allOk(), report.failures().toString());
-    assertEquals(9, report.files().size());
+    assertEquals(10, report.files().size());
     for (String file :
         new String[] {
           "config.yml",
@@ -47,7 +47,8 @@ class YamlConfigServiceTest {
           "factions.yml",
           "contracts.yml",
           "events.yml",
-          "combat.yml"
+          "combat.yml",
+          "kits.yml"
         }) {
       assertTrue(Files.exists(dataDir.resolve(file)), file + " should be seeded");
     }

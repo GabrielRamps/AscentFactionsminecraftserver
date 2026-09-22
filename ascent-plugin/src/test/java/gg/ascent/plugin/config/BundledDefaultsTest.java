@@ -9,6 +9,7 @@ import gg.ascent.api.config.CoreSettings;
 import gg.ascent.api.config.EnchantsSettings;
 import gg.ascent.api.config.EventsSettings;
 import gg.ascent.api.config.FactionsSettings;
+import gg.ascent.api.config.KitsSettings;
 import gg.ascent.api.config.MinesSettings;
 import gg.ascent.api.config.RanksSettings;
 import gg.ascent.api.config.SpawnersSettings;
@@ -54,6 +55,23 @@ class BundledDefaultsTest {
     assertEquals(500, s.sources().pvpKill().base());
     assertEquals(0.1, s.sources().pvpKill().repeatMultiplier());
     assertEquals(2000, s.sources().kothWin());
+    assertEquals(6, s.unlocks().enchantSlots().base());
+    assertEquals(16, s.unlocks().enchantSlots().max());
+    assertEquals(Map.of(1, 1, 2, 20, 3, 40), s.unlocks().mineTiers());
+    assertEquals("entity.player.levelup", s.rankUp().sound());
+  }
+
+  @Test
+  void kitsAreRankGatedInPrdOrder() {
+    KitsSettings s = SettingsParsers.kits(TestYaml.bundled("kits.yml"));
+    assertEquals(
+        java.util.List.of("starter", "rank10", "rank25", "rank50", "rank75"),
+        s.byRank().stream().map(KitsSettings.Kit::id).toList());
+    assertEquals(1, s.kits().get("starter").minRank());
+    assertEquals(75, s.kits().get("rank75").minRank());
+    assertEquals(Duration.ofHours(24), s.kits().get("starter").cooldown());
+    assertEquals("STONE_SWORD", s.kits().get("starter").items().get(0).material());
+    assertEquals(Map.of("berserk", 1), s.kits().get("rank75").items().get(0).enchants());
   }
 
   @Test

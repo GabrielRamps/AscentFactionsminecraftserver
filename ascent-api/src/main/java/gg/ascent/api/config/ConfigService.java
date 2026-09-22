@@ -30,6 +30,8 @@ public interface ConfigService {
 
   CombatSettings combat();
 
+  KitsSettings kits();
+
   /**
    * Re-reads every file, including {@code messages.yml}.
    *

@@ -7,6 +7,7 @@ import gg.ascent.api.config.CoreSettings;
 import gg.ascent.api.config.EnchantsSettings;
 import gg.ascent.api.config.EventsSettings;
 import gg.ascent.api.config.FactionsSettings;
+import gg.ascent.api.config.KitsSettings;
 import gg.ascent.api.config.MinesSettings;
 import gg.ascent.api.config.RanksSettings;
 import gg.ascent.api.config.SpawnersSettings;
@@ -149,6 +150,25 @@ public final class SettingsParsers {
             pvp.longAtLeast("base", 0),
             pvp.integerAtLeast("repeat-victim-window-minutes", 0),
             pvp.decimalBetween("repeat-multiplier", 0.0, 1.0));
+    Node unlocks = root.section("unlocks");
+    Node slots = unlocks.section("enchant-slots");
+    Node mineTiers = unlocks.section("mine-tiers");
+    Map<Integer, Integer> mineTierRanks = new HashMap<>();
+    for (String key : mineTiers.keys()) {
+      mineTierRanks.put(tierNumber(mineTiers, key), mineTiers.integerAtLeast(key, 1));
+    }
+    RanksSettings.Unlocks unlockSettings =
+        wrap(
+            root,
+            "unlocks",
+            () ->
+                new RanksSettings.Unlocks(
+                    new RanksSettings.EnchantSlots(
+                        slots.integerAtLeast("base", 1),
+                        slots.integerAtLeast("per-ranks", 1),
+                        slots.integerAtLeast("max", 1)),
+                    mineTierRanks));
+    RanksSettings.RankUp rankUp = new RanksSettings.RankUp(root.section("rank-up").string("sound"));
     return new RanksSettings(
         xpCurve,
         new RanksSettings.XpSources(
@@ -156,7 +176,47 @@ public final class SettingsParsers {
             spawnerByMob,
             pvpKill,
             sources.longAtLeast("koth-win", 0),
-            sources.longAtLeast("envoy-crate", 0)));
+            sources.longAtLeast("envoy-crate", 0)),
+        unlockSettings,
+        rankUp);
+  }
+
+  public static KitsSettings kits(Node root) {
+    Node kits = root.section("kits");
+    Map<String, KitsSettings.Kit> out = new LinkedHashMap<>();
+    for (String id : kits.keys()) {
+      Node k = kits.section(id);
+      List<KitsSettings.KitItem> items = new ArrayList<>();
+      for (Node item : k.sections("items")) {
+        Node enchants = item.sectionOrEmpty("enchants");
+        Map<String, Integer> levels = new LinkedHashMap<>();
+        for (String enchant : enchants.keys()) {
+          levels.put(enchant.toLowerCase(Locale.ROOT), enchants.integerAtLeast(enchant, 1));
+        }
+        items.add(
+            wrap(
+                item,
+                "amount",
+                () ->
+                    new KitsSettings.KitItem(
+                        item.string("material").toUpperCase(Locale.ROOT),
+                        item.integerAtLeast("amount", 1),
+                        levels)));
+      }
+      out.put(
+          id,
+          wrap(
+              k,
+              "items",
+              () ->
+                  new KitsSettings.Kit(
+                      id,
+                      k.string("display"),
+                      k.integerAtLeast("min-rank", 1),
+                      k.duration("cooldown"),
+                      items)));
+    }
+    return wrap(root, "kits", () -> new KitsSettings(out));
   }
 
   public static EnchantsSettings enchants(Node root) {

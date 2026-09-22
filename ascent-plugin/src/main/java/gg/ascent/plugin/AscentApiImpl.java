@@ -7,6 +7,8 @@ import gg.ascent.api.economy.EconomyService;
 import gg.ascent.api.item.ItemRegistry;
 import gg.ascent.api.message.Messages;
 import gg.ascent.api.player.PlayerService;
+import gg.ascent.api.rank.RankService;
+import gg.ascent.api.rank.UnlockService;
 
 /** Default {@link AscentApi} implementation, backed by the running plugin instance. */
 final class AscentApiImpl implements AscentApi {
@@ -18,6 +20,8 @@ final class AscentApiImpl implements AscentApi {
   private final PlayerService players;
   private final EconomyService economy;
   private final ItemRegistry items;
+  private final RankService ranks;
+  private final UnlockService unlocks;
   private volatile boolean ready;
 
   AscentApiImpl(
@@ -27,7 +31,9 @@ final class AscentApiImpl implements AscentApi {
       DbExecutor db,
       PlayerService players,
       EconomyService economy,
-      ItemRegistry items) {
+      ItemRegistry items,
+      RankService ranks,
+      UnlockService unlocks) {
     this.plugin = plugin;
     this.config = config;
     this.messages = messages;
@@ -35,6 +41,8 @@ final class AscentApiImpl implements AscentApi {
     this.players = players;
     this.economy = economy;
     this.items = items;
+    this.ranks = ranks;
+    this.unlocks = unlocks;
   }
 
   @Override
@@ -75,6 +83,16 @@ final class AscentApiImpl implements AscentApi {
   @Override
   public ItemRegistry items() {
     return items;
+  }
+
+  @Override
+  public RankService ranks() {
+    return ranks;
+  }
+
+  @Override
+  public UnlockService unlocks() {
+    return unlocks;
   }
 
   void markReady() {

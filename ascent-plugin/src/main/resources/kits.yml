@@ -1,0 +1,65 @@
+# Rank-gated kits (PRD E2-S2, E2-S3). A kit opens at min-rank and can be
+# claimed once per cooldown; cooldowns survive restarts. Items are Bukkit
+# material names; enchants are custom enchant ids and levels, pre-applied when
+# the kit is given (items above Simple tier are registry-tagged).
+#
+# These are starting values for the closed beta; tune from data (PRD §2.5).
+kits:
+  starter:
+    display: "<white>Starter"
+    min-rank: 1
+    cooldown: 24h
+    items:
+      - { material: STONE_SWORD, amount: 1 }
+      - { material: STONE_PICKAXE, amount: 1 }
+      - { material: LEATHER_HELMET, amount: 1 }
+      - { material: LEATHER_CHESTPLATE, amount: 1 }
+      - { material: LEATHER_LEGGINGS, amount: 1 }
+      - { material: LEATHER_BOOTS, amount: 1 }
+      - { material: BREAD, amount: 16 }
+  rank10:
+    display: "<green>Rank 10"
+    min-rank: 10
+    cooldown: 24h
+    items:
+      - { material: IRON_SWORD, amount: 1 }
+      - { material: IRON_PICKAXE, amount: 1 }
+      - { material: IRON_HELMET, amount: 1 }
+      - { material: IRON_CHESTPLATE, amount: 1 }
+      - { material: IRON_LEGGINGS, amount: 1 }
+      - { material: IRON_BOOTS, amount: 1 }
+      - { material: COOKED_BEEF, amount: 32 }
+  rank25:
+    display: "<aqua>Rank 25"
+    min-rank: 25
+    cooldown: 24h
+    items:
+      - { material: DIAMOND_SWORD, amount: 1 }
+      - { material: DIAMOND_PICKAXE, amount: 1 }
+      - { material: IRON_HELMET, amount: 1 }
+      - { material: IRON_CHESTPLATE, amount: 1 }
+      - { material: IRON_LEGGINGS, amount: 1 }
+      - { material: IRON_BOOTS, amount: 1 }
+      - { material: GOLDEN_APPLE, amount: 4 }
+  rank50:
+    display: "<yellow>Rank 50"
+    min-rank: 50
+    cooldown: 24h
+    items:
+      - { material: DIAMOND_SWORD, amount: 1 }
+      - { material: DIAMOND_HELMET, amount: 1 }
+      - { material: DIAMOND_CHESTPLATE, amount: 1 }
+      - { material: DIAMOND_LEGGINGS, amount: 1 }
+      - { material: DIAMOND_BOOTS, amount: 1 }
+      - { material: GOLDEN_APPLE, amount: 8 }
+  rank75:
+    display: "<gold>Rank 75"
+    min-rank: 75
+    cooldown: 24h
+    items:
+      - { material: DIAMOND_SWORD, amount: 1, enchants: { berserk: 1 } }
+      - { material: DIAMOND_HELMET, amount: 1 }
+      - { material: DIAMOND_CHESTPLATE, amount: 1, enchants: { ward: 1 } }
+      - { material: DIAMOND_LEGGINGS, amount: 1 }
+      - { material: DIAMOND_BOOTS, amount: 1 }
+      - { material: GOLDEN_APPLE, amount: 16 }

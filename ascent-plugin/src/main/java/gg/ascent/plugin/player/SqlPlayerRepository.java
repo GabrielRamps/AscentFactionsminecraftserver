@@ -176,6 +176,28 @@ public final class SqlPlayerRepository implements PlayerRepository {
     }
   }
 
+  @Override
+  public List<RankEntry> topRanks(Connection c, int limit) throws SQLException {
+    try (PreparedStatement ps =
+        c.prepareStatement(
+            "SELECT uuid, name, `rank`, xp FROM players ORDER BY `rank` DESC, xp DESC, name ASC"
+                + " LIMIT ?")) {
+      ps.setInt(1, limit);
+      try (ResultSet rs = ps.executeQuery()) {
+        List<RankEntry> out = new ArrayList<>();
+        while (rs.next()) {
+          out.add(
+              new RankEntry(
+                  Sql.getUuid(rs, "uuid"),
+                  rs.getString("name"),
+                  rs.getInt("rank"),
+                  rs.getLong("xp")));
+        }
+        return out;
+      }
+    }
+  }
+
   private static PlayerSnapshot read(ResultSet rs) throws SQLException {
     return new PlayerSnapshot(
         Sql.getUuid(rs, "uuid"),

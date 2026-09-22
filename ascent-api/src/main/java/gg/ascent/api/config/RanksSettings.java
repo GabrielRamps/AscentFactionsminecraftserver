@@ -3,7 +3,42 @@ package gg.ascent.api.config;
 import java.util.Map;
 
 /** {@code ranks.yml}: the personal rank ladder (PRD E2-S1, §6.4.4). */
-public record RanksSettings(XpCurve xpCurve, XpSources sources) {
+public record RanksSettings(XpCurve xpCurve, XpSources sources, Unlocks unlocks, RankUp rankUp) {
+
+  /**
+   * Rank gates (PRD E2-S2). Book tiers come from {@code enchants.yml} and kits from {@code
+   * kits.yml}.
+   *
+   * @param enchantSlots slot cap curve: {@code base + rank / perRanks}, at most {@code max}
+   * @param mineTiers mine tier number to the rank that opens it
+   */
+  public record Unlocks(EnchantSlots enchantSlots, Map<Integer, Integer> mineTiers) {
+    public Unlocks {
+      mineTiers = Map.copyOf(mineTiers);
+      if (!mineTiers.containsKey(1) || mineTiers.get(1) != 1) {
+        throw new IllegalArgumentException("mine tier 1 must open at rank 1");
+      }
+    }
+  }
+
+  /**
+   * @param base slots at rank 1 (before the first step)
+   * @param perRanks one more slot every this many ranks
+   * @param max the cap
+   */
+  public record EnchantSlots(int base, int perRanks, int max) {
+    public EnchantSlots {
+      if (base < 1 || perRanks < 1 || max < base) {
+        throw new IllegalArgumentException(
+            "enchant-slots must have base >= 1, per-ranks >= 1, max >= base");
+      }
+    }
+  }
+
+  /**
+   * @param sound the Minecraft sound key played on rank-up, like {@code entity.player.levelup}
+   */
+  public record RankUp(String sound) {}
 
   /**
    * The rank-up curve: {@code xpToNext(rank) = round(base * rank^exponent)}.

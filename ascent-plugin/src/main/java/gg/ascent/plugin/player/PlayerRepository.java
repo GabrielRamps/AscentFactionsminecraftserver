@@ -36,6 +36,12 @@ public interface PlayerRepository {
   /** Highest balances first. */
   List<BalanceEntry> topBalances(Connection c, int limit) throws SQLException;
 
-  /** One leaderboard row. */
+  /** Highest rank first, then most progress. */
+  List<RankEntry> topRanks(Connection c, int limit) throws SQLException;
+
+  /** One balance leaderboard row. */
   record BalanceEntry(UUID uuid, String name, long balance) {}
+
+  /** One rank leaderboard row. */
+  record RankEntry(UUID uuid, String name, int rank, long xp) {}
 }

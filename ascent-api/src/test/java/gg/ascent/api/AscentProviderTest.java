@@ -11,6 +11,8 @@ import gg.ascent.api.economy.EconomyService;
 import gg.ascent.api.item.ItemRegistry;
 import gg.ascent.api.message.Messages;
 import gg.ascent.api.player.PlayerService;
+import gg.ascent.api.rank.RankService;
+import gg.ascent.api.rank.UnlockService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -55,6 +57,16 @@ class AscentProviderTest {
 
         @Override
         public ItemRegistry items() {
+          throw new UnsupportedOperationException("not needed by this test");
+        }
+
+        @Override
+        public RankService ranks() {
+          throw new UnsupportedOperationException("not needed by this test");
+        }
+
+        @Override
+        public UnlockService unlocks() {
           throw new UnsupportedOperationException("not needed by this test");
         }
       };

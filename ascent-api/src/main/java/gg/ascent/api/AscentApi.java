@@ -6,6 +6,8 @@ import gg.ascent.api.economy.EconomyService;
 import gg.ascent.api.item.ItemRegistry;
 import gg.ascent.api.message.Messages;
 import gg.ascent.api.player.PlayerService;
+import gg.ascent.api.rank.RankService;
+import gg.ascent.api.rank.UnlockService;
 
 /**
  * Root entry point for everything Ascent exposes to other modules and to third-party plugins.
@@ -46,4 +48,10 @@ public interface AscentApi {
 
   /** Tagged items and their audit trail. */
   ItemRegistry items();
+
+  /** The personal rank ladder. */
+  RankService ranks();
+
+  /** Every rank gate. */
+  UnlockService unlocks();
 }

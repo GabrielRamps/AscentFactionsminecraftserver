@@ -6,6 +6,8 @@ import gg.ascent.api.economy.TxReason;
 import gg.ascent.api.player.PlayerProfile;
 import gg.ascent.api.player.PlayerService;
 import gg.ascent.api.player.PlayerSnapshot;
+import gg.ascent.api.rank.RankService;
+import gg.ascent.api.rank.XpSource;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -37,13 +39,19 @@ public final class AdminService {
 
   private final PlayerService players;
   private final EconomyService economy;
+  private final RankService ranks;
   private final ConfigService config;
   private final AdminActionLog log;
 
   public AdminService(
-      PlayerService players, EconomyService economy, ConfigService config, AdminActionLog log) {
+      PlayerService players,
+      EconomyService economy,
+      RankService ranks,
+      ConfigService config,
+      AdminActionLog log) {
     this.players = players;
     this.economy = economy;
+    this.ranks = ranks;
     this.config = config;
     this.log = log;
   }
@@ -77,10 +85,7 @@ public final class AdminService {
             });
   }
 
-  /**
-   * {@code /ascent give <player> xp <amount>}: adds rank XP to an online player's profile. Until
-   * E2-S1 lands a rank service, this adds to the counters without rank-ups.
-   */
+  /** {@code /ascent give <player> xp <amount>}: rank XP through the ladder, rank-ups included. */
   public Result giveXp(UUID actor, String targetName, long amount) {
     if (amount < 1 || amount > 1_000_000_000L) {
       return Result.of(Outcome.BAD_AMOUNT);
@@ -90,8 +95,7 @@ public final class AdminService {
       return Result.of(Outcome.NOT_ONLINE);
     }
     PlayerProfile profile = target.get();
-    profile.setXp(profile.xp() + amount);
-    profile.setXpTotal(profile.xpTotal() + amount);
+    ranks.addXp(profile.uuid(), XpSource.ADMIN, amount);
     log.record(actor, "give.xp", profile.name(), Map.of("amount", amount));
     return new Result(Outcome.OK, profile.xp());
   }

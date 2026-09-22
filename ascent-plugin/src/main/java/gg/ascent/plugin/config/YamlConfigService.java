@@ -8,6 +8,7 @@ import gg.ascent.api.config.CoreSettings;
 import gg.ascent.api.config.EnchantsSettings;
 import gg.ascent.api.config.EventsSettings;
 import gg.ascent.api.config.FactionsSettings;
+import gg.ascent.api.config.KitsSettings;
 import gg.ascent.api.config.MinesSettings;
 import gg.ascent.api.config.RanksSettings;
 import gg.ascent.api.config.ReloadReport;
@@ -58,6 +59,7 @@ public final class YamlConfigService implements ConfigService {
   private volatile ContractsSettings contracts;
   private volatile EventsSettings events;
   private volatile CombatSettings combat;
+  private volatile KitsSettings kits;
 
   /**
    * @param dataDir the plugin data folder
@@ -77,6 +79,7 @@ public final class YamlConfigService implements ConfigService {
     slot("contracts.yml", SettingsParsers::contracts, v -> contracts = v, () -> contracts);
     slot("events.yml", SettingsParsers::events, v -> events = v, () -> events);
     slot("combat.yml", SettingsParsers::combat, v -> combat = v, () -> combat);
+    slot("kits.yml", SettingsParsers::kits, v -> kits = v, () -> kits);
   }
 
   /**
@@ -287,5 +290,10 @@ public final class YamlConfigService implements ConfigService {
   @Override
   public CombatSettings combat() {
     return combat;
+  }
+
+  @Override
+  public KitsSettings kits() {
+    return kits;
   }
 }

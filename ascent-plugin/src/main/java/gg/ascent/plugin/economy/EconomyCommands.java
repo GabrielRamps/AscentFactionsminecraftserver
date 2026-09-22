@@ -5,7 +5,8 @@ import gg.ascent.api.economy.TxReason;
 import gg.ascent.api.message.Messages;
 import gg.ascent.api.player.PlayerService;
 import gg.ascent.api.player.PlayerSnapshot;
-import gg.ascent.plugin.player.PlayerRepository.BalanceEntry;
+import gg.ascent.plugin.leaderboard.Leaderboard;
+import gg.ascent.plugin.leaderboard.Leaderboard.Entry;
 import gg.ascent.plugin.util.Futures;
 import java.util.List;
 import java.util.Locale;
@@ -28,7 +29,7 @@ public final class EconomyCommands implements CommandExecutor, TabCompleter {
   private final Plugin plugin;
   private final EconomyService economy;
   private final PlayerService players;
-  private final BaltopCache baltop;
+  private final Leaderboard baltop;
   private final Messages messages;
   private final Logger log;
 
@@ -36,7 +37,7 @@ public final class EconomyCommands implements CommandExecutor, TabCompleter {
       Plugin plugin,
       EconomyService economy,
       PlayerService players,
-      BaltopCache baltop,
+      Leaderboard baltop,
       Messages messages,
       Logger log) {
     this.plugin = plugin;
@@ -153,7 +154,7 @@ public final class EconomyCommands implements CommandExecutor, TabCompleter {
         .runTaskAsynchronously(
             plugin,
             () -> {
-              List<BalanceEntry> entries = baltop.read();
+              List<Entry> entries = baltop.read();
               Bukkit.getScheduler()
                   .runTask(
                       plugin,
@@ -164,13 +165,13 @@ public final class EconomyCommands implements CommandExecutor, TabCompleter {
                           return;
                         }
                         int position = 1;
-                        for (BalanceEntry entry : entries) {
+                        for (Entry entry : entries) {
                           messages.send(
                               sender,
                               "economy.baltop.entry",
                               Placeholder.unparsed("position", String.valueOf(position++)),
                               name(entry.name()),
-                              amount(entry.balance()));
+                              amount(entry.score()));
                         }
                       });
             });
