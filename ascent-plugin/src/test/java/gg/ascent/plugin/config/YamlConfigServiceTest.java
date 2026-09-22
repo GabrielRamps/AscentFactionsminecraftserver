@@ -154,7 +154,7 @@ class YamlConfigServiceTest {
     ReloadReport report = service.load();
 
     assertTrue(report.allOk());
-    assertEquals(10, report.files().size());
+    assertEquals(11, report.files().size());
     assertEquals("15", holder[0]);
   }
 }
