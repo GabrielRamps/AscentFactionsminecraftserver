@@ -25,8 +25,11 @@ mockito = "5.14.2"
 
 # Third-party plugin APIs (compile only; the plugin itself is provided at runtime)
 vaultapi = "1.7.1"
-# Must match the FAWE build installed on the server (server/PLUGINS.md).
-fawe = "2.15.4"
+# The WorldEdit API the mines compile against. FastAsyncWorldEdit is a fork that keeps
+# these classes, so the plugin runs on the FAWE build the server installs (2.15.x, built on
+# WorldEdit 7.3.x); the API itself is published by EngineHub, FAWE's own jars are not on a
+# public Maven repository we can rely on.
+worldedit = "7.3.8"
 
 # Annotations
 jetbrainsAnnotations = "26.0.1"
@@ -42,9 +45,9 @@ mariadb-client = { module = "org.mariadb.jdbc:mariadb-java-client", version.ref 
 
 # Vault publishes only through JitPack (settings.gradle.kts lists it).
 vaultapi = { module = "com.github.MilkBowl:VaultAPI", version.ref = "vaultapi" }
-# The WorldEdit API lives in FAWE-Core; BukkitAdapter in FAWE-Bukkit. Compile only.
-fawe-core = { module = "com.fastasyncworldedit:FastAsyncWorldEdit-Core", version.ref = "fawe" }
-fawe-bukkit = { module = "com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit", version.ref = "fawe" }
+# WorldEdit API (EditSession, patterns, clipboards) and BukkitAdapter. Compile only.
+worldedit-core = { module = "com.sk89q.worldedit:worldedit-core", version.ref = "worldedit" }
+worldedit-bukkit = { module = "com.sk89q.worldedit:worldedit-bukkit", version.ref = "worldedit" }
 
 annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrainsAnnotations" }
 

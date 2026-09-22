@@ -14,7 +14,7 @@ dependencyResolutionManagement {
     maven("https://repo.papermc.io/repository/maven-public/") { name = "papermc" }
     maven("https://oss.sonatype.org/content/groups/public/") { name = "sonatype" }
     maven("https://jitpack.io") { name = "jitpack" }
-    // FastAsyncWorldEdit and WorldGuard publish here.
+    // WorldEdit (the API FastAsyncWorldEdit implements) and WorldGuard publish here.
     maven("https://maven.enginehub.org/repo/") { name = "enginehub" }
   }
 }
