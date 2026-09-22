@@ -22,6 +22,11 @@ import gg.ascent.plugin.item.ItemAudit;
 import gg.ascent.plugin.item.ItemListener;
 import gg.ascent.plugin.item.ItemRegistryImpl;
 import gg.ascent.plugin.item.SqlItemRepository;
+import gg.ascent.plugin.kit.BukkitKitGiver;
+import gg.ascent.plugin.kit.KitCommand;
+import gg.ascent.plugin.kit.KitListener;
+import gg.ascent.plugin.kit.KitManager;
+import gg.ascent.plugin.kit.SqlKitCooldownRepository;
 import gg.ascent.plugin.leaderboard.Leaderboard;
 import gg.ascent.plugin.leaderboard.Leaderboard.Entry;
 import gg.ascent.plugin.message.YamlMessages;
@@ -64,6 +69,7 @@ public final class AscentPlugin extends JavaPlugin {
   private Leaderboard rankTop;
   private RankServiceImpl ranks;
   private UnlockServiceImpl unlocks;
+  private KitManager kits;
   private ItemRegistryImpl items;
   private DupeScanTask dupeScan;
   private StaffAlerts alerts;
@@ -220,9 +226,33 @@ public final class AscentPlugin extends JavaPlugin {
     long scanTicks = Math.max(20, config.core().items().dupeScanInterval().toSeconds() * 20);
     getServer().getScheduler().runTaskTimer(this, dupeScan, scanTicks, scanTicks);
 
+    kits =
+        new KitManager(
+            config,
+            players,
+            unlocks,
+            database.executor(),
+            new SqlKitCooldownRepository(),
+            new BukkitKitGiver(getServer(), items, messages, getSLF4JLogger()),
+            Clock.systemUTC(),
+            getSLF4JLogger());
+    KitCommand kitCommand = new KitCommand(kits, config, messages);
+    getServer()
+        .getPluginManager()
+        .registerEvents(new KitListener(kits, kitCommand, config, messages), this);
+
     api =
         new AscentApiImpl(
-            this, config, messages, database.executor(), players, economy, items, ranks, unlocks);
+            this,
+            config,
+            messages,
+            database.executor(),
+            players,
+            economy,
+            items,
+            ranks,
+            unlocks,
+            kits);
     AscentProvider.register(api);
     getServer().getServicesManager().register(AscentApi.class, api, this, ServicePriority.Normal);
 
@@ -247,7 +277,8 @@ public final class AscentPlugin extends JavaPlugin {
         || !bind("bal", money, money)
         || !bind("pay", money, money)
         || !bind("baltop", money, money)
-        || !bind("rank", rank, rank)) {
+        || !bind("rank", rank, rank)
+        || !bind("kit", kitCommand, kitCommand)) {
       getServer().getPluginManager().disablePlugin(this);
       return;
     }
@@ -276,6 +307,7 @@ public final class AscentPlugin extends JavaPlugin {
     rankTop = null;
     ranks = null;
     unlocks = null;
+    kits = null;
     items = null;
     dupeScan = null;
     alerts = null;

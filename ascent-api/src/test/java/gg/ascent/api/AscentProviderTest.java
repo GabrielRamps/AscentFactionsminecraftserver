@@ -9,6 +9,7 @@ import gg.ascent.api.config.ConfigService;
 import gg.ascent.api.db.DbExecutor;
 import gg.ascent.api.economy.EconomyService;
 import gg.ascent.api.item.ItemRegistry;
+import gg.ascent.api.kit.KitService;
 import gg.ascent.api.message.Messages;
 import gg.ascent.api.player.PlayerService;
 import gg.ascent.api.rank.RankService;
@@ -67,6 +68,11 @@ class AscentProviderTest {
 
         @Override
         public UnlockService unlocks() {
+          throw new UnsupportedOperationException("not needed by this test");
+        }
+
+        @Override
+        public KitService kits() {
           throw new UnsupportedOperationException("not needed by this test");
         }
       };

@@ -115,6 +115,8 @@ Player commands you can use to check economy stories (permission
 | `/rank` | Your rank, a progress bar, and the next unlock | E2-S1 |
 | `/rank top` | Top 10 ranks, refreshed every 60 seconds | E2-S1 |
 | `/rank unlocks` | Every threshold on the ladder with ✔/✘ for you | E2-S2 |
+| `/kit` | The kit menu: click a kit to claim it; locked kits show their rank, claimed ones their cooldown | E2-S3 |
+| `/kit <name>` | Claim a kit directly, for example `/kit starter` | E2-S3 |
 
 **Verified 2026-09-22** on Paper 1.21.11 build 132 by the owner: first join
 created the row with $1,000; `/ascent give money`, `/ascent rank set`,

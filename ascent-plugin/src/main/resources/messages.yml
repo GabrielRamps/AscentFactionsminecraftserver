@@ -131,6 +131,28 @@ rank:
     mine-tier: "<aqua>Mine tier <name>"
     kit: "<aqua>/kit <name>"
 
+kit:
+  console: "<prefix><gray>Kits are for players. Try it in game."
+  # <kit>
+  claimed: "<prefix><green>Claimed kit <white><kit></white>."
+  unknown: "<prefix><red>There is no kit called <white><kit></white>."
+  # <kit>, <rank>
+  locked: "<prefix><red>Kit <white><kit></white> unlocks at rank <white><rank></white>."
+  # <kit>, <time>
+  cooldown: "<prefix><red>Kit <white><kit></white> is ready again in <white><time></white>."
+  not-ready: "<prefix><yellow>Your kits are still loading; try again in a moment."
+  # <count>: stacks that did not fit and were dropped at your feet
+  dropped: "<prefix><yellow>Your inventory was full; <count> stack(s) dropped at your feet."
+  menu:
+    title: "<dark_gray>Kits"
+    # <rank>
+    locked: "<red>Unlocks at rank <rank>"
+    # <time>
+    cooldown: "<yellow>Ready in <time>"
+    ready: "<green>Click to claim"
+    # <amount>, <item>
+    item: "<dark_gray>- <gray><amount>x <item>"
+
 alerts:
   # Sent to everyone with ascent.staff.alerts.
   # <item>, <observed>, <created>, <holders>

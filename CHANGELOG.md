@@ -66,6 +66,11 @@ Sprint 1, the core platform (Epic 1).
 - Unlock hooks (E2-S2). `UnlockService` answers enchant slot cap, highest book
   tier, mine tier and open kits from `ranks.yml`, `enchants.yml` and the new
   `kits.yml`; `/rank unlocks` lists every threshold with ✔/✘.
+- Kits (E2-S3). `/kit` opens a menu of the kits in `kits.yml` with rank gates
+  and cooldown timers; `/kit <name>` claims directly. Cooldowns live in
+  `kit_cooldowns`, so they survive restarts; overflow drops at the player's
+  feet; kit items with pre-applied enchants are registry-tagged (the enchants
+  themselves apply once the enchant engine lands).
 - Lore renderer (E11-S3). One `LoreRenderer` writes all custom item lore:
   enchants by tier then name with the tier's color, `PROTECTED` when scrolled,
   a kind footer, and a `[n]` enchant count on the name. Idempotent.

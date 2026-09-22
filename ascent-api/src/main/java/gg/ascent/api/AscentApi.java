@@ -4,6 +4,7 @@ import gg.ascent.api.config.ConfigService;
 import gg.ascent.api.db.DbExecutor;
 import gg.ascent.api.economy.EconomyService;
 import gg.ascent.api.item.ItemRegistry;
+import gg.ascent.api.kit.KitService;
 import gg.ascent.api.message.Messages;
 import gg.ascent.api.player.PlayerService;
 import gg.ascent.api.rank.RankService;
@@ -54,4 +55,7 @@ public interface AscentApi {
 
   /** Every rank gate. */
   UnlockService unlocks();
+
+  /** Rank-gated kits. */
+  KitService kits();
 }

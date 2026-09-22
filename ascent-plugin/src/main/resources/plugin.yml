@@ -37,6 +37,11 @@ commands:
     description: Your rank, the leaderboard, and what each rank unlocks.
     usage: /rank [top|unlocks]
     permission: ascent.rank.use
+  kit:
+    description: Open the kit menu or claim a kit.
+    usage: /kit [name]
+    aliases: [kits]
+    permission: ascent.kit.use
 
 permissions:
   ascent.admin:
@@ -47,6 +52,9 @@ permissions:
     default: true
   ascent.rank.use:
     description: /rank, /rank top and /rank unlocks.
+    default: true
+  ascent.kit.use:
+    description: /kit.
     default: true
   ascent.staff.alerts:
     description: Receive dupe and other staff alerts in game.
