@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 # E0-S4: one command to rebuild the plugin and restart the dev server.
 #
-#   ./dev.sh                 build, copy the jar, restart, wait for "Done"
+#   ./dev.sh                 build the jar, copy it, restart, wait for "Done"
 #   ./dev.sh --no-restart    build and copy only
 #   ./dev.sh --console       attach to the server console when it is up
+#   ./dev.sh --full          also run the tests and format checks (CI does
+#                            this on every push; locally it needs a spare
+#                            JVM the machine may not have next to the server)
 #
 # Attach to the console at any time with:  tmux attach -t ascent
 # Detach without stopping the server with: Ctrl-b then d
@@ -19,10 +22,12 @@ STOP_TIMEOUT="${ASCENT_STOP_TIMEOUT:-45}"
 
 RESTART=1
 ATTACH=0
+FULL=0
 for arg in "$@"; do
   case "$arg" in
     --no-restart) RESTART=0 ;;
     --console) ATTACH=1 ;;
+    --full) FULL=1 ;;
     -h | --help)
       sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'
       exit 0
@@ -44,7 +49,13 @@ Run scripts/bootstrap.sh first, or set ASCENT_SERVER_DIR in .env."
 fi
 
 echo "==> Building"
-./gradlew build copyToServer -PascentServerDir="$SERVER_DIR" --console=plain
+if [ "$FULL" -eq 1 ]; then
+  ./gradlew build copyToServer -PascentServerDir="$SERVER_DIR" --console=plain
+else
+  # Just the shaded jar. Tests fork a second JVM, and next to a running Paper
+  # server plus the database containers that fork can time out on a laptop.
+  ./gradlew copyToServer -PascentServerDir="$SERVER_DIR" --console=plain
+fi
 
 if [ "$RESTART" -eq 0 ]; then
   echo "==> Jar copied; skipping restart (--no-restart)."

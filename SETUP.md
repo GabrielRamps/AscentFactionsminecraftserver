@@ -274,6 +274,12 @@ Day-to-day commands live in `TESTING.md`. What to build next is in
 
 ## Troubleshooting
 
+**"Unable to connect to the child process 'Gradle Test Executor'" during
+`./dev.sh`.** The machine ran out of room to fork the test JVM next to the
+running server and the database containers. `./dev.sh` now builds only the
+jar; the tests run in CI on every push. Use `./dev.sh --full` when you do want
+them locally, ideally with the server stopped.
+
 **"already locked (possibly by other Minecraft instance?)" on boot, or you
 time out joining right after `./dev.sh`.** The previous server did not stop in
 time and its Java process is still alive, holding `world/session.lock` and the
