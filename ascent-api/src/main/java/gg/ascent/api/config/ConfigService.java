@@ -32,6 +32,8 @@ public interface ConfigService {
 
   KitsSettings kits();
 
+  PricesSettings prices();
+
   /**
    * Re-reads every file, including {@code messages.yml}.
    *

@@ -4,10 +4,13 @@ import gg.ascent.api.AscentApi;
 import gg.ascent.api.config.ConfigService;
 import gg.ascent.api.db.DbExecutor;
 import gg.ascent.api.economy.EconomyService;
+import gg.ascent.api.economy.SellMultiplierService;
 import gg.ascent.api.item.ItemRegistry;
 import gg.ascent.api.kit.KitService;
 import gg.ascent.api.message.Messages;
+import gg.ascent.api.mine.MineService;
 import gg.ascent.api.player.PlayerService;
+import gg.ascent.api.progress.ProgressBus;
 import gg.ascent.api.rank.RankService;
 import gg.ascent.api.rank.UnlockService;
 
@@ -24,6 +27,9 @@ final class AscentApiImpl implements AscentApi {
   private final RankService ranks;
   private final UnlockService unlocks;
   private final KitService kits;
+  private final MineService mines;
+  private final ProgressBus progress;
+  private final SellMultiplierService sellMultiplier;
   private volatile boolean ready;
 
   AscentApiImpl(
@@ -36,7 +42,10 @@ final class AscentApiImpl implements AscentApi {
       ItemRegistry items,
       RankService ranks,
       UnlockService unlocks,
-      KitService kits) {
+      KitService kits,
+      MineService mines,
+      ProgressBus progress,
+      SellMultiplierService sellMultiplier) {
     this.plugin = plugin;
     this.config = config;
     this.messages = messages;
@@ -47,6 +56,9 @@ final class AscentApiImpl implements AscentApi {
     this.ranks = ranks;
     this.unlocks = unlocks;
     this.kits = kits;
+    this.mines = mines;
+    this.progress = progress;
+    this.sellMultiplier = sellMultiplier;
   }
 
   @Override
@@ -102,6 +114,21 @@ final class AscentApiImpl implements AscentApi {
   @Override
   public KitService kits() {
     return kits;
+  }
+
+  @Override
+  public MineService mines() {
+    return mines;
+  }
+
+  @Override
+  public ProgressBus progress() {
+    return progress;
+  }
+
+  @Override
+  public SellMultiplierService sellMultiplier() {
+    return sellMultiplier;
   }
 
   void markReady() {

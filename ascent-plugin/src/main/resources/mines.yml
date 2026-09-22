@@ -15,6 +15,20 @@ reset:
   interval: 10m
   mined-fraction: 0.7
 
+# How a plot is built when its tier has no schematic file: a bedrock slab with
+# a square pit of ore in the middle and the spawn point on the rim. A tier's
+# schematic, when the file exists, is pasted instead with its corner at the
+# plot origin.
+layout:
+  # The walkable surface. The top layer of ore is at this height.
+  surface-y: 64
+  # Layers of ore, counting the surface layer.
+  pit-depth: 24
+  # Blocks between the plot edge and the pit on every side.
+  pit-inset: 8
+  # Glass wall height around the plot above the surface.
+  wall-height: 3
+
 # Per tier: the FAWE schematic pasted on allocation and reset, and the block
 # mix as percentages that must sum to 100.
 tiers:

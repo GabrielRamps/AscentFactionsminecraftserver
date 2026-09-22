@@ -71,6 +71,15 @@ Sprint 1, the core platform (Epic 1).
   `kit_cooldowns`, so they survive restarts; overflow drops at the player's
   feet; kit items with pre-applied enchants are registry-tagged (the enchants
   themselves apply once the enchant engine lands).
+- Personal mines (E4-S1). A void `mines` world with a grid of 64x64 plots
+  allocated on first `/mine` and released after 24h idle, built with
+  FastAsyncWorldEdit (or the Bukkit API when FAWE is absent) from a generated
+  layout or a per-tier schematic; the pit refills every 10 minutes or at 70%
+  mined with players moved to safety first; no entry to others' plots, no
+  building, no combat, no spawns; mining pays rank XP by tier and reports to
+  `ProgressBus`.
+- Selling (E4-S2). `/sell` sells everything sellable at `prices.yml` values
+  with an itemised receipt; `SellMultiplierService` answers 1.0 for now.
 - Lore renderer (E11-S3). One `LoreRenderer` writes all custom item lore:
   enchants by tier then name with the tier's color, `PROTECTED` when scrolled,
   a kind footer, and a `[n]` enchant count on the name. Idempotent.

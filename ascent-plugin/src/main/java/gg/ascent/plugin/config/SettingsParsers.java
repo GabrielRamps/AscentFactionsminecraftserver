@@ -9,6 +9,7 @@ import gg.ascent.api.config.EventsSettings;
 import gg.ascent.api.config.FactionsSettings;
 import gg.ascent.api.config.KitsSettings;
 import gg.ascent.api.config.MinesSettings;
+import gg.ascent.api.config.PricesSettings;
 import gg.ascent.api.config.RanksSettings;
 import gg.ascent.api.config.SpawnersSettings;
 import gg.ascent.api.contract.Archetype;
@@ -252,13 +253,38 @@ public final class SettingsParsers {
       String schematic = t.string("schematic");
       out.put(number, wrap(t, "blocks", () -> new MinesSettings.MineTier(schematic, composition)));
     }
-    return new MinesSettings(
-        root.string("world"),
-        root.integerAtLeast("plot-size", 8),
-        root.duration("plot-inactivity"),
-        reset.duration("interval"),
-        reset.decimalBetween("mined-fraction", 0.0, 1.0),
-        out);
+    Node layout = root.section("layout");
+    MinesSettings.Layout layoutSettings =
+        wrap(
+            root,
+            "layout",
+            () ->
+                new MinesSettings.Layout(
+                    layout.integer("surface-y"),
+                    layout.integerAtLeast("pit-depth", 1),
+                    layout.integerAtLeast("pit-inset", 2),
+                    layout.integerAtLeast("wall-height", 1)));
+    return wrap(
+        root,
+        "plot-size",
+        () ->
+            new MinesSettings(
+                root.string("world"),
+                root.integerAtLeast("plot-size", 8),
+                root.duration("plot-inactivity"),
+                reset.duration("interval"),
+                reset.decimalBetween("mined-fraction", 0.0, 1.0),
+                layoutSettings,
+                out));
+  }
+
+  public static PricesSettings prices(Node root) {
+    Node sell = root.section("sell");
+    Map<String, Long> prices = new LinkedHashMap<>();
+    for (String key : sell.keys()) {
+      prices.put(key.toUpperCase(Locale.ROOT), sell.longAtLeast(key, 0));
+    }
+    return new PricesSettings(prices);
   }
 
   public static SpawnersSettings spawners(Node root) {

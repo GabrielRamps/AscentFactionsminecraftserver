@@ -1,0 +1,18 @@
+# What /sell pays per item, in whole dollars (PRD E4-S2). Items not listed
+# cannot be sold. Mine output is priced so that a tier-1 pit is worth roughly
+# the tier-1 kit and a tier-3 pit an hour of grinding; tune from data.
+sell:
+  STONE: 1
+  COBBLESTONE: 1
+  COAL_ORE: 6
+  COAL: 3
+  IRON_ORE: 15
+  RAW_IRON: 12
+  IRON_INGOT: 20
+  GOLD_ORE: 40
+  RAW_GOLD: 35
+  GOLD_INGOT: 50
+  DIAMOND_ORE: 120
+  DIAMOND: 100
+  EMERALD_ORE: 250
+  EMERALD: 200

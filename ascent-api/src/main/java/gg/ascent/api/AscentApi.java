@@ -3,10 +3,13 @@ package gg.ascent.api;
 import gg.ascent.api.config.ConfigService;
 import gg.ascent.api.db.DbExecutor;
 import gg.ascent.api.economy.EconomyService;
+import gg.ascent.api.economy.SellMultiplierService;
 import gg.ascent.api.item.ItemRegistry;
 import gg.ascent.api.kit.KitService;
 import gg.ascent.api.message.Messages;
+import gg.ascent.api.mine.MineService;
 import gg.ascent.api.player.PlayerService;
+import gg.ascent.api.progress.ProgressBus;
 import gg.ascent.api.rank.RankService;
 import gg.ascent.api.rank.UnlockService;
 
@@ -58,4 +61,13 @@ public interface AscentApi {
 
   /** Rank-gated kits. */
   KitService kits();
+
+  /** Personal mines. */
+  MineService mines();
+
+  /** Where gameplay reports progress for contracts to count. */
+  ProgressBus progress();
+
+  /** The multiplier on {@code /sell} prices. */
+  SellMultiplierService sellMultiplier();
 }

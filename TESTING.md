@@ -117,6 +117,8 @@ Player commands you can use to check economy stories (permission
 | `/rank unlocks` | Every threshold on the ladder with ✔/✘ for you | E2-S2 |
 | `/kit` | The kit menu: click a kit to claim it; locked kits show their rank, claimed ones their cooldown | E2-S3 |
 | `/kit <name>` | Claim a kit directly, for example `/kit starter` | E2-S3 |
+| `/mine` | Teleport to your personal mine; builds it on first use, upgrades the tier when your rank allows | E4-S1 |
+| `/sell` | Sell every sellable item in your inventory at `prices.yml` values, with a receipt | E4-S2 |
 
 **Verified 2026-09-22** on Paper 1.21.11 build 132 by the owner: first join
 created the row with $1,000; `/ascent give money`, `/ascent rank set`,
@@ -143,6 +145,23 @@ SELECT source, SUM(amount) FROM xp_log WHERE player_uuid = '<uuid>' GROUP BY sou
 **Verified 2026-09-22** by the owner: `/rank`, `/rank unlocks`, `/rank top`
 and a rank-up from `/ascent give xp` with chat line, title and sound. Closes
 E2-S1 and E2-S2.
+
+## Personal mines
+
+`/mine` puts you in a dedicated void world called `mines`, in your own 64x64
+plot: a bedrock slab with a 48x48 pit of ore 24 blocks deep and glass walls.
+The pit refills every 10 minutes or once 70% is mined (`mines.yml`), and you
+are moved to the plot spawn first. Nobody else can walk or teleport into your
+plot, nothing spawns, nothing hurts you, and nothing can be placed. Each block
+mined pays rank XP by tier (`ranks.yml`), and `/sell` turns the ore into money.
+
+Plots are built with FastAsyncWorldEdit when it is installed and through the
+Bukkit API a few thousand blocks per tick otherwise, so a first visit takes a
+few seconds. Drop a `.schem` at `plugins/Ascent/mines/tier1.schem` (and tier2,
+tier3) to replace the generated layout; its corner goes at the plot origin and
+the pit region must line up with `layout` in `mines.yml`.
+
+A plot unused for 24 hours is handed to the next player who needs one.
 
 ## Item registry and dupe alerts
 

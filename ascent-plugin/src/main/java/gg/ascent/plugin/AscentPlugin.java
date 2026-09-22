@@ -13,8 +13,10 @@ import gg.ascent.plugin.command.AscentCommand;
 import gg.ascent.plugin.config.YamlConfigService;
 import gg.ascent.plugin.db.BukkitMainThread;
 import gg.ascent.plugin.db.Database;
+import gg.ascent.plugin.economy.ConstantSellMultiplier;
 import gg.ascent.plugin.economy.EconomyCommands;
 import gg.ascent.plugin.economy.EconomyServiceImpl;
+import gg.ascent.plugin.economy.SellCommand;
 import gg.ascent.plugin.economy.SqlTransactionRepository;
 import gg.ascent.plugin.economy.VaultHook;
 import gg.ascent.plugin.item.DupeScanTask;
@@ -30,9 +32,18 @@ import gg.ascent.plugin.kit.SqlKitCooldownRepository;
 import gg.ascent.plugin.leaderboard.Leaderboard;
 import gg.ascent.plugin.leaderboard.Leaderboard.Entry;
 import gg.ascent.plugin.message.YamlMessages;
+import gg.ascent.plugin.mine.BukkitMineBuilder;
+import gg.ascent.plugin.mine.FaweMineBuilder;
+import gg.ascent.plugin.mine.MineBuilder;
+import gg.ascent.plugin.mine.MineCommand;
+import gg.ascent.plugin.mine.MineListener;
+import gg.ascent.plugin.mine.MinePlots;
+import gg.ascent.plugin.mine.MineWorld;
+import gg.ascent.plugin.mine.SqlMinePlotRepository;
 import gg.ascent.plugin.player.PlayerListener;
 import gg.ascent.plugin.player.PlayerManager;
 import gg.ascent.plugin.player.SqlPlayerRepository;
+import gg.ascent.plugin.progress.SimpleProgressBus;
 import gg.ascent.plugin.rank.BukkitRankUpNotifier;
 import gg.ascent.plugin.rank.PvpKillTracker;
 import gg.ascent.plugin.rank.PvpListener;
@@ -70,6 +81,8 @@ public final class AscentPlugin extends JavaPlugin {
   private RankServiceImpl ranks;
   private UnlockServiceImpl unlocks;
   private KitManager kits;
+  private MineWorld mines;
+  private SimpleProgressBus progress;
   private ItemRegistryImpl items;
   private DupeScanTask dupeScan;
   private StaffAlerts alerts;
@@ -241,6 +254,33 @@ public final class AscentPlugin extends JavaPlugin {
         .getPluginManager()
         .registerEvents(new KitListener(kits, kitCommand, config, messages), this);
 
+    progress = new SimpleProgressBus(getSLF4JLogger());
+    ConstantSellMultiplier sellMultiplier = new ConstantSellMultiplier(1.0);
+    MinePlots plots =
+        new MinePlots(
+            config,
+            database.executor(),
+            new SqlMinePlotRepository(),
+            Clock.systemUTC(),
+            getSLF4JLogger());
+    MineBuilder mineBuilder =
+        getServer().getPluginManager().getPlugin("FastAsyncWorldEdit") != null
+            ? new FaweMineBuilder(this, config.mines(), getDataFolder().toPath(), getSLF4JLogger())
+            : new BukkitMineBuilder(this, config.mines(), getSLF4JLogger());
+    mines =
+        new MineWorld(
+            getServer(), config, players, unlocks, plots, mineBuilder, messages, getSLF4JLogger());
+    try {
+      mines.loadWorld();
+    } catch (RuntimeException e) {
+      getSLF4JLogger().error("Could not load the mines world; /mine is unavailable.", e);
+    }
+    plots.load();
+    getServer()
+        .getPluginManager()
+        .registerEvents(new MineListener(mines, ranks, progress, config, messages), this);
+    getServer().getScheduler().runTaskTimer(this, mines::sweep, 20L * 30, 20L * 30);
+
     api =
         new AscentApiImpl(
             this,
@@ -252,7 +292,10 @@ public final class AscentPlugin extends JavaPlugin {
             items,
             ranks,
             unlocks,
-            kits);
+            kits,
+            mines,
+            progress,
+            sellMultiplier);
     AscentProvider.register(api);
     getServer().getServicesManager().register(AscentApi.class, api, this, ServicePriority.Normal);
 
@@ -271,6 +314,9 @@ public final class AscentPlugin extends JavaPlugin {
             actionLog,
             getSLF4JLogger());
     RankCommand rank = new RankCommand(this, ranks, unlocks, rankTop, messages);
+    MineCommand mineCommand = new MineCommand(mines, messages);
+    SellCommand sellCommand =
+        new SellCommand(economy, sellMultiplier, items, progress, config, messages);
     EconomyCommands money =
         new EconomyCommands(this, economy, players, baltop, messages, getSLF4JLogger());
     if (!bind("ascent", admin, admin)
@@ -278,7 +324,9 @@ public final class AscentPlugin extends JavaPlugin {
         || !bind("pay", money, money)
         || !bind("baltop", money, money)
         || !bind("rank", rank, rank)
-        || !bind("kit", kitCommand, kitCommand)) {
+        || !bind("kit", kitCommand, kitCommand)
+        || !bind("mine", mineCommand, mineCommand)
+        || !bind("sell", sellCommand, sellCommand)) {
       getServer().getPluginManager().disablePlugin(this);
       return;
     }
@@ -308,6 +356,8 @@ public final class AscentPlugin extends JavaPlugin {
     ranks = null;
     unlocks = null;
     kits = null;
+    mines = null;
+    progress = null;
     items = null;
     dupeScan = null;
     alerts = null;

@@ -153,6 +153,25 @@ kit:
     # <amount>, <item>
     item: "<dark_gray>- <gray><amount>x <item>"
 
+mine:
+  console: "<prefix><gray>Mines are for players."
+  building: "<prefix><gray>Building your mine..."
+  # <tier>
+  upgraded: "<prefix><green>Your mine is now tier <white><tier></white>. Refilling it..."
+  # <tier>, <plot>
+  welcome: "<prefix><gray>Welcome to your tier <white><tier></white> mine. It refills every 10 minutes or when mostly mined. <white>/sell</white> when you are full."
+  resetting: "<prefix><yellow>Your mine is refilling."
+  not-yours: "<prefix><red>That is someone else's mine."
+
+sell:
+  console: "<prefix><gray>Selling is for players."
+  nothing: "<prefix><yellow>Nothing in your inventory can be sold. Ore and stone from the mines can."
+  header: "<prefix><gold>Sold:"
+  # <count>, <item>, <total>
+  line: "<dark_gray> - <gray><count>x <white><item> <dark_gray>for <green><total>"
+  # <total>, <balance>
+  total: "<prefix><green>+<total></green> <gray>(balance <white><balance></white>)"
+
 alerts:
   # Sent to everyone with ascent.staff.alerts.
   # <item>, <observed>, <created>, <holders>

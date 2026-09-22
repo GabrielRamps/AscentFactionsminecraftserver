@@ -8,6 +8,10 @@ dependencies {
   // Vault's Economy interface (E1-S4). Vault ships the classes at runtime; the
   // hook is only touched when the Vault plugin is present.
   compileOnly(libs.vaultapi) { exclude(group = "org.bukkit") }
+  // FastAsyncWorldEdit for mine fills and resets (E4-S1). The server provides it; the
+  // mines module checks the plugin is present before touching these classes.
+  compileOnly(libs.fawe.core) { isTransitive = false }
+  compileOnly(libs.fawe.bukkit) { isTransitive = false }
 
   api(project(":ascent-api"))
 

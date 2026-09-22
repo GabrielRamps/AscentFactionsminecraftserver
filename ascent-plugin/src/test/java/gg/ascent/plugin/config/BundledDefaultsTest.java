@@ -11,6 +11,7 @@ import gg.ascent.api.config.EventsSettings;
 import gg.ascent.api.config.FactionsSettings;
 import gg.ascent.api.config.KitsSettings;
 import gg.ascent.api.config.MinesSettings;
+import gg.ascent.api.config.PricesSettings;
 import gg.ascent.api.config.RanksSettings;
 import gg.ascent.api.config.SpawnersSettings;
 import gg.ascent.api.contract.Archetype;
@@ -59,6 +60,28 @@ class BundledDefaultsTest {
     assertEquals(16, s.unlocks().enchantSlots().max());
     assertEquals(Map.of(1, 1, 2, 20, 3, 40), s.unlocks().mineTiers());
     assertEquals("entity.player.levelup", s.rankUp().sound());
+  }
+
+  @Test
+  void pricesCoverEveryMineBlock() {
+    PricesSettings prices = SettingsParsers.prices(TestYaml.bundled("prices.yml"));
+    MinesSettings mines = SettingsParsers.mines(TestYaml.bundled("mines.yml"));
+    for (MinesSettings.MineTier tier : mines.tiers().values()) {
+      for (String block : tier.composition().keySet()) {
+        assertTrue(prices.sellPrice(block).isPresent(), block + " must be sellable");
+      }
+    }
+    assertEquals(120, prices.sellPrice("DIAMOND_ORE").orElseThrow());
+    assertTrue(prices.sellPrice("DIRT").isEmpty());
+  }
+
+  @Test
+  void minesLayoutLeavesRoomForThePit() {
+    MinesSettings mines = SettingsParsers.mines(TestYaml.bundled("mines.yml"));
+    assertEquals(64, mines.plotSize());
+    assertEquals(48, mines.pitSize());
+    assertEquals(48 * 48 * 24, mines.pitVolume());
+    assertEquals(64, mines.layout().surfaceY());
   }
 
   @Test

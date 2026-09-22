@@ -8,10 +8,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import gg.ascent.api.config.ConfigService;
 import gg.ascent.api.db.DbExecutor;
 import gg.ascent.api.economy.EconomyService;
+import gg.ascent.api.economy.SellMultiplierService;
 import gg.ascent.api.item.ItemRegistry;
 import gg.ascent.api.kit.KitService;
 import gg.ascent.api.message.Messages;
+import gg.ascent.api.mine.MineService;
 import gg.ascent.api.player.PlayerService;
+import gg.ascent.api.progress.ProgressBus;
 import gg.ascent.api.rank.RankService;
 import gg.ascent.api.rank.UnlockService;
 import org.junit.jupiter.api.AfterEach;
@@ -73,6 +76,21 @@ class AscentProviderTest {
 
         @Override
         public KitService kits() {
+          throw new UnsupportedOperationException("not needed by this test");
+        }
+
+        @Override
+        public MineService mines() {
+          throw new UnsupportedOperationException("not needed by this test");
+        }
+
+        @Override
+        public ProgressBus progress() {
+          throw new UnsupportedOperationException("not needed by this test");
+        }
+
+        @Override
+        public SellMultiplierService sellMultiplier() {
           throw new UnsupportedOperationException("not needed by this test");
         }
       };

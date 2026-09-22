@@ -14,6 +14,7 @@ softdepend:
   - Vault
   - PlaceholderAPI
   - LuckPerms
+  - FastAsyncWorldEdit
 
 commands:
   ascent:
@@ -42,6 +43,14 @@ commands:
     usage: /kit [name]
     aliases: [kits]
     permission: ascent.kit.use
+  mine:
+    description: Teleport to your personal mine.
+    usage: /mine
+    permission: ascent.mines.use
+  sell:
+    description: Sell every sellable item in your inventory.
+    usage: /sell
+    permission: ascent.economy.sell
 
 permissions:
   ascent.admin:
@@ -55,6 +64,12 @@ permissions:
     default: true
   ascent.kit.use:
     description: /kit.
+    default: true
+  ascent.mines.use:
+    description: /mine.
+    default: true
+  ascent.economy.sell:
+    description: /sell.
     default: true
   ascent.staff.alerts:
     description: Receive dupe and other staff alerts in game.
