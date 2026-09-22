@@ -192,7 +192,8 @@ Legendary 36); enchanted gear pays half the sum of its enchants' book values.
 Each Elite or better book also has a 10% chance of returning Magic Dust of its
 tier (1 to 8%). Unopened books, scrolls, dust and plain items show a red
 barrier and block the trade until removed (`tinkerer` in `enchants.yml`).
-Anything left in the pane comes back to you when the menu closes.
+Click-and-place, shift-click and drag all put items into the left pane;
+anything left there comes back to you when the menu closes.
 
 Payment is XP bottles: custom items that grant their levels when right-clicked
 (sneak to drink a stack). They never throw like vanilla bottles.

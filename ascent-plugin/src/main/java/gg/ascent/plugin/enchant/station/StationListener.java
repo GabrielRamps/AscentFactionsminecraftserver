@@ -20,7 +20,7 @@ import org.bukkit.plugin.Plugin;
  * input slot goes back to the player when the menu closes. After every change the menu is refreshed
  * on the next tick, once Bukkit has moved the items.
  */
-abstract class StationListener<M extends InventoryHolder> implements Listener {
+public abstract class StationListener<M extends InventoryHolder> implements Listener {
 
   private final Plugin plugin;
   private final Class<M> type;
@@ -64,12 +64,54 @@ abstract class StationListener<M extends InventoryHolder> implements Listener {
         event.setCancelled(true);
         return;
       }
-    } else if (action == InventoryAction.MOVE_TO_OTHER_INVENTORY
-        || action == InventoryAction.COLLECT_TO_CURSOR) {
-      event.setCancelled(true); // would land in, or gather from, the decoration
+    } else if (action == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
+      // Shift-click from the player's inventory: vanilla would drop the stack into the first
+      // free slot of the menu, decoration included. Route it into the input slots ourselves.
+      event.setCancelled(true);
+      ItemStack moving = event.getCurrentItem();
+      if (moving != null && !moving.getType().isAir()) {
+        event.setCurrentItem(moveIntoInputs(event.getInventory(), moving));
+      }
+    } else if (action == InventoryAction.COLLECT_TO_CURSOR) {
+      event.setCancelled(true); // would gather from the decoration
       return;
     }
     scheduleRefresh(menu, player);
+  }
+
+  /**
+   * Puts as much of {@code stack} as fits into the input slots, topping up matching stacks first
+   * and then filling empty slots in order.
+   *
+   * @return what did not fit, or null when everything moved
+   */
+  private ItemStack moveIntoInputs(Inventory menu, ItemStack stack) {
+    ItemStack moving = stack.clone();
+    for (int slot : inputSlots()) {
+      ItemStack present = menu.getItem(slot);
+      if (present == null || present.getType().isAir() || !present.isSimilar(moving)) {
+        continue;
+      }
+      int room = present.getMaxStackSize() - present.getAmount();
+      if (room <= 0) {
+        continue;
+      }
+      int take = Math.min(room, moving.getAmount());
+      present.setAmount(present.getAmount() + take);
+      menu.setItem(slot, present);
+      moving.setAmount(moving.getAmount() - take);
+      if (moving.getAmount() <= 0) {
+        return null;
+      }
+    }
+    for (int slot : inputSlots()) {
+      ItemStack present = menu.getItem(slot);
+      if (present == null || present.getType().isAir()) {
+        menu.setItem(slot, moving);
+        return null;
+      }
+    }
+    return moving;
   }
 
   @EventHandler
