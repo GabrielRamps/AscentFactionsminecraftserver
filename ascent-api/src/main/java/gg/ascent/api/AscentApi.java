@@ -13,6 +13,7 @@ import gg.ascent.api.player.PlayerService;
 import gg.ascent.api.progress.ProgressBus;
 import gg.ascent.api.rank.RankService;
 import gg.ascent.api.rank.UnlockService;
+import gg.ascent.api.zone.ZoneService;
 
 /**
  * Root entry point for everything Ascent exposes to other modules and to third-party plugins.
@@ -74,4 +75,7 @@ public interface AscentApi {
 
   /** The enchant book lottery. */
   EnchantService enchants();
+
+  /** Spawn safezone and warzone lookups (E8-S1). */
+  ZoneService zones();
 }

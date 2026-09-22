@@ -131,6 +131,20 @@ Sprint 1, the core platform (Epic 1).
   times the level, and two Magic Dusts of one tier into the next tier for a
   flat fee (`alchemist.dust-cost-levels`). Legendary dust and max-level books
   do not combine.
+- Zones (E8-S1). `events.yml` names the world and two radii from spawn:
+  inside the first is the safezone (no PvP, no damage, no building), out to
+  the second the warzone (PvP on, no building), beyond it wilderness. Border
+  crossings show an action-bar line; `ascent.zones.bypass` builds anywhere.
+  Enchant effects and the combat rules read the same `ZoneService`. With
+  WorldGuard installed the circles are mirrored as its `spawn` and `warzone`
+  regions on start.
+- Gear gating and combat rules (E9-S2). Shields, elytra, tridents, crossbows,
+  totems, end crystals and netherite (`gear` in `combat.yml`) cannot be
+  crafted or picked up and are deleted when an inventory opens; god apples
+  and ender pearls carry client-visible cooldowns; every death writes a
+  `death_log` row with killer, place and dropped item ids. A datapack in
+  `server/datapacks/ascent_world` makes new worlds 0 to 256 tall with
+  bedrock at y=0.
 - Lore renderer (E11-S3). One `LoreRenderer` writes all custom item lore:
   enchants by tier then name with the tier's color, `PROTECTED` when scrolled,
   a kind footer, and a `[n]` enchant count on the name. Idempotent.

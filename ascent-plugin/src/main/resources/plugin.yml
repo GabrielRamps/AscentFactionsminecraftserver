@@ -89,3 +89,6 @@ permissions:
   ascent.staff.alerts:
     description: Receive dupe and other staff alerts in game.
     default: op
+  ascent.zones.bypass:
+    description: Build and break inside the safezone and warzone.
+    default: op

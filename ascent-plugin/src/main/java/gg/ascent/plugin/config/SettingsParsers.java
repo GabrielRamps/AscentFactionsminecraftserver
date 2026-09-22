@@ -463,8 +463,10 @@ public final class SettingsParsers {
             "zones",
             () ->
                 new EventsSettings.Zones(
+                    zones.has("world") ? zones.string("world") : "world",
                     zones.integerAtLeast("safezone-radius", 0),
-                    zones.integerAtLeast("warzone-radius", 0)));
+                    zones.integerAtLeast("warzone-radius", 0),
+                    !zones.has("worldguard") || zones.bool("worldguard")));
     EventsSettings.Koth kothSettings =
         new EventsSettings.Koth(
             koth.duration("interval"),
@@ -493,10 +495,29 @@ public final class SettingsParsers {
   }
 
   public static CombatSettings combat(Node root) {
+    CombatSettings.Gear gear = CombatSettings.Gear.DEFAULT;
+    if (root.has("gear")) {
+      Node g = root.section("gear");
+      List<String> items = new ArrayList<>();
+      for (String name : g.stringList("banned-items")) {
+        items.add(name.trim().toUpperCase(Locale.ROOT));
+      }
+      List<String> prefixes = new ArrayList<>();
+      for (String name : g.stringList("banned-prefixes")) {
+        prefixes.add(name.trim().toUpperCase(Locale.ROOT));
+      }
+      gear =
+          new CombatSettings.Gear(
+              items,
+              prefixes,
+              g.integerAtLeast("god-apple-cooldown-seconds", 0),
+              g.integerAtLeast("enderpearl-cooldown-seconds", 0));
+    }
     return new CombatSettings(
         root.integerAtLeast("tag-seconds", 1),
         root.integerAtLeast("logger-npc-seconds", 1),
-        root.stringList("blocked-commands-while-tagged"));
+        root.stringList("blocked-commands-while-tagged"),
+        gear);
   }
 
   /** A weighted table written as a map of item name to weight. */

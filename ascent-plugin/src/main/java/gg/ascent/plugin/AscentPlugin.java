@@ -2,6 +2,7 @@ package gg.ascent.plugin;
 
 import gg.ascent.api.AscentApi;
 import gg.ascent.api.AscentProvider;
+import gg.ascent.api.config.EventsSettings;
 import gg.ascent.api.config.ReloadReport;
 import gg.ascent.api.db.DbException;
 import gg.ascent.plugin.admin.AdminActionLog;
@@ -9,6 +10,9 @@ import gg.ascent.plugin.admin.AdminService;
 import gg.ascent.plugin.admin.SqlAdminActionRepository;
 import gg.ascent.plugin.alert.DiscordWebhook;
 import gg.ascent.plugin.alert.StaffAlerts;
+import gg.ascent.plugin.combat.DeathListener;
+import gg.ascent.plugin.combat.GearListener;
+import gg.ascent.plugin.combat.SqlDeathLogRepository;
 import gg.ascent.plugin.command.AscentCommand;
 import gg.ascent.plugin.config.YamlConfigService;
 import gg.ascent.plugin.db.BukkitMainThread;
@@ -30,7 +34,6 @@ import gg.ascent.plugin.enchant.runtime.EffectApplier;
 import gg.ascent.plugin.enchant.runtime.EffectListener;
 import gg.ascent.plugin.enchant.runtime.FighterViews;
 import gg.ascent.plugin.enchant.runtime.PassiveTask;
-import gg.ascent.plugin.enchant.runtime.SafeZones;
 import gg.ascent.plugin.enchant.runtime.Silences;
 import gg.ascent.plugin.enchant.station.AlchemistCommand;
 import gg.ascent.plugin.enchant.station.TinkererCommand;
@@ -69,8 +72,12 @@ import gg.ascent.plugin.rank.RankServiceImpl;
 import gg.ascent.plugin.rank.SqlXpLogRepository;
 import gg.ascent.plugin.rank.UnlockServiceImpl;
 import gg.ascent.plugin.redis.RedisConnector;
+import gg.ascent.plugin.zone.RadiusZones;
+import gg.ascent.plugin.zone.WorldGuardZones;
+import gg.ascent.plugin.zone.ZoneListener;
 import java.time.Clock;
 import java.time.Duration;
+import org.bukkit.World;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.TabCompleter;
@@ -301,6 +308,24 @@ public final class AscentPlugin extends JavaPlugin {
         .getPluginManager()
         .registerEvents(new XpBottleListener(enchants, items, messages), this);
 
+    // PRD E8-S1: the spawn safezone and the warzone ring. Effects, combat and building ask here.
+    RadiusZones zones = new RadiusZones(config);
+    getServer().getPluginManager().registerEvents(new ZoneListener(zones, messages), this);
+    mirrorZonesInWorldGuard();
+
+    // PRD E9-S2: 1.8 gear rules, item cooldowns and the death log.
+    getServer().getPluginManager().registerEvents(new GearListener(this, config, messages), this);
+    getServer()
+        .getPluginManager()
+        .registerEvents(
+            new DeathListener(
+                database.executor(),
+                new SqlDeathLogRepository(),
+                items,
+                Clock.systemUTC(),
+                getSLF4JLogger()),
+            this);
+
     // PRD E3-S4: the effect runtime. Combat math is pure; these are its Bukkit hooks.
     java.security.SecureRandom effectRandom = new java.security.SecureRandom();
     Silences silences = new Silences();
@@ -316,13 +341,13 @@ public final class AscentPlugin extends JavaPlugin {
                 applier,
                 cooldowns,
                 silences,
-                SafeZones.NONE,
+                zones,
                 items,
                 effectRandom),
             this);
     getServer()
         .getScheduler()
-        .runTaskTimer(this, new PassiveTask(getServer(), views, applier, SafeZones.NONE), 20L, 20L);
+        .runTaskTimer(this, new PassiveTask(getServer(), views, applier, zones), 20L, 20L);
     getServer()
         .getScheduler()
         .runTaskTimer(
@@ -385,7 +410,8 @@ public final class AscentPlugin extends JavaPlugin {
             mines,
             progress,
             sellMultiplier,
-            enchants);
+            enchants,
+            zones);
     AscentProvider.register(api);
     getServer().getServicesManager().register(AscentApi.class, api, this, ServicePriority.Normal);
 
@@ -480,6 +506,25 @@ public final class AscentPlugin extends JavaPlugin {
       database = null;
     }
     getSLF4JLogger().info("Ascent disabled.");
+  }
+
+  /** Mirrors the zones into WorldGuard when it is installed and enabled in events.yml. */
+  private void mirrorZonesInWorldGuard() {
+    EventsSettings.Zones zones = config.events().zones();
+    if (!zones.worldguard() || getServer().getPluginManager().getPlugin("WorldGuard") == null) {
+      return;
+    }
+    World world = getServer().getWorld(zones.world());
+    if (world == null) {
+      getSLF4JLogger()
+          .warn("events.yml zones.world '{}' is not loaded; zones not mirrored.", zones.world());
+      return;
+    }
+    try {
+      WorldGuardZones.sync(world, zones, getSLF4JLogger());
+    } catch (Throwable t) {
+      getSLF4JLogger().warn("Could not mirror the zones into WorldGuard: {}", t.toString());
+    }
   }
 
   private boolean bind(String name, CommandExecutor executor, TabCompleter completer) {

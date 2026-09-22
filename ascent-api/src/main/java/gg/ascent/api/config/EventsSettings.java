@@ -11,10 +11,19 @@ public record EventsSettings(Zones zones, Koth koth, Envoys envoys) {
    * Radii from spawn, in blocks. Safezone is inside {@code safezoneRadius}; warzone is the ring
    * from there out to {@code warzoneRadius}.
    */
-  public record Zones(int safezoneRadius, int warzoneRadius) {
+  /**
+   * @param world the world the zones live in; every other world is wilderness
+   * @param safezoneRadius blocks from spawn that are safe
+   * @param warzoneRadius blocks from spawn where the warzone ends
+   * @param worldguard whether to mirror the zones as WorldGuard regions when it is installed
+   */
+  public record Zones(String world, int safezoneRadius, int warzoneRadius, boolean worldguard) {
     public Zones {
       if (warzoneRadius <= safezoneRadius) {
         throw new IllegalArgumentException("warzone radius must exceed safezone radius");
+      }
+      if (world == null || world.isBlank()) {
+        throw new IllegalArgumentException("world must be named");
       }
     }
   }

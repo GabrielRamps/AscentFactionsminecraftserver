@@ -12,6 +12,7 @@ dependencies {
   // classes at runtime, and the mines module checks the plugin is present before touching them.
   compileOnly(libs.worldedit.core) { isTransitive = false }
   compileOnly(libs.worldedit.bukkit) { isTransitive = false }
+  compileOnly(libs.worldguard.core) { isTransitive = false }
 
   api(project(":ascent-api"))
 

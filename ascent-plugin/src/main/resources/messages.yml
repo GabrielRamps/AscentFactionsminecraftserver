@@ -281,6 +281,24 @@ xp-bottle:
   # <levels>
   used: "<prefix><green>+<levels> XP levels."
 
+zones:
+  # Action-bar lines on crossing a border (PRD E8-S1).
+  enter:
+    safezone: "<green><bold>Safezone</bold> <dark_gray>| <gray>no PvP, no damage, no building"
+    warzone: "<red><bold>Warzone</bold> <dark_gray>| <gray>PvP is on"
+    wilderness: "<yellow><bold>Wilderness</bold> <dark_gray>| <gray>PvP is on"
+  no-pvp: "<prefix><red>No fighting in the safezone."
+  no-build: "<prefix><red>You can't build here."
+
+combat:
+  gear:
+    # <item>
+    banned: "<prefix><red><item> is not allowed on Ascent."
+    # <count>
+    removed: "<prefix><red>Removed <white><count></white> banned item(s) from your inventory."
+    # <seconds>
+    god-apple-cooldown: "<prefix><red>God apples are on cooldown for another <white><seconds></white>s."
+
 alerts:
   # Sent to everyone with ascent.staff.alerts.
   # <item>, <observed>, <created>, <holders>

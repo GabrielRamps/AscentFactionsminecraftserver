@@ -272,6 +272,27 @@ git push
 Day-to-day commands live in `TESTING.md`. What to build next is in
 `docs/ascent-factions-phase-1-prd.md`, section 10.2.
 
+## World height (PRD E9-S2)
+
+The PRD wants the main world 0 to 256 blocks tall with bedrock at y=0, like
+1.8. That is a world-generation setting and cannot be changed on a world that
+already exists, so it is applied by a datapack when a world is first created.
+Your current dev world is a normal 1.21 world and works fine for testing;
+switch when you want the real layout. In the Ubuntu shell, with the server
+stopped (`tmux attach -t ascent`, type `stop`):
+
+```bash
+cd ~/ascent-server
+mv world world.old && mv world_nether world_nether.old && mv world_the_end world_the_end.old
+mkdir -p world/datapacks
+cp -r ~/AscentFactionsminecraftserver/server/datapacks/ascent_world world/datapacks/
+cd ~/AscentFactionsminecraftserver && ./dev.sh
+```
+
+The old world folders are kept as `.old`; delete them once you are happy.
+If the server refuses to start after this, remove `world/datapacks/ascent_world`
+and start again; the world is then a normal one.
+
 ## Troubleshooting
 
 **"Unable to connect to the child process 'Gradle Test Executor'" during

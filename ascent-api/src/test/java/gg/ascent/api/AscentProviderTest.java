@@ -18,6 +18,7 @@ import gg.ascent.api.player.PlayerService;
 import gg.ascent.api.progress.ProgressBus;
 import gg.ascent.api.rank.RankService;
 import gg.ascent.api.rank.UnlockService;
+import gg.ascent.api.zone.ZoneService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -97,6 +98,11 @@ class AscentProviderTest {
 
         @Override
         public EnchantService enchants() {
+          throw new UnsupportedOperationException("not needed by this test");
+        }
+
+        @Override
+        public ZoneService zones() {
           throw new UnsupportedOperationException("not needed by this test");
         }
       };

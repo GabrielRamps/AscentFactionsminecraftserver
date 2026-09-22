@@ -30,6 +30,7 @@ vaultapi = "1.7.1"
 # WorldEdit 7.3.x); the API itself is published by EngineHub, FAWE's own jars are not on a
 # public Maven repository we can rely on.
 worldedit = "7.3.8"
+worldguard = "7.0.12"
 
 # Annotations
 jetbrainsAnnotations = "26.0.1"
@@ -48,6 +49,7 @@ vaultapi = { module = "com.github.MilkBowl:VaultAPI", version.ref = "vaultapi" }
 # WorldEdit API (EditSession, patterns, clipboards) and BukkitAdapter. Compile only.
 worldedit-core = { module = "com.sk89q.worldedit:worldedit-core", version.ref = "worldedit" }
 worldedit-bukkit = { module = "com.sk89q.worldedit:worldedit-bukkit", version.ref = "worldedit" }
+worldguard-core = { module = "com.sk89q.worldguard:worldguard-core", version.ref = "worldguard" }
 
 annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrainsAnnotations" }
 

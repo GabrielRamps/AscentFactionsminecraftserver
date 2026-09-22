@@ -1,10 +1,17 @@
 # KOTH, Envoys and the zones they live in (PRD Epic 8).
 
 zones:
+  # The world whose spawn the zones are measured from. Every other world
+  # (the mines included) is wilderness.
+  world: world
   # Radii from spawn, in blocks. Inside safezone-radius: no PvP, no damage,
-  # no build. From there to warzone-radius: PvP on, no claiming.
+  # no build. From there to warzone-radius: PvP on, no claiming, no build.
   safezone-radius: 100
   warzone-radius: 400
+  # When WorldGuard is installed, mirror the zones as its "spawn" and
+  # "warzone" regions on every start and reload so other plugins see them.
+  # Ascent enforces the rules itself either way.
+  worldguard: true
 
 koth:
   interval: 6h

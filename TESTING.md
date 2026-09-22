@@ -272,6 +272,36 @@ the pit region must line up with `layout` in `mines.yml`.
 
 A plot unused for 24 hours is handed to the next player who needs one.
 
+## Zones and combat rules
+
+Spawn is the centre of two circles in `events.yml`: inside 100 blocks is the
+safezone (no PvP, no damage of any kind, no building), out to 400 blocks is
+the warzone (PvP on, no building), and beyond that is wilderness. Crossing a
+border prints an action-bar line above the hotbar. Ops (permission
+`ascent.zones.bypass`) can still build in both. Every other world, the mines
+included, is wilderness. When WorldGuard is installed the same circles are
+written as its `spawn` and `warzone` regions on every start, so `/rg info
+spawn` in game shows them; Ascent enforces the rules itself either way.
+
+Gear that breaks the 1.8 meta (shields, elytra, tridents, crossbows, totems,
+end crystals, anything netherite; `gear` in `combat.yml`) cannot be crafted or
+picked up, and is deleted with a message the moment an inventory opens. God
+apples get a 60-second cooldown and ender pearls 16 seconds, both drawn on
+the item by the client. Every death writes a `death_log` row with the killer,
+the spot and the registry ids of what dropped.
+
+To test: stand at spawn and `/kill` yourself or fall from a height; nothing
+happens. Walk 101 blocks out and the action bar announces the warzone. Try
+to break a block in either zone: refused unless you are op. In the console,
+`give <you> shield` then open your inventory: the shield is removed with a
+message. Eat a god apple (`give <you> enchanted_golden_apple 2`): the second
+one shows a cooldown sweep for a minute. Throw an ender pearl: the item greys
+out for 16 seconds.
+
+The main world's height (0 to 256, bedrock at y=0) is a world-generation
+setting, applied by the datapack in `server/datapacks/ascent_world`. It only
+takes effect on a fresh world; see SETUP.md.
+
 ## Item registry and dupe alerts
 
 Every valuable item gets a permanent id when it is created (books, scrolls,

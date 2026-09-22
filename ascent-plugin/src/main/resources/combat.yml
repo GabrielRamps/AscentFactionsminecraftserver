@@ -22,3 +22,16 @@ blocked-commands-while-tagged:
   - tinkerer
   - alchemist
   - trade
+
+# Gear gating (PRD E9-S2). Modern items that break the 1.8 meta cannot be
+# crafted or picked up, and are deleted from an inventory when it opens.
+# Material names as in https://jd.papermc.io/paper/1.21/org/bukkit/Material.html
+gear:
+  banned-items: [SHIELD, ELYTRA, TRIDENT, CROSSBOW, TOTEM_OF_UNDYING, END_CRYSTAL]
+  # Any material whose name starts with one of these is banned as well.
+  banned-prefixes: [NETHERITE_]
+  # God apples (enchanted golden apples) can be eaten this often; the client
+  # shows the cooldown on the item. Ordinary golden apples keep the old
+  # values through OldCombatMechanics.
+  god-apple-cooldown-seconds: 60
+  enderpearl-cooldown-seconds: 16

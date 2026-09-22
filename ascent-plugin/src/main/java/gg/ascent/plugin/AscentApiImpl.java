@@ -14,6 +14,7 @@ import gg.ascent.api.player.PlayerService;
 import gg.ascent.api.progress.ProgressBus;
 import gg.ascent.api.rank.RankService;
 import gg.ascent.api.rank.UnlockService;
+import gg.ascent.api.zone.ZoneService;
 
 /** Default {@link AscentApi} implementation, backed by the running plugin instance. */
 final class AscentApiImpl implements AscentApi {
@@ -32,6 +33,7 @@ final class AscentApiImpl implements AscentApi {
   private final ProgressBus progress;
   private final SellMultiplierService sellMultiplier;
   private final EnchantService enchants;
+  private final ZoneService zones;
   private volatile boolean ready;
 
   AscentApiImpl(
@@ -48,7 +50,8 @@ final class AscentApiImpl implements AscentApi {
       MineService mines,
       ProgressBus progress,
       SellMultiplierService sellMultiplier,
-      EnchantService enchants) {
+      EnchantService enchants,
+      ZoneService zones) {
     this.plugin = plugin;
     this.config = config;
     this.messages = messages;
@@ -63,6 +66,7 @@ final class AscentApiImpl implements AscentApi {
     this.progress = progress;
     this.sellMultiplier = sellMultiplier;
     this.enchants = enchants;
+    this.zones = zones;
   }
 
   @Override
@@ -138,6 +142,11 @@ final class AscentApiImpl implements AscentApi {
   @Override
   public EnchantService enchants() {
     return enchants;
+  }
+
+  @Override
+  public ZoneService zones() {
+    return zones;
   }
 
   void markReady() {
