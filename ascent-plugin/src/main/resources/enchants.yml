@@ -37,6 +37,356 @@ tiers:
     destroy: [30, 90]
     min-rank: 40
 
-# The enchant catalog is added by story E3-S1 under an "enchants:" key, one
-# entry per enchant with display name, tier, applicable gear, max level, lore
-# per level and effect parameters. See PRD §6.4.4 for the shape.
+# The enchant catalog (PRD E3-S1). One entry per enchant:
+#   display        the name players see
+#   tier           SIMPLE | UNIQUE | ELITE | ULTIMATE | LEGENDARY
+#   applies-to     HELMET CHESTPLATE LEGGINGS BOOTS SWORD AXE BOW PICKAXE HOE
+#                  ALL_ARMOR ALL_WEAPONS
+#   max-level      1..10
+#   description    one MiniMessage line, or a map of level -> line; <param>
+#                  placeholders are filled from effect.per-level at that level
+#   effect.type    what it does (see below); effect.potion / target / condition
+#                  are options, effect.per-level holds one value per level (or a
+#                  single number for every level)
+#   cooldown-ticks minimum ticks between procs on one player
+#
+# Effect types and their per-level parameters:
+#   POTION_ON_HIT, POTION_ON_HURT   potion, target (TARGET|SELF|ATTACKER); amplifier, duration (s), chance (%)
+#   POTION_PASSIVE                  potion; amplifier
+#   DAMAGE_MULTIPLIER               condition?; multiplier, chance
+#   DAMAGE_REDUCTION_STACKABLE      condition?; percent, chance   (summed across pieces, capped at 60%)
+#   LIFESTEAL                       heal (hearts), chance
+#   EXTRA_HEARTS                    hearts
+#   HEAL_ON_KILL                    heal (hearts)
+#   LIGHTNING_ON_ARROW              chance, damage (hearts)
+#   AUTO_SMELT, TELEPATHY           (none)
+#   NO_DURABILITY_LOSS              chance
+#   KNOCKBACK_MULTIPLIER            multiplier, chance
+#   DOUBLE_STRIKE                   chance
+#   SILENCE                         chance, duration (s)
+#   BONUS_XP                        percent, chance
+# Conditions: SELF_BELOW_HP:<percent>, TARGET_BELOW_HP:<percent>, SELF_HOLDING:<target>,
+#             TARGET_HOLDING:<target>, ATTACKER_HOLDING:<target>, ATTACKER_PROJECTILE
+# Potion FIRE means "set on fire for duration".
+#
+# Effects follow the design bible descriptions; every number is ours to tune.
+enchants:
+  # --- Simple ---------------------------------------------------------------
+  aquatic:
+    display: "Aquatic"
+    tier: SIMPLE
+    applies-to: [HELMET]
+    max-level: 1
+    description: "Breathe underwater"
+    effect: { type: POTION_PASSIVE, potion: WATER_BREATHING, per-level: { amplifier: 0 } }
+  glowing:
+    display: "Glowing"
+    tier: SIMPLE
+    applies-to: [HELMET]
+    max-level: 1
+    description: "See in the dark"
+    effect: { type: POTION_PASSIVE, potion: NIGHT_VISION, per-level: { amplifier: 0 } }
+  haste:
+    display: "Haste"
+    tier: SIMPLE
+    applies-to: [PICKAXE]
+    max-level: 3
+    description: "Mine faster (Haste <level_display>)"
+    effect: { type: POTION_PASSIVE, potion: HASTE, per-level: { amplifier: [0, 1, 2], level_display: [1, 2, 3] } }
+  auto_smelt:
+    display: "Auto Smelt"
+    tier: SIMPLE
+    applies-to: [PICKAXE]
+    max-level: 1
+    description: "Ores drop smelted"
+    effect: { type: AUTO_SMELT }
+  experience:
+    display: "Experience"
+    tier: SIMPLE
+    applies-to: [PICKAXE]
+    max-level: 3
+    description: "<percent>% more rank XP from mining"
+    effect: { type: BONUS_XP, per-level: { percent: [10, 20, 30], chance: 100 } }
+  obliterate:
+    display: "Obliterate"
+    tier: SIMPLE
+    applies-to: [SWORD, AXE]
+    max-level: 3
+    description: "<chance>% chance to knock enemies back x<multiplier>"
+    effect: { type: KNOCKBACK_MULTIPLIER, per-level: { multiplier: [1.5, 2.0, 2.5], chance: [10, 15, 20] } }
+    cooldown-ticks: 20
+  lightning:
+    display: "Lightning"
+    tier: SIMPLE
+    applies-to: [BOW]
+    max-level: 3
+    description: "<chance>% chance for arrows to strike lightning (<damage> hearts)"
+    effect: { type: LIGHTNING_ON_ARROW, per-level: { chance: [5, 8, 12], damage: [1, 1.5, 2] } }
+    cooldown-ticks: 40
+  confusion:
+    display: "Confusion"
+    tier: SIMPLE
+    applies-to: [SWORD]
+    max-level: 3
+    description: "<chance>% chance to confuse enemies for <duration>s"
+    effect: { type: POTION_ON_HIT, potion: NAUSEA, per-level: { amplifier: 0, duration: [3, 4, 5], chance: [6, 9, 12] } }
+    cooldown-ticks: 60
+
+  # --- Unique ---------------------------------------------------------------
+  berserk:
+    display: "Berserk"
+    tier: UNIQUE
+    applies-to: [SWORD, AXE]
+    max-level: 3
+    description: "<chance>% chance to gain Strength <level_display> for <duration>s on hit"
+    effect: { type: POTION_ON_HIT, potion: STRENGTH, target: SELF, per-level: { amplifier: [0, 0, 1], level_display: [1, 1, 2], duration: [3, 4, 5], chance: [5, 8, 11] } }
+    cooldown-ticks: 100
+  ward:
+    display: "Ward"
+    tier: UNIQUE
+    applies-to: [ALL_ARMOR]
+    max-level: 3
+    description: "<chance>% chance to gain Absorption when hit"
+    effect: { type: POTION_ON_HURT, potion: ABSORPTION, target: SELF, per-level: { amplifier: [0, 1, 2], duration: [4, 5, 6], chance: [5, 8, 11] } }
+    cooldown-ticks: 100
+  curse:
+    display: "Curse"
+    tier: UNIQUE
+    applies-to: [SWORD]
+    max-level: 3
+    description: "<chance>% chance to weaken enemies for <duration>s"
+    effect: { type: POTION_ON_HIT, potion: WEAKNESS, per-level: { amplifier: [0, 0, 1], duration: [3, 4, 5], chance: [6, 9, 12] } }
+    cooldown-ticks: 60
+  ender_shift:
+    display: "EnderShift"
+    tier: UNIQUE
+    applies-to: [ALL_ARMOR]
+    max-level: 3
+    description: "Below <threshold>% health, <chance>% chance for Speed <level_display> when hit"
+    effect: { type: POTION_ON_HURT, potion: SPEED, target: SELF, condition: "SELF_BELOW_HP:30", per-level: { amplifier: [0, 1, 1], level_display: [1, 2, 2], duration: [3, 4, 5], chance: [15, 20, 25], threshold: 30 } }
+    cooldown-ticks: 200
+  molten:
+    display: "Molten"
+    tier: UNIQUE
+    applies-to: [ALL_ARMOR]
+    max-level: 3
+    description: "<chance>% chance to set attackers on fire for <duration>s"
+    effect: { type: POTION_ON_HURT, potion: FIRE, target: ATTACKER, per-level: { amplifier: 0, duration: [2, 3, 4], chance: [5, 8, 11] } }
+    cooldown-ticks: 40
+  featherweight:
+    display: "Featherweight"
+    tier: UNIQUE
+    applies-to: [SWORD]
+    max-level: 3
+    description: "<chance>% chance for Haste on hit"
+    effect: { type: POTION_ON_HIT, potion: HASTE, target: SELF, per-level: { amplifier: [0, 1, 2], duration: [3, 4, 5], chance: [8, 12, 16] } }
+    cooldown-ticks: 60
+  telepathy:
+    display: "Telepathy"
+    tier: UNIQUE
+    applies-to: [PICKAXE, AXE, HOE]
+    max-level: 1
+    description: "Drops go straight to your inventory"
+    effect: { type: TELEPATHY }
+  famine:
+    display: "Famine"
+    tier: UNIQUE
+    applies-to: [SWORD]
+    max-level: 3
+    description: "<chance>% chance to starve enemies for <duration>s"
+    effect: { type: POTION_ON_HIT, potion: HUNGER, per-level: { amplifier: [0, 1, 2], duration: [4, 5, 6], chance: [6, 9, 12] } }
+    cooldown-ticks: 60
+
+  # --- Elite ----------------------------------------------------------------
+  springs:
+    display: "Springs"
+    tier: ELITE
+    applies-to: [BOOTS]
+    max-level: 3
+    description: "Jump higher (Jump Boost <level_display>)"
+    effect: { type: POTION_PASSIVE, potion: JUMP_BOOST, per-level: { amplifier: [0, 1, 2], level_display: [1, 2, 3] } }
+  cactus:
+    display: "Cactus"
+    tier: ELITE
+    applies-to: [ALL_ARMOR]
+    max-level: 3
+    description: "<chance>% chance to prick attackers for <damage> hearts"
+    effect: { type: POTION_ON_HURT, potion: INSTANT_DAMAGE, target: ATTACKER, per-level: { amplifier: 0, duration: 1, chance: [6, 9, 12], damage: [1.5, 1.5, 1.5] } }
+    cooldown-ticks: 40
+  execute:
+    display: "Execute"
+    tier: ELITE
+    applies-to: [SWORD, AXE]
+    max-level: 4
+    description: "x<multiplier> damage to enemies below <threshold>% health"
+    effect: { type: DAMAGE_MULTIPLIER, condition: "TARGET_BELOW_HP:25", per-level: { multiplier: [1.15, 1.3, 1.45, 1.6], chance: 100, threshold: 25 } }
+  frozen:
+    display: "Frozen"
+    tier: ELITE
+    applies-to: [ALL_ARMOR]
+    max-level: 3
+    description: "<chance>% chance to slow attackers for <duration>s"
+    effect: { type: POTION_ON_HURT, potion: SLOWNESS, target: ATTACKER, per-level: { amplifier: [0, 1, 1], duration: [2, 3, 4], chance: [6, 9, 12] } }
+    cooldown-ticks: 60
+  poison:
+    display: "Poison"
+    tier: ELITE
+    applies-to: [SWORD, AXE]
+    max-level: 3
+    description: "<chance>% chance to poison enemies for <duration>s"
+    effect: { type: POTION_ON_HIT, potion: POISON, per-level: { amplifier: [0, 1, 2], duration: [3, 4, 5], chance: [8, 11, 14] } }
+    cooldown-ticks: 60
+  reforged:
+    display: "Reforged"
+    tier: ELITE
+    applies-to: [ALL_ARMOR, ALL_WEAPONS, PICKAXE]
+    max-level: 5
+    description: "<chance>% chance to take no durability damage"
+    effect: { type: NO_DURABILITY_LOSS, per-level: { chance: [20, 35, 50, 65, 80] } }
+  voodoo:
+    display: "Voodoo"
+    tier: ELITE
+    applies-to: [SWORD, AXE]
+    max-level: 3
+    description: "<chance>% chance to weaken enemies heavily for <duration>s"
+    effect: { type: POTION_ON_HIT, potion: WEAKNESS, per-level: { amplifier: [1, 1, 2], duration: [3, 4, 5], chance: [8, 11, 14] } }
+    cooldown-ticks: 80
+  wither:
+    display: "Wither"
+    tier: ELITE
+    applies-to: [SWORD, AXE]
+    max-level: 3
+    description: "<chance>% chance to wither enemies for <duration>s"
+    effect: { type: POTION_ON_HIT, potion: WITHER, per-level: { amplifier: [0, 1, 1], duration: [3, 3, 4], chance: [6, 9, 12] } }
+    cooldown-ticks: 80
+  vampire:
+    display: "Vampire"
+    tier: ELITE
+    applies-to: [SWORD, AXE]
+    max-level: 3
+    description: "<chance>% chance to heal <heal> hearts on hit"
+    effect: { type: LIFESTEAL, per-level: { heal: [0.5, 0.5, 1.0], chance: [8, 12, 16] } }
+    cooldown-ticks: 20
+
+  # --- Ultimate -------------------------------------------------------------
+  angelic:
+    display: "Angelic"
+    tier: ULTIMATE
+    applies-to: [ALL_ARMOR]
+    max-level: 3
+    description: "<chance>% chance for Regeneration <level_display> when hit"
+    effect: { type: POTION_ON_HURT, potion: REGENERATION, target: SELF, per-level: { amplifier: [0, 1, 2], level_display: [1, 2, 3], duration: [3, 4, 5], chance: [6, 9, 12] } }
+    cooldown-ticks: 100
+  assassin:
+    display: "Assassin"
+    tier: ULTIMATE
+    applies-to: [SWORD]
+    max-level: 5
+    description: "x<multiplier> damage to enemies holding a bow"
+    effect: { type: DAMAGE_MULTIPLIER, condition: "TARGET_HOLDING:BOW", per-level: { multiplier: [1.1, 1.2, 1.3, 1.4, 1.5], chance: 100 } }
+  dodge:
+    display: "Dodge"
+    tier: ULTIMATE
+    applies-to: [LEGGINGS, BOOTS]
+    max-level: 5
+    description: "<chance>% chance to shrug off a hit (-<percent>%)"
+    effect: { type: DAMAGE_REDUCTION_STACKABLE, per-level: { percent: 50, chance: [4, 6, 8, 10, 12] } }
+  heavy:
+    display: "Heavy"
+    tier: ULTIMATE
+    applies-to: [ALL_ARMOR]
+    max-level: 5
+    description: "-<percent>% damage from arrows"
+    effect: { type: DAMAGE_REDUCTION_STACKABLE, condition: "ATTACKER_PROJECTILE", per-level: { percent: [4, 8, 12, 16, 20], chance: 100 } }
+  tank:
+    display: "Tank"
+    tier: ULTIMATE
+    applies-to: [ALL_ARMOR]
+    max-level: 5
+    description: "-<percent>% damage from axes"
+    effect: { type: DAMAGE_REDUCTION_STACKABLE, condition: "ATTACKER_HOLDING:AXE", per-level: { percent: [4, 8, 12, 16, 20], chance: 100 } }
+  valor:
+    display: "Valor"
+    tier: ULTIMATE
+    applies-to: [ALL_ARMOR]
+    max-level: 5
+    description: "-<percent>% damage while holding a sword"
+    effect: { type: DAMAGE_REDUCTION_STACKABLE, condition: "SELF_HOLDING:SWORD", per-level: { percent: [3, 6, 9, 12, 15], chance: 100 } }
+  enrage:
+    display: "Enrage"
+    tier: ULTIMATE
+    applies-to: [SWORD, AXE]
+    max-level: 5
+    description: "x<multiplier> damage while below <threshold>% health"
+    effect: { type: DAMAGE_MULTIPLIER, condition: "SELF_BELOW_HP:30", per-level: { multiplier: [1.1, 1.2, 1.3, 1.4, 1.5], chance: 100, threshold: 30 } }
+  ice_aspect:
+    display: "Ice Aspect"
+    tier: ULTIMATE
+    applies-to: [SWORD, AXE]
+    max-level: 3
+    description: "<chance>% chance to freeze enemies (Slowness <level_display>) for <duration>s"
+    effect: { type: POTION_ON_HIT, potion: SLOWNESS, per-level: { amplifier: [1, 2, 3], level_display: [2, 3, 4], duration: [2, 3, 3], chance: [8, 11, 14] } }
+    cooldown-ticks: 60
+
+  # --- Legendary ------------------------------------------------------------
+  overload:
+    display: "Overload"
+    tier: LEGENDARY
+    applies-to: [ALL_ARMOR]
+    max-level: 3
+    description: "+<hearts> max hearts while worn"
+    effect: { type: EXTRA_HEARTS, per-level: { hearts: [1, 2, 3] } }
+  lifesteal:
+    display: "Lifesteal"
+    tier: LEGENDARY
+    applies-to: [SWORD]
+    max-level: 5
+    description: "Heals <heal> hearts on hit (<chance>% chance)"
+    effect: { type: LIFESTEAL, per-level: { heal: [0.5, 1.0, 1.5, 2.0, 2.5], chance: [6, 9, 12, 15, 18] } }
+    cooldown-ticks: 20
+  deathbringer:
+    display: "Deathbringer"
+    tier: LEGENDARY
+    applies-to: [SWORD, AXE]
+    max-level: 3
+    description: "<chance>% chance to deal x<multiplier> damage"
+    effect: { type: DAMAGE_MULTIPLIER, per-level: { multiplier: [1.5, 1.75, 2.0], chance: [4, 6, 8] } }
+    cooldown-ticks: 20
+  double_strike:
+    display: "Double Strike"
+    tier: LEGENDARY
+    applies-to: [SWORD]
+    max-level: 3
+    description: "<chance>% chance to strike twice"
+    effect: { type: DOUBLE_STRIKE, per-level: { chance: [5, 8, 11] } }
+    cooldown-ticks: 20
+  enlighted:
+    display: "Enlighted"
+    tier: LEGENDARY
+    applies-to: [ALL_ARMOR]
+    max-level: 3
+    description: "<chance>% chance to heal <heal> hearts when hit"
+    effect: { type: POTION_ON_HURT, potion: INSTANT_HEALTH, target: SELF, per-level: { amplifier: [0, 0, 1], duration: 1, chance: [5, 8, 11], heal: [2, 2, 4] } }
+    cooldown-ticks: 100
+  silence:
+    display: "Silence"
+    tier: LEGENDARY
+    applies-to: [SWORD]
+    max-level: 3
+    description: "<chance>% chance to silence enemy enchants for <duration>s"
+    effect: { type: SILENCE, per-level: { chance: [5, 8, 11], duration: [3, 4, 5] } }
+    cooldown-ticks: 100
+  gears:
+    display: "Gears"
+    tier: LEGENDARY
+    applies-to: [BOOTS]
+    max-level: 3
+    description: "Move faster (Speed <level_display>)"
+    effect: { type: POTION_PASSIVE, potion: SPEED, per-level: { amplifier: [0, 1, 2], level_display: [1, 2, 3] } }
+  armored:
+    display: "Armored"
+    tier: LEGENDARY
+    applies-to: [ALL_ARMOR]
+    max-level: 5
+    description: "-<percent>% damage from swords"
+    effect: { type: DAMAGE_REDUCTION_STACKABLE, condition: "ATTACKER_HOLDING:SWORD", per-level: { percent: [4, 8, 12, 16, 20], chance: 100 } }

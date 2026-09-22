@@ -108,6 +108,16 @@ public final class AscentPlugin extends JavaPlugin {
               "{} configuration file(s) failed to load and are running on fallback values;"
                   + " fix them and run /ascent reload.",
               report.failures().size());
+      // PRD E3-S1: a malformed enchant catalog is not something to run past. The error above
+      // names the enchant and the field.
+      for (ReloadReport.FileResult failure : report.failures()) {
+        if (failure.file().equals("enchants.yml")) {
+          getSLF4JLogger()
+              .error("enchants.yml is malformed; refusing to enable: {}", failure.error());
+          getServer().getPluginManager().disablePlugin(this);
+          return;
+        }
+      }
     }
 
     try {

@@ -146,6 +146,16 @@ SELECT source, SUM(amount) FROM xp_log WHERE player_uuid = '<uuid>' GROUP BY sou
 and a rank-up from `/ascent give xp` with chat line, title and sound. Closes
 E2-S1 and E2-S2.
 
+## Enchant catalog
+
+Every custom enchant is data in `enchants.yml`: 41 MVP enchants across the five
+tiers, each with the gear it fits, its max level, a lore line per level and an
+effect type with per-level numbers. Numbers are ours to tune. Change one, save,
+`/ascent reload`. A malformed entry is reported with the enchant id and the
+field, keeps the previous catalog on reload, and stops the plugin from
+enabling at boot: the catalog is not something to run half-loaded. Books that
+use the catalog arrive with E3-S2; effects with E3-S4.
+
 ## Personal mines
 
 `/mine` puts you in a dedicated void world called `mines`, in your own 64x64

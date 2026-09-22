@@ -247,6 +247,34 @@ public final class Node {
     return new IntRange(min, max);
   }
 
+  /**
+   * {@code count} numbers at {@code path}: a list of exactly that many, or one number repeated for
+   * every entry.
+   */
+  public List<Double> decimalList(String path, int count) {
+    Object value = section.get(path);
+    if (value instanceof Number n) {
+      return java.util.Collections.nCopies(count, n.doubleValue());
+    }
+    List<?> list = section.getList(path);
+    if (list == null) {
+      throw wrongType(path, "a number or a list of " + count + " numbers", value);
+    }
+    if (list.size() != count) {
+      throw new ConfigException(
+          at(path) + ": expected " + count + " values, one per level, got " + list.size());
+    }
+    List<Double> out = new ArrayList<>(count);
+    for (int i = 0; i < list.size(); i++) {
+      if (!(list.get(i) instanceof Number n)) {
+        throw new ConfigException(
+            at(path) + "[" + i + "]: expected a number, got " + describe(list.get(i)));
+      }
+      out.add(n.doubleValue());
+    }
+    return out;
+  }
+
   public List<String> stringList(String path) {
     List<?> list = section.getList(path);
     if (list == null) {

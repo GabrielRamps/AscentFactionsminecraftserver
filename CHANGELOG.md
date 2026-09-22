@@ -80,6 +80,12 @@ Sprint 1, the core platform (Epic 1).
   `ProgressBus`.
 - Selling (E4-S2). `/sell` sells everything sellable at `prices.yml` values
   with an itemised receipt; `SellMultiplierService` answers 1.0 for now.
+- Enchant catalog (E3-S1). `enchants.yml` now carries the 41 MVP enchants as
+  data: display, tier, `applies-to`, `max-level`, per-level lore with
+  `<param>` placeholders, effect type and per-level parameters, cooldown. The
+  loader validates every field and refuses to enable the plugin on a malformed
+  entry, naming the enchant and the field. `EnchantDefinition`, `ItemTarget`
+  and `EffectType` join the API.
 - Lore renderer (E11-S3). One `LoreRenderer` writes all custom item lore:
   enchants by tier then name with the tier's color, `PROTECTED` when scrolled,
   a kind footer, and a `[n]` enchant count on the name. Idempotent.

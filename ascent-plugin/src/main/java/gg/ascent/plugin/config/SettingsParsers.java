@@ -13,6 +13,9 @@ import gg.ascent.api.config.PricesSettings;
 import gg.ascent.api.config.RanksSettings;
 import gg.ascent.api.config.SpawnersSettings;
 import gg.ascent.api.contract.Archetype;
+import gg.ascent.api.enchant.EffectType;
+import gg.ascent.api.enchant.EnchantDefinition;
+import gg.ascent.api.enchant.ItemTarget;
 import gg.ascent.api.enchant.Tier;
 import gg.ascent.api.progress.ObjectiveType;
 import java.time.DateTimeException;
@@ -24,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import org.jetbrains.annotations.Nullable;
@@ -235,7 +239,77 @@ public final class SettingsParsers {
               t.intRange("destroy", 0, 100),
               t.integerAtLeast("min-rank", 1)));
     }
-    return wrap(root, "tiers", () -> new EnchantsSettings(out));
+    Node catalog = root.sectionOrEmpty("enchants");
+    Map<String, EnchantDefinition> enchants = new LinkedHashMap<>();
+    for (String id : catalog.keys()) {
+      enchants.put(id, enchant(catalog.section(id), id));
+    }
+    return wrap(root, "tiers", () -> new EnchantsSettings(out, enchants));
+  }
+
+  /** One catalog entry. Every failure names the enchant and the field (PRD E3-S1). */
+  static EnchantDefinition enchant(Node e, String id) {
+    Tier tier = e.enumValue("tier", Tier.class);
+    Set<ItemTarget> targets = EnumSet.noneOf(ItemTarget.class);
+    List<String> applies = e.stringList("applies-to");
+    for (int i = 0; i < applies.size(); i++) {
+      String name = applies.get(i).trim().toUpperCase(Locale.ROOT).replace('-', '_');
+      try {
+        targets.add(ItemTarget.valueOf(name));
+      } catch (IllegalArgumentException ex) {
+        throw new ConfigException(
+            e.at("applies-to")
+                + "["
+                + i
+                + "]: '"
+                + name
+                + "' is not one of "
+                + List.of(ItemTarget.values()));
+      }
+    }
+    int maxLevel = e.integerAtLeast("max-level", 1);
+    Map<Integer, String> descriptions = new HashMap<>();
+    if (e.isString("description")) {
+      descriptions.put(1, e.rawString("description"));
+    } else {
+      Node desc = e.section("description");
+      for (String key : desc.keys()) {
+        int level;
+        try {
+          level = Integer.parseInt(key);
+        } catch (NumberFormatException ex) {
+          throw new ConfigException(desc.at(key) + ": description keys are levels, like 1");
+        }
+        descriptions.put(level, desc.rawString(key));
+      }
+    }
+    Node effectNode = e.section("effect");
+    EffectType type = effectNode.enumValue("type", EffectType.class);
+    Map<String, String> options = new HashMap<>();
+    for (String opt : List.of("potion", "target", "condition")) {
+      if (effectNode.has(opt)) {
+        options.put(opt, effectNode.string(opt).trim().toUpperCase(Locale.ROOT));
+      }
+    }
+    Map<String, List<Double>> perLevel = new LinkedHashMap<>();
+    Node params = effectNode.sectionOrEmpty("per-level");
+    for (String key : params.keys()) {
+      perLevel.put(key, params.decimalList(key, maxLevel));
+    }
+    int cooldown = e.has("cooldown-ticks") ? e.integerAtLeast("cooldown-ticks", 0) : 0;
+    return wrap(
+        e,
+        "effect",
+        () ->
+            new EnchantDefinition(
+                id,
+                e.string("display"),
+                tier,
+                targets,
+                maxLevel,
+                descriptions,
+                new EnchantDefinition.Effect(type, options, perLevel),
+                cooldown));
   }
 
   public static MinesSettings mines(Node root) {
